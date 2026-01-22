@@ -11,13 +11,23 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  HeadsetIcon,
+  BrushCleaning,
+  LayoutDashboard,
   Calendar,
+  Moon,
+  CreditCard,
+  Clock,
+  DoorOpen,
+  ClipboardList,
+  NotebookPen,
   Package,
   FileText,
   // Tag,
   PlusCircle,
   Receipt,
   Wrench,
+  Puzzle,
   HelpCircle,
 } from 'lucide-react';
 import { useAppSelector } from '@/redux/hooks';
@@ -33,11 +43,12 @@ interface NavItem {
   access?: (keyof Access)[];
 }
 
+// Main app navigation
 const mainNavigation: NavItem[] = [
   { name: 'Dashboard', href: '/app', icon: Home, userLevels: [0, 1, 2, 3, 4] },
   { name: 'Properties', href: '/app/property', icon: Building, userLevels: [2, 3, 4] },
   { name: "My Property", href: `/app/property`, icon: Building, userLevels: [1, 0] },
-  { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
+        { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
   { name: 'Access Control', href: '/app/access-control', icon: Shield, userLevels: [4] },
   { name: 'Utils Management', href: '/app/utils-management', icon: Wrench, userLevels: [4, 3], access: ["canCDAmenity", "canCDCategory", "canCDPropertyType", "canCDCategory"] },
 ];
@@ -82,8 +93,73 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
   };
 
   useEffect(() => {
-    if (user && [0, 1, 2, 3, 4].includes(user.userLevel)) {
-      const fullNav: NavItem[] = [
+    if (isFrontDeskRoute && propertyId) {
+      if (user && [0, 1, 2, 3, 4].includes(user.userLevel)) {
+        const fullNav: NavItem[] = [
+          { name: 'Dashboard', href: '/app', icon: Home, userLevels: [0, 1, 2, 3, 4] },
+          { name: 'Properties', href: '/app/property', icon: Building, userLevels: [2, 3, 4] },
+          { name: "My Property", href: `/app/property`, icon: Building, userLevels: [1, 0] },
+
+          {
+            name: 'Property Config',
+            icon: Building,
+            userLevels: [0, 1, 2, 3, 4],
+            children: [
+              {
+                name: 'Rate Plan',
+                href: `/property/${propertyId}/rate-plan`,
+                icon: Calendar,
+                userLevels: [0, 1, 2, 3, 4],
+                access: ["canCreateRatePlan", "canDeleteRatePlan", "canUpdateRatePlan", "canDeleteRatePlan"],
+              },
+              {
+                name: 'Rate Plan Allotment',
+                href: `/property/${propertyId}/rate-plan/map`,
+                icon: Package,
+                userLevels: [0, 1, 2, 3, 4],
+                access: ["canMapRatePlan","canCreateRoomAvailability","canModifyStartStopSell"]
+              },
+              {
+                name: 'Inventory',
+                href: `/property/${propertyId}/inventory`,
+                icon: Building,
+                userLevels: [0, 1, 2, 3, 4],
+                access: ["canAddInventory"]
+              },
+              {
+                name: 'Policy',
+                href: `/property/${propertyId}/policy`,
+                icon: FileText,
+                userLevels: [0, 1, 2, 3, 4],
+                access: ["canCreatePolicy", "canUpdatePolicy", "canDeletePolicy", "canAddPolicyToRatePlans"]
+              },
+              {
+                name: 'Add-On',
+                href: `/property/${propertyId}/add-on`,
+                icon: PlusCircle,
+                userLevels: [0, 1, 2, 3, 4],
+                access: ["canAddAddons", "canViewAddons", "canUpdateAddons", "canDeleteAddons"]
+              },
+              {
+                name: 'Tax System',
+                href: `/property/${propertyId}/tax-system`,
+                icon: Receipt,
+                userLevels: [0, 1, 2, 3, 4],
+                access: ["canAddTax", "canViewTax", "canUpdateTax", "canDeleteTax", "canAddTaxToRatePlans", "canCreateTaxGroup", "canDeleteTaxGroup"]
+              },
+            ]
+          },
+          
+        { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
+          { name: 'Access Control', href: '/app/access-control', icon: Shield, userLevels: [4] },
+          { name: 'Utils Management', href: '/app/utils-management', icon: Wrench, userLevels: [4] },
+          { name: "Contact Support", href: "/app/contact-support", icon: HelpCircle, userLevels: [0, 1, 2, 3, 4] }
+        ];
+        setNavigation(fullNav);
+      } 
+    } else if (isPropertyRoute && propertyId) {
+      const propertyNav: NavItem[] = [
+        // Main App Routes
         { name: 'Dashboard', href: '/app', icon: Home, userLevels: [0, 1, 2, 3, 4] },
         { name: 'Properties', href: '/app/property', icon: Building, userLevels: [2, 3, 4] },
         { name: "My Property", href: `/app/property`, icon: Building, userLevels: [1, 0] },
@@ -98,54 +174,157 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
               href: `/property/${propertyId}/rate-plan`,
               icon: Calendar,
               userLevels: [0, 1, 2, 3, 4],
-              access: ["canCreateRatePlan", "canDeleteRatePlan", "canUpdateRatePlan", "canDeleteRatePlan"],
+              access: ["canCreateRatePlan", "canDeleteRatePlan", "canUpdateRatePlan"],
             },
             {
               name: 'Rate Plan Allotment',
               href: `/property/${propertyId}/rate-plan/map`,
               icon: Package,
               userLevels: [0, 1, 2, 3, 4],
-              access: ["canMapRatePlan", "canCreateRoomAvailability", "canModifyStartStopSell"]
+                access: ["canMapRatePlan","canCreateRoomAvailability","canModifyStartStopSell"]
             },
             {
               name: 'Inventory',
               href: `/property/${propertyId}/inventory`,
               icon: Building,
               userLevels: [0, 1, 2, 3, 4],
-              access: ["canAddInventory"]
+              access: ["canAddInventory"],
             },
             {
               name: 'Policy',
               href: `/property/${propertyId}/policy`,
               icon: FileText,
               userLevels: [0, 1, 2, 3, 4],
-              access: ["canCreatePolicy", "canUpdatePolicy", "canDeletePolicy", "canAddPolicyToRatePlans"]
+              access: ["canCreatePolicy", "canUpdatePolicy", "canDeletePolicy", "canAddPolicyToRatePlans"],
             },
             {
               name: 'Add-On',
               href: `/property/${propertyId}/add-on`,
               icon: PlusCircle,
               userLevels: [0, 1, 2, 3, 4],
-              access: ["canAddAddons", "canViewAddons", "canUpdateAddons", "canDeleteAddons"]
+              access: ["canAddAddons", "canViewAddons", "canUpdateAddons", "canDeleteAddons"],
             },
             {
               name: 'Tax System',
               href: `/property/${propertyId}/tax-system`,
               icon: Receipt,
               userLevels: [0, 1, 2, 3, 4],
-              access: ["canAddTax", "canViewTax", "canUpdateTax", "canDeleteTax", "canAddTaxToRatePlans", "canCreateTaxGroup", "canDeleteTaxGroup"]
+              access: ["canAddTax", "canViewTax", "canUpdateTax", "canDeleteTax", "canAddTaxToRatePlans", "canCreateTaxGroup", "canDeleteTaxGroup"],
             },
           ]
         },
+        {
+          name: 'Front Desk',
+          icon: HeadsetIcon,
+          userLevels: [0, 1, 2, 3, 4],
+          access: ["canAccessFrontoffice"],
+          children: [
+            {
+              name: 'Dashboard',
+              href: `/property/${propertyId}/frontdesk`,
+              icon: LayoutDashboard,
+              userLevels: [0, 1, 2, 3, 4],
+            },
+            {
+              name: 'Reservations',
+              href: `/property/${propertyId}/frontdesk/reservation`,
+              icon: Calendar,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewReservation", "canAmendReservation", "canCancelReservation", "canMakeCheckIn", "canMakeCheckOut", "canCreateReservation", "canDownloadBookingVouchers", "canDownloadInvoice"],
+            },
+            {
+              name: 'Arrival / Departure',
+              href: `/property/${propertyId}/frontdesk/reservation/arrival-departure`,
+              icon: Clock,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewArrivals", "canViewDepartures"],
+            },
+            {
+              name: 'Check In/Out',
+              href: `/property/${propertyId}/frontdesk/reservation/check-in-out`,
+              icon: DoorOpen,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewCheckIns", "canViewCheckOuts"],
+            },
+            {
+              name: 'Guests',
+              href: `/property/${propertyId}/frontdesk/guests`,
+              icon: Users,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewGuests", "canCreateGuests", "canUpdateGuests", "canDeleteGuests"],
+            },
+            {
+              name: 'Night Audit',
+              href: `/property/${propertyId}/frontdesk/night-audit/make`,
+              icon: Moon,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canPerformNightAudit"],
+            },
+            {
+              name: 'Payments',
+              href: `/property/${propertyId}/frontdesk/payment`,
+              icon: CreditCard,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canAddPayments", "canViewPayments", "canDeletePayments", "canUpdatePayments"],
+            },
+            {
+              name: 'Room Management',
+              href: `/property/${propertyId}/frontdesk/room-management`,
+              icon: DoorOpen,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canCreateIndividualRooms", "canDeleteIndividualRooms", "canUpdateIndividualRooms", "canViewIndividualRooms"],
+            },
+            {
+              name: 'Task Assignment',
+              href: `/property/${propertyId}/frontdesk/task-assignment`,
+              icon: ClipboardList,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewHouseKeepingTasks", "canCreateHouseKeepingTasks", "canDeleteHouseKeepingTasks", "canUpdateHouseKeepingTasks"],
+            },
 
+            {
+              name: 'Reports',
+              href: `/property/${propertyId}/frontdesk/reports`,
+              icon: NotebookPen,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewReports", "canDownloadReports"],
+            },
+            {
+              name: 'Addons Management',
+              href: `/property/${propertyId}/frontdesk/addons-management`,
+              icon: Puzzle,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewAddons", "canAddAddons", "canUpdateAddons", "canDeleteAddons", "canAddAddonsForBookings"],
+            },
+          ]
+        },
+        {
+          name: 'House Keeping',
+          icon: BrushCleaning,
+          userLevels: [0, 1, 2, 3, 4],
+          access: ["canAccessHousekeeping"],
+          children: [
+            {
+              name: 'Dashboard',
+              href: `/property/${propertyId}/housekeeping`,
+              icon: LayoutDashboard,
+              userLevels: [0, 1, 2, 3, 4],
+              access: ["canViewHouseKeepingTasks", "canUpdateHouseKeepingTasks"],
+            },
+          ]
+        },
         { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
         { name: 'Access Control', href: '/app/access-control', icon: Shield, userLevels: [4] },
-        { name: 'Utils Management', href: '/app/utils-management', icon: Wrench, userLevels: [4] },
+        { name: 'Utils Management', href: '/app/utils-management', icon: Wrench, userLevels: [4], access: ["canCDAmenity", "canCDCategory", "canCDPropertyType"] },
         { name: "Contact Support", href: "/app/contact-support", icon: HelpCircle, userLevels: [0, 1, 2, 3, 4] }
       ];
-      setNavigation(fullNav);
-    }
+      setNavigation(propertyNav);
+    } else {
+      const updatedMainNav = [...mainNavigation];
 
+
+      setNavigation(updatedMainNav);
+    }
   }, [isFrontDeskRoute, isHouseKeepingRoute, isPropertyRoute, propertyId, user]);
 
   // Auto-expand parent items when child is active
