@@ -107,6 +107,9 @@ export class AuthService {
                 level,
             } = data;
             password = await createHash(password);
+            if(role==="super_admin"){
+             return errorResponse("You don't have permission to create this user")   
+            }
             let existingUser;
             if (email) {
                 existingUser = await UserAuthRepository.findUserByEmail(email);

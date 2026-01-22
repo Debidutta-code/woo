@@ -63,6 +63,7 @@ export class AuthController {
                     .status(400)
                     .json(errorResponse('In sufficient creator data'));
             }
+            
             const requestedRoleLevel = req.body.level;
             if (
                 requestedRoleLevel == '0' &&
@@ -117,6 +118,7 @@ export class AuthController {
                     req.body && req.body.level in [0, 1, 2, 3]
                         ? req.body.level
                         : 1,
+                        
                 createdBy: creatorAuthKey,
             };
             const newUser = await AuthService.createUser(userData, creatorId);
