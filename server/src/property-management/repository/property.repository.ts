@@ -65,12 +65,17 @@ export class PropertyDao {
             await prisma.propertyConfigs.create({
                 data: {
                     propertyId: property.id,
-                    channelManagerIntegrationActive: true,
                     pmsIntegrationActive: true,
                     reservationResetTime: '9:30',
                     selfAriActive: true,
+
                 },
             });
+            await prisma.dynamicPricing.create({
+                data:{
+                    propertyId:property.id,
+                }
+            })
             return property;
         } catch (error: any) {
             throw new Error(`Failed to create property: ${error.message}`);
