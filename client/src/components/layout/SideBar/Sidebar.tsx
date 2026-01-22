@@ -48,7 +48,7 @@ const mainNavigation: NavItem[] = [
   { name: 'Dashboard', href: '/app', icon: Home, userLevels: [0, 1, 2, 3, 4] },
   { name: 'Properties', href: '/app/property', icon: Building, userLevels: [2, 3, 4] },
   { name: "My Property", href: `/app/property`, icon: Building, userLevels: [1, 0] },
-        { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
+  { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
   { name: 'Access Control', href: '/app/access-control', icon: Shield, userLevels: [4] },
   { name: 'Utils Management', href: '/app/utils-management', icon: Wrench, userLevels: [4, 3], access: ["canCDAmenity", "canCDCategory", "canCDPropertyType", "canCDCategory"] },
 ];
@@ -56,7 +56,7 @@ const mainNavigation: NavItem[] = [
 // Define the component's props interface
 interface SidebarProps {
   isSidebarOpen: boolean;
-  toggleSidebar: () => void;
+  toggleSidebar: () => void;  
 }
 
 export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) {
@@ -117,7 +117,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
                 href: `/property/${propertyId}/rate-plan/map`,
                 icon: Package,
                 userLevels: [0, 1, 2, 3, 4],
-                access: ["canMapRatePlan","canCreateRoomAvailability","canModifyStartStopSell"]
+                access: ["canMapRatePlan", "canCreateRoomAvailability", "canModifyStartStopSell"]
               },
               {
                 name: 'Inventory',
@@ -149,14 +149,14 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
               },
             ]
           },
-          
-        { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
+
+          { name: 'Manage Members', href: '/app/members', icon: Users, userLevels: [4, 3, 2, 1, 0], access: ["canCreateLevel0User", "canCreateLevel1User", "canCreateLevel2User"] },
           { name: 'Access Control', href: '/app/access-control', icon: Shield, userLevels: [4] },
           { name: 'Utils Management', href: '/app/utils-management', icon: Wrench, userLevels: [4] },
           { name: "Contact Support", href: "/app/contact-support", icon: HelpCircle, userLevels: [0, 1, 2, 3, 4] }
         ];
         setNavigation(fullNav);
-      } 
+      }
     } else if (isPropertyRoute && propertyId) {
       const propertyNav: NavItem[] = [
         // Main App Routes
@@ -181,7 +181,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
               href: `/property/${propertyId}/rate-plan/map`,
               icon: Package,
               userLevels: [0, 1, 2, 3, 4],
-                access: ["canMapRatePlan","canCreateRoomAvailability","canModifyStartStopSell"]
+              access: ["canMapRatePlan", "canCreateRoomAvailability", "canModifyStartStopSell"]
             },
             {
               name: 'Inventory',
