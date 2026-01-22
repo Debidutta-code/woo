@@ -13,6 +13,7 @@ import { Types } from 'mongoose';
 
 class ActivityController {
 
+  
 
   public static async getActivities(req: CustomRequest, res: Response) {
     try {
