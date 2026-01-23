@@ -1,19 +1,13 @@
 
 import { prisma } from "../../config";
+import { errorResponse } from "../../utils/return";
 import {
-    AdjustmentType,
-    ICreateOccupancyBasedDynamicPricing,
-    ICCreateOccupancyBasedDynamicPricing,
-    ISeasonalHolidayPricing,
     IWeekendPricing,
     IWeekendPricingDays,
-    PeriodType,
-    OccupancyBasedAdjustmentType,
     ICreateWeekendPricing,
-    ICSeasonalHolidayPricingR,
-    ICWeekendPricingDays
-
-
+    ICWeekendPricingDays,
+    IUWeekendPricingDays,
+    PeriodType
 } from "../types";
 export class WeekendPricing {
     public async createWeekendPricing(data: ICreateWeekendPricing): Promise<IWeekendPricing> {
@@ -21,36 +15,77 @@ export class WeekendPricing {
             return await prisma.weekendPricing.create({
                 data: data,
                 include: {
-                    fridayPricing: true,
-                    saturdayPricing: true,
-                    sundayPricing: true,
+                    weekDays: true
                 }
             })
         } catch (error) {
             throw new Error("Failed to create weekend pricing")
         }
     }
-    public async createFridayPricing(data: ICWeekendPricingDays): Promise<IWeekendPricingDays> {
+
+    public async getWeekendPricing(propertyId: string): Promise<IWeekendPricing[] | null> {
         try {
-            return await prisma.weekendFridayPricing.create({
-                data: data
+            return await prisma.weekendPricing.findMany({
+                where: {
+                    propertyId: propertyId
+                }, include: {
+                    weekDays: true
+                }
             })
         } catch (error) {
-            throw new Error("Failed to create weekend days pricing")
+            throw new Error("Failed to get weekend pricing")
         }
     }
-    public async createSaturdayPricing(data: ICWeekendPricingDays): Promise<IWeekendPricingDays> {
+
+    public async getWeekendPricingWithDetails(weekendPricingId: string): Promise<IWeekendPricing | null> {
         try {
-            return await prisma.weekendSaturdayPricing.create({
-                data: data
+            return await prisma.weekendPricing.findUnique({
+                where: {
+                    id: weekendPricingId
+                },
+                include: {
+                    weekDays: true
+                }
             })
         } catch (error) {
-            throw new Error("Failed to create weekend days pricing")
+            throw new Error("Failed to get weekend pricing details")
         }
     }
-    public async createSundayPricing(data: ICWeekendPricingDays): Promise<IWeekendPricingDays> {
+    public async deleteWeekendPricing(weekendPricingId: string): Promise<boolean> {
         try {
-            return await prisma.weekendSunDayPricing.create({
+            await prisma.weekendPricing.delete({
+                where: {
+                    id: weekendPricingId
+                }
+            })
+            return true
+        } catch (error) {
+            throw new Error("Failed to delete weekend pricing")
+        }
+    }
+
+    public async getWeekendPricingForRoom(propertyId: string, roomType: string): Promise<IWeekendPricing | null> {
+        try {
+            return await prisma.weekendPricing.findUnique({
+                where: {
+                    propertyId: propertyId,
+                    roomType: roomType
+                },
+                include: {
+                    weekDays: true
+                }
+            })
+        } catch (error) {
+            throw new Error("Failed to get weekend pricing for room")
+        }
+    }
+
+    
+}
+export class WeekendDayDynamicPricingRepository {
+    public async createWeekDayPricing(data: ICWeekendPricingDays): Promise<IWeekendPricingDays> {
+        try {
+            return await prisma.weekendDayPricing.create({
                 data: data
             })
         } catch (error) {
@@ -58,4 +93,44 @@ export class WeekendPricing {
         }
     }
 
+    public async updateForTotalWeekends(weekendId:string,data:IUWeekendPricingDays): Promise<boolean> {
+        try {
+            await prisma.weekendDayPricing.updateMany({
+                where: {
+                    weekendPricingId: weekendId
+                },
+                data: data
+            })
+            return true
+
+        } catch (error) {
+            throw new Error("Failed to update weekend day pricing")
+        }
+    }
+    public async updateForASingleDay(weekendDayId:string,data:IUWeekendPricingDays): Promise<boolean> {
+        try {
+            await prisma.weekendDayPricing.updateMany({
+                where: {
+                    id: weekendDayId,
+                },
+                data: data
+            })
+            return true
+
+        } catch (error) {
+            throw new Error("Failed to update weekend day pricing")
+        }
+    }
+    public async deleteWeekDayPricing(weekendPricingId: string): Promise<boolean> {
+        try {
+            await prisma.weekendDayPricing.delete({
+                where: {
+                    weekendPricingId: weekendPricingId
+                }
+            })
+            return true
+        } catch (error) {
+            throw new Error("Failed to delete Saturday pricing")
+        }
+    }
 }

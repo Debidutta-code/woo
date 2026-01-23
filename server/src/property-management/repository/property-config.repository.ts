@@ -11,8 +11,6 @@ export class PropertyConfigRepo {
                     propertyId: propertyId,
                 },
                 data: {
-                    channelManagerIntegrationActive:
-                        config.channelManagerIntegrationActive,
                     pmsIntegrationActive: config.pmsIntegrationActive,
                     selfAriActive: config.selfAriActive,
                     reservationResetTime: config.reservationResetTime,

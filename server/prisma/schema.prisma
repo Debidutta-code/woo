@@ -1204,7 +1204,7 @@ model ProblemTickets {
 
 model DynamicPricing {
   id         String   @id @default(uuid())
-  propertyId String   @map("property_id")
+  propertyId String @unique @map("property_id")
   Property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   occupancyBasedPricings  OccupancyBasedPricing[]
@@ -1268,7 +1268,7 @@ model SeasonalHolidayPricing {
 
 model WeekendPricing {
   id               String         @id @default(uuid())
-  propertyId       String         @map("property_id")
+  propertyId       String  @unique @map("property_id")
   property         Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   dynamicPricingId String         @map("dynamic_pricing_id")
   dynamicPricing   DynamicPricing @relation(fields: [dynamicPricingId], references: [id], onDelete: Cascade)
@@ -1278,47 +1278,31 @@ model WeekendPricing {
   roomName String @map("room_name")
   room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
-  fridayPricing   WeekendFridayPricing?
-  saturdayPricing WeekendSaturdayPricing?
-  sundayPricing   WeekendSunDayPricing?
+  weekDays   WeekendDayPricing[]
 
   updatedAt DateTime @updatedAt
 
   @@map("weekend_pricing")
 }
-
-model WeekendFridayPricing {
+enum WeekendDay {
+  fri_day
+  sat_day
+  sun_day
+}
+model WeekendDayPricing {
   id               String                       @id @default(uuid())
-  weekendPricingId String                       @unique @map("weekend_pricing_id")
+  day              WeekendDay                   @default(fri_day)
+  weekendPricingId String                       @map("weekend_pricing_id")
   weekendPricing   WeekendPricing               @relation(fields: [weekendPricingId], references: [id], onDelete: Cascade)
   adjustmentType   OccupancyBasedAdjustmentType @default(percentage) @map("adjustment_type")
-  adjustmentValue  Float                      @map("adjustment_value")
+  adjustmentValue  Float                        @map("adjustment_value")
   currencyCode     CurrencyCode?                @default(INR) @map("currency_code")
 
-  @@map("weekend_friday_pricing")
+  @@unique([weekendPricingId, day])
+  @@map("weekend_day_pricing")
 }
 
-model WeekendSaturdayPricing {
-  id               String                       @id @default(uuid())
-  weekendPricingId String                       @unique @map("weekend_pricing_id")
-  weekendPricing   WeekendPricing               @relation(fields: [weekendPricingId], references: [id], onDelete: Cascade)
-  adjustmentType   OccupancyBasedAdjustmentType @default(percentage) @map("adjustment_type")
-  adjustmentValue  Float                      @map("adjustment_value")
-  currencyCode     CurrencyCode?                @default(INR) @map("currency_code")
 
-  @@map("weekend_saturday_pricing")
-}
-
-model WeekendSunDayPricing {
-  id               String                       @id @default(uuid())
-  weekendPricingId String                       @unique @map("weekend_pricing_id")
-  weekendPricing   WeekendPricing               @relation(fields: [weekendPricingId], references: [id], onDelete: Cascade)
-  adjustmentType   OccupancyBasedAdjustmentType @default(percentage) @map("adjustment_type")
-  adjustmentValue  Float                      @map("adjustment_value")
-  currencyCode     CurrencyCode?                @default(INR) @map("currency_code")
-
-  @@map("weekend_sunday_pricing")
-}
 
 
 

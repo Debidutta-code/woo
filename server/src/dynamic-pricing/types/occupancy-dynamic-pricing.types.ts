@@ -16,8 +16,22 @@ export interface ICCreateOccupancyBasedDynamicPricing {
   adjustmentValue: number;
   currencyCode: CurrencyCode | undefined;
 }
-export interface ICreateOccupancyBasedDynamicPricing extends ICCreateOccupancyBasedDynamicPricing {
-id:string;
-updatedAt:Date;
+export interface ICCreateOccupancyBasedDynamicPricingS {
+  propertyId: string;
+  roomId: string;
+  
+  minimumOccupancyPercentage: number;
+  maximumOccupancyPercentage: number;
+  adjustmentType: OccupancyBasedAdjustmentType;
+  adjustmentValue: number;
+  currencyCode: CurrencyCode | undefined;
 }
-
+export interface IOccupancyBasedDynamicPricing extends ICCreateOccupancyBasedDynamicPricing {
+  id: string;
+  updatedAt: Date;
+}
+export interface IUpdateOccupancyBasedDynamicPricing {
+  adjustmentType: OccupancyBasedAdjustmentType;
+  adjustmentValue: number;
+  currencyCode: CurrencyCode | undefined;
+}

@@ -75,7 +75,7 @@ export class PropertyDao {
                 data:{
                     propertyId:property.id,
                 }
-            })
+            });
             return property;
         } catch (error: any) {
             throw new Error(`Failed to create property: ${error.message}`);

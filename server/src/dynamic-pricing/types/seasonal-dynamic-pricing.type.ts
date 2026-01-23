@@ -15,6 +15,24 @@ export interface ICSeasonalHolidayPricingR {
   adjustmentValue: number;
   currencyCode: CurrencyCode | null;
 }
+export interface IUSeasonalHolidayPricingR {
+  
+  adjustmentType: OccupancyBasedAdjustmentType;
+  adjustmentValue: number;
+  currencyCode: CurrencyCode | null;
+}
+export interface ICSeasonalHolidayPricingS {
+  propertyId: string;
+  roomId: string;
+  
+  ruleName: string;
+  periodType: PeriodType;
+  startDate: Date;
+  endDate: Date;
+  adjustmentType: OccupancyBasedAdjustmentType;
+  adjustmentValue: number;
+  currencyCode: CurrencyCode | null;
+}
 export interface ISeasonalHolidayPricing extends ICSeasonalHolidayPricingR {
   id:string;
   updatedAt:Date;
