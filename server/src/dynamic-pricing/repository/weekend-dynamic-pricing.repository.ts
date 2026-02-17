@@ -123,7 +123,7 @@ export class WeekendDayDynamicPricingRepository {
     }
     public async deleteWeekDayPricing(weekendPricingId: string): Promise<boolean> {
         try {
-            await prisma.weekendDayPricing.delete({
+            await prisma.weekendDayPricing.deleteMany({
                 where: {
                     weekendPricingId: weekendPricingId
                 }

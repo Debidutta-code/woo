@@ -483,7 +483,7 @@ model Room {
   maxOccupancy        Int           @map("max_occupancy")
   maxNumberOfAdults   Int           @map("max_number_of_adults")
   maxNumberOfChildren Int           @map("max_number_of_children")
-  numberOfBedrooms    Int?          @default(0) @map("number_of_bedrooms")
+  numberOfBedrooms    Int?          @default(1) @map("number_of_bedrooms")
   numberOfLivingRoom  Int?          @default(0) @map("number_of_living_room")
   extraBed            Int?          @default(0) @map("extra_bed")
   description         String?
@@ -1023,7 +1023,10 @@ model Reservation {
   addOns                  BookingAddon[]
   priceBreakdowns         ReservationPriceBrakeDown[]
   PromoCode               PromoCode?                  @relation(fields: [promoId], references: [id])
-
+  
+  agencyId String? @map("agency_id")
+  Agency   Agency? @relation(fields: [agencyId], references: [id])
+  
   // Folio                   Folio[]
   property  Property @relation(fields: [propertyId], references: [id])
   createdAt DateTime @default(now())
@@ -1031,6 +1034,7 @@ model Reservation {
 
   @@index([propertyCode])
   @@index([propertyId])
+  @@index([agencyId])
   @@map("reservations")
 }
 
@@ -1304,8 +1308,6 @@ model WeekendDayPricing {
 
 
 
-
-
 model GeoRatePlan {
   id         String   @id @default(uuid())
   propertyId String   @map("property_id")
@@ -1353,14 +1355,15 @@ model Agency {
   contactNo          String              @map("contact_no")
   taxNo              String              @map("tax_no")
   commissionType     AgentCommissionType @default(percentage) @map("commission_type")
-  commissionValue    Decimal             @map("commission_value")
+  commissionValue    Int             @map("commission_value")
   commissionCurrency CurrencyCode?       @default(INR) @map("commission_currency")
   iataCode           String              @map("iata_code")
   address            String              @map("address")
 
   Agents            Agents[]
-  agenticProperties AgenticProperty[]
-  agenticRooms      AgenticRoom[]
+  AgenticProperties AgenticProperty[]
+  Reservations      Reservation[]
+  isDeleted         Boolean          @default(false) @map("is_deleted")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
@@ -1374,7 +1377,8 @@ model AgenticProperty {
   propertyId   String   @map("property_id")
   propertyCode String   @map("property_code")
   propertyName String   @map("property_name")
-  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  Property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  AgenticRooms      AgenticRoom[]
 
   isActive  Boolean  @default(true) @map("is_active")
   isDeleted Boolean  @default(false) @map("is_deleted")
@@ -1387,8 +1391,8 @@ model AgenticProperty {
 
 model AgenticRoom {
   id        String @id @default(uuid())
-  agencyId  String @map("agency_id")
-  agency    Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agenticPropertyId  String @map("agentic_property_id")
+  AgenticProperty    AgenticProperty @relation(fields: [agenticPropertyId], references: [id], onDelete: Cascade)
 
   roomId   String @map("room_id")
   roomType String @map("room_type")
@@ -1399,7 +1403,7 @@ model AgenticRoom {
   isDeleted Boolean  @default(false) @map("is_deleted")
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@index([agencyId])
+  @@index([agenticPropertyId])
   @@index([roomId])
   @@map("agentic_room")
 }
@@ -1412,7 +1416,7 @@ model Agents {
   agentEmail     String   @map("agent_email")
   agentPhone     String   @map("agent_phone")
   agentPassword  String   @map("agent_password")
-
+  isDeleted      Boolean  @default(false) @map("is_deleted")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -1426,7 +1430,7 @@ model AgentApplications {
   applicationNoForThisUser Int                     @map("application_no_for_this_user")
   status                   AgencyApplicationStatus @default(pending) @map("status")
 
-  applicantEmail     String              @map("applicant_email")
+  applicantEmail     String   @unique           @map("applicant_email")
   applicantName      String              @map("applicant_name")
   applicantPhone     String              @map("applicant_phone")
   applicantPassword  String              @map("applicant_password")
@@ -1437,7 +1441,7 @@ model AgentApplications {
   contactNo          String              @map("contact_no")
   taxNo              String              @map("tax_no")
   commissionType     AgentCommissionType @default(percentage) @map("commission_type")
-  commissionValue    Decimal             @map("commission_value")
+  commissionValue    Int              @map("commission_value")
   commissionCurrency CurrencyCode?       @default(INR) @map("commission_currency")
   iataCode           String              @map("iata_code")
   address            String              @map("address")
