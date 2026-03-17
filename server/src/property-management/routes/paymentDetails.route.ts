@@ -1,28 +1,22 @@
 import { Router } from 'express';
 import { protect } from '../../middlewares/auth.middleware';
 import {
-    checkRoleBased,
-    addRoleBasedDetails,
-    checkMultiplePermissions,
+  checkRoleBased
 } from '../../middlewares/checkRole.middleware';
-import { BankController } from '../controller';
+import {BankController
+} from "../controller";
 
 export const paymentDetailsRoute = Router({ mergeParams: true });
 paymentDetailsRoute
-    .route('/')
-    .post(
-        protect,
-        checkRoleBased('canCreateHotel'),
-        BankController.addBankDetails
-    )
-    .get(BankController.getBankDetailsByPropertyId)
-    .patch(
-        protect,
-        checkRoleBased('canUpdatePaymentDetails'),
-        BankController.updateBankDetailsByPropertyId
-    )
-    .put(
-        protect,
-        checkRoleBased('canUpdatePaymentDetails'),
-        BankController.updatePaymentMethodsByPropertyId
-    );
+  .route('/')
+  .post(
+    protect,
+    checkRoleBased('canCreateHotel'),
+    BankController.addBankDetails
+  )
+  .get(BankController.getBankDetailsByPropertyId)
+  .put(
+    protect,
+    checkRoleBased('canUpdatePaymentDetails'),
+    BankController.updatePaymentMethodsByPropertyId
+  );

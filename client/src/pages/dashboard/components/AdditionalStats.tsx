@@ -17,7 +17,7 @@ export default function AdditionalStats({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'INR',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -63,7 +63,7 @@ export default function AdditionalStats({
                     >
                       <span className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">#{index + 1}</span>
-                        <span className="truncate">{addon.addonId}</span>
+                        <span className="truncate">{addon.addonName}</span>
                       </span>
                       <div className="text-right">
                         <div className="font-semibold">{formatCurrency(addon.revenue)}</div>

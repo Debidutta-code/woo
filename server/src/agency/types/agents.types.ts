@@ -9,6 +9,7 @@ export interface ICAgents {
 }
 export interface IAgents extends ICAgents {
     id: string;
+    
     isDeleted: boolean;
 }
 export interface IAgentsWA extends IAgents {

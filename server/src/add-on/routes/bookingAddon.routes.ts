@@ -1,28 +1,24 @@
-import { Router } from 'express';
-import { BookingAddonController } from '../controllers';
-import { checkRoleBased } from '../../middlewares/checkRole.middleware';
-import { protect } from '../../middlewares/auth.middleware';
+import { Router } from "express";
+import { BookingAddonController } from "../controllers";
+import {attachPropertyDetails} from "../../middlewares/property.middleware"
 
 const router = Router();
 const bookingAddonController = new BookingAddonController();
 
 router.post(
-    '/',
-    protect,
-        checkRoleBased('canAddAddons'),
-        bookingAddonController.createBookingAddon
+    "/",
+    bookingAddonController.createBookingAddon
 );
 
 router.put(
-    '/:bookingAddonId',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/:bookingAddonId",
     bookingAddonController.updateBookingAddon
 );
 
-router.delete('/:bookingAddonId', 
-    protect,
-    checkRoleBased('canAddAddons'),
-    bookingAddonController.deleteBookingAddon);
+router.delete(
+    "/:bookingAddonId",
+    bookingAddonController.deleteBookingAddon
+);
+
 
 export { router as BookingAddonRoutes };

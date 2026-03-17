@@ -1,3 +1,5 @@
-import PolicyRoute from './route';
+import PolicyRoute from "./route";
 
-export { PolicyRoute };
+export {
+    PolicyRoute
+};

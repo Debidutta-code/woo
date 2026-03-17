@@ -99,7 +99,7 @@ export default function PropertyInfo() {
           getAllCategory(),
           getAllPropertyType(),
         ]);
-        console.log(categoryRes.data, typeRes.data);
+        // console.log(categoryRes.data, destRes.data, typeRes.data);
         if (categoryRes.success) setPropertyCategories(categoryRes.data);
         if (typeRes.success) setPropertyTypes(typeRes.data);
       } catch (error: any) {
@@ -122,7 +122,7 @@ export default function PropertyInfo() {
       try {
         const response = await getPropertyDetails(propertyId);
         if (response.success && response.data) {
-          console.log(response.data.propertyCategory);
+          // console.log(response.data.propertyCategory);
           setPropertyDetails({
             ...response.data,
             // Ensure nested objects are not null
@@ -140,13 +140,7 @@ export default function PropertyInfo() {
                 propertyTypeDescription: response.data.propertyType?.masterPropertyType?.propertyTypeDescription || "",
               }
             },
-            destinationType: {
-              masterDestinationType: {
-                id:  "d3345526-4c21-489f-9475-1a2f242d9c66",
-                destinationTypeName:  "Villa",
-                destinationDescription:  "A private luxury house, often with a garden, pool, and exclusive amenities, ideal for families or groups.",
-              }
-            },
+            
             image: response.data.image || [],
           });
           setIsExistingData(true);
@@ -185,7 +179,7 @@ export default function PropertyInfo() {
           }
         }));
       }
-    } else {
+    } else   {
       const selectedObject = propertyTypes.find((type) => type.id === selectedValue);
       if (selectedObject) {
         setPropertyDetails((prev) => ({
@@ -212,7 +206,7 @@ export default function PropertyInfo() {
     const result = propertyInfoSchema.safeParse(propertyDetails);
 
     if (!result.success) {
-      console.log(result)
+      // console.log(result)
       setErrors(result.error.format());
       toast.error("Please fix the errors before continuing.");
       return;
@@ -223,13 +217,13 @@ export default function PropertyInfo() {
       let response;
       // KEY CHANGE: Use internal state to decide which API to call
       if (isExistingData) {
-        console.log(result.data)
+        // console.log(result.data)
         response = await updatePropertyById(propertyId!, result.data);
       } else {
         response = await createProperty(result.data, creationId!);
         // If creating, we get a new ID back that we must set in the context
         if (response.success && response.data.id) {
-          console.log("response", response.data)
+          // console.log("response", response.data)
           setPropertyIdAndUrl(response.data.id);
         }
       }
@@ -352,7 +346,7 @@ export default function PropertyInfo() {
                     onChange={(e) =>
                       handleInputChange("propertyContact", e.target.value)
                     }
-                    placeholder="+91 9876543210"
+                    placeholder=" 9876543210"
                     className={cn(
                       "h-12 border-2 transition-all duration-300 border-gray-300 focus:border-black hover:border-gray-400 focus:outline-none focus:ring-0",
                       errors?.propertyContact &&
@@ -623,6 +617,7 @@ export default function PropertyInfo() {
       <ImageUploadModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        // uploadImages={uploadImages}
         onUploadSuccess={handleUploadSuccess}
       />
     </div>

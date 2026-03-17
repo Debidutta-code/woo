@@ -1,29 +1,27 @@
-import { BankController } from './bankDetails.controller';
-import {
-    Property,
+import {BankController} from "./bankDetails.controller";
+import {Property,
     PropertyAddressController,
-    PropertyAminityController,
-} from './property.controller';
-import { RoomAminityController, RoomController } from './room.controller';
-import {
-    AminityController,
-    Category,
-    PropertyType,
-    RoomAminityControllerManagement,
-} from './types.controller';
-import { uploadHandler } from './upload.controller';
-import { PropertyConfigController } from './property-config.controller';
+    PropertyAminityController
+} from "./property.controller";
+import {RoomAminityController,RoomController} from "./room.controller";
+
+import {uploadHandler} from "./upload.controller";
+import {PropertyConfigController} from "./property-config.controller";
+import {BookingEngineController} from "./bookingEngine.controller";
 export {
+    PropertyVedioController,
+    RoomVedioController
+} from "./vedio.controller";
+export{
     BankController,
     Property,
     PropertyAddressController,
     PropertyAminityController,
     RoomAminityController,
     RoomController,
-    AminityController,
-    Category,
-    PropertyType,
-    RoomAminityControllerManagement,
     uploadHandler,
     PropertyConfigController,
-};
+    BookingEngineController,
+}
+export * from "./property-integration.controller";
+export * from "./propertyEmail.controller";

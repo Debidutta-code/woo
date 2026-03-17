@@ -16,34 +16,68 @@ import { PolicyRoute } from '../policies/routes';
 import { promoCodeRoutes } from '../promocode/routes';
 import { TaxSystemRouter } from '../tax-system/routes';
 import { AddonsRoute } from '../add-on/routes';
+import { pmsRoute } from '../pms/routes';
+import { BookingEngineRoutes } from '../booking-engine/routes';
 import { dashboardRouter } from '../dashboard/routes';
-import { conactSupportRouter } from '../contact-support/routes';
+// import EmailService from '../sms-email-service/routes/route';
+import { PaymentRoutes } from '../payment/routes';
+
+import { agencyMainRouter } from '../agency/routes/index.route';
+import { loyaltyRouter } from '../loyalty/routes/loyalty.routes';
+import promotionRouter from '../promotions/routes';
+import { agentPlatformRouter } from '../agent-paltform/routes';
+import integrationRouter from '../integrations/routes/index.routes';
+import platformRouter from '../platforms/routes/platform.routes';
+import {currencyRoutes} from "../currency-maping/routes"
+import { fikafiPaymentRoutes } from '../payment/routes/fikafi.routes';
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
     app.head('/status', (_, res: Response) => res.status(200).end());
 
     const apiV1Router = Router();
     app.use('/api/v1', apiV1Router);
-    apiV1Router.use('/init', initRouter);
+
+    // Health check endpoint
+    app.get('/health', (_req: Request, res: Response) => {
+        res.status(200).json({
+            status: 'OK',
+            timestamp: new Date().toISOString(),
+        });
+    });
 
     // Mount all routers under /api/v1
     apiV1Router.use('/auth', AuthRouter);
     apiV1Router.use('/user', UserRouter);
     apiV1Router.use('/create', CreationRouter);
+    apiV1Router.use('/init', initRouter);
 
     apiV1Router.use('/dash', dashboardRouter);
 
     apiV1Router.use('/access', AccessControlRoutes);
 
     apiV1Router.use('/policy', PolicyRoute);
-
+    apiV1Router.use('/agent-platform', agentPlatformRouter);
     apiV1Router.use('/property-management', PropertyManagement);
     apiV1Router.use('/ari', AriRouter);
     apiV1Router.use('/activities', ActivityRouter);
     apiV1Router.use('/promo-codes', promoCodeRoutes);
     apiV1Router.use('/tax-system', TaxSystemRouter);
     apiV1Router.use('/addon', AddonsRoute);
-    apiV1Router.use('/contact-support', conactSupportRouter);
+    apiV1Router.use('/pms', pmsRoute);
+    apiV1Router.use('/booking-engine', BookingEngineRoutes);
+    // apiV1Router.use('/email-service', EmailService);
+    apiV1Router.use('/agency', agencyMainRouter);
+    apiV1Router.use('/promotions', promotionRouter);
+    apiV1Router.use('/loyalty', loyaltyRouter);
+        apiV1Router.use('/fikafi', fikafiPaymentRoutes);
+
+
+    apiV1Router.use('/payment',PaymentRoutes);
+    apiV1Router.use('/integrations',integrationRouter);
+    apiV1Router.use('/platform',platformRouter);
+
+    apiV1Router.use('/currency', currencyRoutes);
+
     // Handle 404 for any undefined route under /api/v1
     app.all('/api/v1/*', (req: Request, _res: Response, next: NextFunction) => {
         next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

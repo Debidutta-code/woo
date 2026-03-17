@@ -28,6 +28,8 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { IAddonAvailabilityCreate, IAddon } from "../interface";
+import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
+import { currencies } from "@/components/currency-code/cuurency";
 
 interface AddOnAvailabilityDialogProps {
     open: boolean;
@@ -49,10 +51,12 @@ export default function AddOnAvailabilityDialog({
         from: new Date(),
         to: new Date(),
         price: 0,
-        currencyCode: "INR",
+        currencyCode: "USD",
         isAvailable: true,
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fromDateOpen, setFromDateOpen] = useState(false);
+    const [toDateOpen, setToDateOpen] = useState(false);
 
     useEffect(() => {
         if (selectedAddonId) {
@@ -81,7 +85,7 @@ export default function AddOnAvailabilityDialog({
             from: new Date(),
             to: new Date(),
             price: 0,
-            currencyCode: "INR",
+            currencyCode: "USD",
             isAvailable: true,
         });
     };
@@ -124,8 +128,7 @@ export default function AddOnAvailabilityDialog({
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>From Date *</Label>
-
-                            <Popover>
+                            <Popover open={fromDateOpen} onOpenChange={setFromDateOpen}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
@@ -142,14 +145,17 @@ export default function AddOnAvailabilityDialog({
                                         )}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent className=" p-0" align="start">
                                     <Calendar
-                                        className="rounded-md border"
                                         mode="single"
                                         selected={formData.from}
-                                        onSelect={(date) =>
-                                            date && setFormData({ ...formData, from: date })
-                                        }
+                                        onSelect={(date) => {
+                                            if (date) {
+                                                setFormData({ ...formData, from: date });
+                                                setFromDateOpen(false); // Close the popover
+                                            }
+                                        }}
+                                        className="rounded-md border w-full"
                                         initialFocus
                                     />
                                 </PopoverContent>
@@ -158,9 +164,9 @@ export default function AddOnAvailabilityDialog({
 
                         <div className="space-y-2">
                             <Label>To Date *</Label>
-                             <Popover>
+                            <Popover open={toDateOpen} onOpenChange={setToDateOpen}>
                                 <PopoverTrigger asChild>
-                                   <Button
+                                    <Button
                                         variant="outline"
                                         className={cn(
                                             "w-full justify-start text-left font-normal",
@@ -175,18 +181,22 @@ export default function AddOnAvailabilityDialog({
                                         )}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
+                                <PopoverContent className=" p-0" align="start">
                                     <Calendar
-                                        className="rounded-md border"
                                         mode="single"
                                         selected={formData.to}
-                                        onSelect={(date) =>
-                                            date && setFormData({ ...formData, to: date })
-                                        }
+                                        onSelect={(date) => {
+                                            if (date) {
+                                                setFormData({ ...formData, to: date });
+                                                setToDateOpen(false); // Close the popover
+                                            }
+                                        }}
                                         initialFocus
                                         disabled={(date) =>
                                             formData.from ? date < formData.from : false
                                         }
+                                        className="rounded-md border w-full"
+
                                     />
                                 </PopoverContent>
                             </Popover>
@@ -214,50 +224,50 @@ export default function AddOnAvailabilityDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="currencyCode">Currency *</Label>
+                            <Label htmlFor="currencyCode">Currency Code</Label>
                             <Select
                                 value={formData.currencyCode}
-                                onValueChange={(value) =>
-                                    setFormData({ ...formData, currencyCode: value })
-                                }
+                                onValueChange={(value) => setFormData({ ...formData, currencyCode: value as CurrencyCode })}
                             >
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="INR">INR (₹)</SelectItem>
-                                    <SelectItem value="USD">USD ($)</SelectItem>
-                                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                                    {currencies.map((currency) => (
+                                        <SelectItem key={currency.code} value={currency.code}>
+                                            {currency.name} ({currency.symbol})
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
+                            
                         </div>
-                    </div>
-
-                    {/* Availability Toggle */}
-                    <div className="flex items-center justify-between space-x-2 py-2">
-                        <Label htmlFor="isAvailable" className="cursor-pointer">
-                            Available for Booking
-                        </Label>
-                        <Switch
-                            id="isAvailable"
-                            checked={formData.isAvailable}
-                            onCheckedChange={(checked) =>
-                                setFormData({ ...formData, isAvailable: checked })
-                            }
-                        />
                     </div>
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={isSubmitting}>
-                        {isSubmitting ? "Creating..." : "Create Availability"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                {/* Availability Toggle */}
+                <div className="flex items-center justify-between space-x-2 py-2">
+                    <Label htmlFor="isAvailable" className="cursor-pointer">
+                        Available for Booking
+                    </Label>
+                    <Switch
+                        id="isAvailable"
+                        checked={formData.isAvailable}
+                        onCheckedChange={(checked) =>
+                            setFormData({ ...formData, isAvailable: checked })
+                        }
+                    />
+                </div>
+
+            <DialogFooter>
+                <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
+                    Cancel
+                </Button>
+                <Button onClick={handleSave} disabled={isSubmitting}>
+                    {isSubmitting ? "Creating..." : "Create Availability"}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+        </Dialog >
     );
 }

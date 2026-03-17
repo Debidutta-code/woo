@@ -1,35 +1,31 @@
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageSlider from "@/components/shared/ImageSlider";
 import { getPropertyId } from "../../../pages/property/api/api";
 import type { IPropertyAddress, IPropertyDetails } from "../../../pages/property/types/types";
-import { MapPin } from "lucide-react";
+import { MapPin, Calendar, Package, Building } from "lucide-react";
 import toast from "react-hot-toast";
 import PropertyAddress from "@/components/property/show/Address";
 import PropertyDetails from "@/components/property/show/PropertyDetails";
 import PropertyAmenities from "@/components/property/show/PropertyAmenities";
 import Rooms from "@/components/property/show/Rooms";
-import RatePlans from "@/components/property/show/RatePlans";
+// import RatePlans from "@/components/property/show/RatePlans";
 import BankDetails from "@/components/property/show/BankDetails";
 import Loader from "@/components/Loader/Loader";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 
 export default function PropertyDetailsPage() {
+  const router = useNavigate();
   const { propertyId } = useParams<{ propertyId: string }>();
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [propertyDetails, setPropertyDetails] = useState<IPropertyDetails>({
     propertyName: "",
     propertyEmail: "",
     description: "",
-    destinationType: {
-      masterDestinationType: {
-      id: "",
-      description: "",
-      destinationTypeName: "",
-      }
-    },
+    
     propertyCategory: {
       masterCategory:{
         
@@ -80,7 +76,6 @@ export default function PropertyDetailsPage() {
           starRating: data.starRating?.$numberDecimal || data.starRating,
 
           propertyCategory: data.propertyCategory,
-          destinationType: data.destinationType,
           propertyType: data.propertyType,
           propertyRoom: data.propertyRoom,
           description: data.description,
@@ -148,7 +143,7 @@ export default function PropertyDetailsPage() {
             </p>
           </div>
         </div>
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button
             className="h-12 w-full "
             onClick={() => router("/app/rate-plan")}
@@ -170,14 +165,14 @@ export default function PropertyDetailsPage() {
             />
             Create Inventory
           </Button>
-        </div> */}
+        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-1 h-fit">
             <TabsTrigger value="property">Property Details</TabsTrigger>
             <TabsTrigger value="address">Address</TabsTrigger>
             <TabsTrigger value="amenities">Amenities</TabsTrigger>
             <TabsTrigger value="rooms">Rooms</TabsTrigger>
-            <TabsTrigger value="rate-plans">Rate Plans</TabsTrigger>
+            {/* <TabsTrigger value="rate-plans">Rate Plans</TabsTrigger> */}
             <TabsTrigger value="bank-details">Bank Details</TabsTrigger>
           </TabsList>
           <TabsContent value="property" className="space-y-6">
@@ -192,9 +187,9 @@ export default function PropertyDetailsPage() {
           <TabsContent value="rooms" className="space-y-6">
             <Rooms propertyId={propertyId!} />
           </TabsContent>
-          <TabsContent value="rate-plans">
+          {/* <TabsContent value="rate-plans">
             <RatePlans  />
-          </TabsContent>
+          </TabsContent> */}
           <TabsContent value="bank-details">
             <BankDetails propertyId={propertyId!} />
           </TabsContent>

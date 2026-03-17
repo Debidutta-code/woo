@@ -1,10 +1,10 @@
 import {prisma} from "../../config";
-import { AgencyApplicationStatus, IAgencyApplication } from "../types";
+import { AgencyApplicationStatus,ICAgencyApplication, IAgencyApplication, IAgents, fAgencyApplicationStatus } from "../types";
 
 
 export class AgencyApplicationRepository {
 
-    public async createApplication(data: IAgencyApplication): Promise<IAgencyApplication> {
+    public async createApplication(data: ICAgencyApplication): Promise<IAgencyApplication> {
         try {
             
             const application = await prisma.agentApplications.create({
@@ -25,10 +25,20 @@ export class AgencyApplicationRepository {
             throw new Error(`Failed to retrieve agency application`);
         }
     }
-    public async getApplications(status: AgencyApplicationStatus, skip: number=0, take: number=10): Promise<IAgencyApplication[]> {
+    public async getApplicationsByEmail(email: string): Promise<IAgencyApplication | null> {
+        try {
+            const applications = await prisma.agentApplications.findUnique({
+                where: { applicantEmail: email }
+            });
+            return applications;
+        } catch (error) {
+            throw new Error(`Failed to retrieve agency applications by email`);
+        }
+    }
+    public async getApplications(status: fAgencyApplicationStatus, skip: number=0, take: number=10): Promise<IAgencyApplication[]> {
         try {
             const query: any = {};
-            if (status) {
+            if (status && status !== "all") {
                 query.status = status;
             }
             const applications = await prisma.agentApplications.findMany({
@@ -41,11 +51,11 @@ export class AgencyApplicationRepository {
             throw new Error(`Failed to retrieve agency applications`);
         }
     }
-    public async updateApplocationStatus(applicationId:string,newStatus:AgencyApplicationStatus):Promise<IAgencyApplication>{
+    public async updateApplicationStatus(email:string,newStatus:AgencyApplicationStatus,reason?:string):Promise<IAgencyApplication>{
         try {
             const updatedApplication = await prisma.agentApplications.update({
-                where: { id: applicationId },
-                data: { status: newStatus }
+                where: { applicantEmail: email },
+                data: { status: newStatus, rejectionReason: reason }
             });
             return updatedApplication;
         } catch (error) {
@@ -63,6 +73,46 @@ export class AgencyApplicationRepository {
             return count?.applicationNoForThisUser;
         } catch (error) {
             throw new Error(`Failed to retrieve last applied count by email`);
+        }
+    }
+    public async getAgentApplicationsByTaxNo(taxNo:string):Promise<IAgencyApplication|null>{
+        try {
+            return await prisma.agentApplications.findUnique({
+                where: { 
+                    taxNo: taxNo
+                 }
+            });
+        } catch (error) {
+            throw new Error(`Failed to get agent applications by tax number: ${taxNo}`);
+        }
+    }
+    public async getAgentApplicationsByName(name:string):Promise<IAgencyApplication|null>{
+        try {
+            return await prisma.agentApplications.findUnique({
+                where: { 
+                    agencyName: name
+                 }
+            });
+        } catch (error) {
+            throw new Error(`Failed to get agent applications by agency name: ${name}`);
+        }
+    }
+    public async updateCount(email: string): Promise<void> {
+        try {
+            await prisma.agentApplications.update({
+                where: { applicantEmail: email },
+                data: { applicationNoForThisUser: { increment: 1 } }
+            });
+        } catch (error) {
+            throw new Error(`Failed to update application count for email: ${email}`);
+        }
+    }
+    public async getCount(): Promise<number> {
+        try {
+            const count = await prisma.agentApplications.count();
+            return count;
+        } catch (error) {
+            throw new Error(`Failed to get agency application count`);
         }
     }
 }

@@ -23,6 +23,7 @@ export const getAllPropertyType = async () => {
     return error?.response.data;
   }
 };
+
 export const uploadImages = async (files: File[]) => {
   const axiosInstance = createAxiosInstance();
 

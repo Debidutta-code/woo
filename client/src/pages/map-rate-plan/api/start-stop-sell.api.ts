@@ -17,31 +17,33 @@ export const startStopSellAPI = async (propertyId: string, data: ICStartStopSell
     }
 }
 
-
-
-export const getMultiRoomRentPrice = async (
-    propertyId: string,
-    rooms: {
-        ratePlanCode: string;
-        invTypeCode: string;
-        startDate: Date;
-        endDate: Date;
-        noOfChildren: number;
-        noOfAdults: number;
-        noOfRooms: number;
-    }[]
-) => {
+export const getRoomRentPrice = async (
+    propertyId:string,
+    invTypeCode:string,
+    startDate:string,
+    endDate:string,
+    noOfChildren:string,
+    noOfAdults:string,
+    noOfRooms:string,
+    ratePlanCode:string) => {
     try {
         const response = await axiosInstance.post(`/ari/price/get-price`, {
             propertyId,
-            rooms,
+            invTypeCode,
+            startDate,
+            endDate,
+            noOfChildren,
+            noOfAdults,
+            noOfRooms,
+            ratePlanCode,
         });
-        return response.data;
+        return response.data
     } catch (error: any) {
-        if (error?.response?.data) {
+        if (error.response.data) {
             return error.response.data;
-        } else {
-            return { message: 'Failed to get multi-room rent price', success: false };
+        }
+        else {
+            return { message: 'Failed to get room rent price', success: false };
         }
     }
 }

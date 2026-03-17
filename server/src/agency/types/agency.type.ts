@@ -1,7 +1,6 @@
 
-import { CurrencyCode } from "../../ari/types/roomRent.types";
 import { AgencyType, AgentCommissionType, IAgenticProperty, IAgents } from ".";
-import { IReservation } from "../../reservations/types";
+import { CurrencyCode } from "../../tax-system/interfaces/tourist-tax.type";
 export interface ICAgency {
     agencyName: string;
     agencyType: AgencyType

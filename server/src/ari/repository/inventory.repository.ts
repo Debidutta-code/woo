@@ -1,13 +1,9 @@
+
 import { prisma } from '../../config';
-import type {
-    ICreateInventoryRepo,
-    IIdInventory,
-    IWeekdayCharges,
-    IWeekdayAdditionalCharges,
-    IAdditionalGuestAmount,
-    ICharges,
-} from '../types';
-import { formatDate, localMidnight, parseDdMmYyyy } from '../utils/date';
+import { toUTC } from '../../utils';
+import type { ICreateInventoryRepo, IIdInventory, IWeekdayCharges, IWeekdayAdditionalCharges, IAdditionalGuestAmount, ICharges } from "../types"
+import { formatDate, localMidnight, parseDdMmYyyy } from "../utils/date"
+
 
 class InventoryRepository {
     public static async getInventoryDao(
@@ -81,13 +77,15 @@ class InventoryRepository {
 
     public static async getRoom(propertyId: string, roomType: string) {
         try {
-            return await prisma.room.findFirst({
+            const room = await prisma.room.findFirst({
                 where: {
                     propertyId,
                     roomType,
                 },
             });
+            return room;
         } catch (error: any) {
+            console.error('❌ getRoom error:', error);
             throw new Error(error?.message);
         }
     }
@@ -111,84 +109,59 @@ class InventoryRepository {
         }
     }
 
-    public static async createInventory(repoData: ICreateInventoryRepo[]) {
+    public static async createInventory(
+        repoData: ICreateInventoryRepo[]
+    ): Promise<boolean> {
         try {
-            // Build a list of unique keys and a map for quick lookup
-            const keyOf = (d: ICreateInventoryRepo) =>
-                `${d.propertyCode}__${d.roomTypeCode}__${d.date}`;
-            const inputMap = new Map<string, ICreateInventoryRepo>();
-            for (const d of repoData) inputMap.set(keyOf(d), d);
-
-            // Fetch existing inventory rows for these (propertyCode, roomTypeCode, date) triples
-            const existing = await prisma.inventory.findMany({
-                where: {
-                    OR: repoData.map(d => ({
-                        propertyCode: d.propertyCode,
-                        roomTypeCode: d.roomTypeCode,
-                        date: d.date,
-                    })),
-                },
-                select: {
-                    id: true,
-                    propertyCode: true,
-                    roomTypeCode: true,
-                    date: true,
-                },
-            });
-
-            const existingKeys = new Set(
-                existing.map(
-                    e => `${e.propertyCode}__${e.roomTypeCode}__${e.date}`
-                )
-            );
-
-            // Prepare batched operations: update existing, create missing
             const ops: any[] = [];
-            let updates = 0;
-            let creates = 0;
+
             for (const item of repoData) {
-                const key = keyOf(item);
-                if (existingKeys.has(key)) {
-                    updates++;
+                const isExists = await prisma.inventory.findFirst({
+                    where: {
+                        propertyCode: item.propertyCode,
+                        roomTypeCode: item.roomTypeCode,
+                        date: toUTC(item.date)
+                    }
+                })
+                if (isExists) {
                     ops.push(
-                        prisma.inventory.updateMany({
+                        prisma.inventory.update({
                             where: {
-                                propertyCode: item.propertyCode,
-                                roomTypeCode: item.roomTypeCode,
-                                date: item.date,
+                                id: isExists.id
                             },
                             data: { availability: item.availability },
                         })
-                    );
+                    )
+
                 } else {
-                    creates++;
                     ops.push(
                         prisma.inventory.create({
-                            data: item,
+                            data: {
+                                ...item,
+                                date: toUTC(item.date),
+                            },
                         })
                     );
                 }
+
             }
 
             if (ops.length > 0) {
                 await prisma.$transaction(ops);
             }
 
-            return {
-                message:
-                    'Inventory successfully updated or created for the given date range.',
-                stats: {
-                    updated: updates,
-                    created: creates,
-                    total: repoData.length,
-                },
-            };
+            return true
+
         } catch (error: any) {
             throw new Error(error.message);
         }
     }
 
-    public static async mapRatePlans(payload: ICharges[]) {
+
+
+    public static async mapRatePlans(
+        payload: ICharges[]
+    ) {
         try {
             if (!payload || payload.length === 0) {
                 throw new Error('No charge data provided');
@@ -219,7 +192,9 @@ class InventoryRepository {
                     baseGuestAmounts: {
                         create: baseGuestAmounts.map(bg => ({
                             numberOfGuests: bg.noOfGuests,
-                            amountBeforeTax: bg.amount,
+                            amountBeforeTax: Number(bg.amount),
+                            ageQualifyingCode: bg.ageQualifyingCode,
+
                         })),
                     },
                     additionalGuestAmounts: {
@@ -253,7 +228,8 @@ class InventoryRepository {
                                     deleteMany: {},
                                     create: baseGuestAmounts.map(bg => ({
                                         numberOfGuests: bg.noOfGuests,
-                                        amountBeforeTax: bg.amount,
+                                        amountBeforeTax: Number(bg.amount),
+                                        ageQualifyingCode: bg.ageQualifyingCode,
                                     })),
                                 },
                                 additionalGuestAmounts: {
@@ -269,8 +245,9 @@ class InventoryRepository {
                 } else {
                     chargeUpdates.push(
                         prisma.charge.create({
-                            data: chargeDoc,
-                        })
+                            data: chargeDoc
+                        }
+                        )
                     );
                 }
             }
@@ -316,6 +293,62 @@ class InventoryRepository {
         } catch (error: any) {
             console.error('Error mapping rate plans:', error);
             throw new Error(error.message);
+        }
+    }
+    public static async checkInventoryAvailability(
+        propertyCode: string,
+        roomTypeCode: string,
+        startDate: string,
+        endDate: string
+    ) {
+        try {
+            // Generate all dates in the range as ISO strings for comparison
+            const allDateStrings: string[] = [];
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            for (
+                let d = new Date(start.getTime());
+                d.getTime() <= end.getTime();
+                d.setDate(d.getDate() + 1)
+            ) {
+                allDateStrings.push(d.toISOString().split('T')[0]);
+            }
+
+            // Fetch inventory for the date range with availability > 0
+            const inventories = await prisma.inventory.findMany({
+                where: {
+                    propertyCode,
+                    roomTypeCode,
+                    availability: {
+                        gt: 0  // Only dates with availability > 0
+                    }
+                },
+                select: {
+                    date: true,
+                    availability: true
+                }
+            });
+
+            // Get dates that have inventory with availability > 0 (as ISO strings)
+            const availableDateStrings = inventories.map(inv => inv.date.toISOString().split('T')[0]);
+
+            // Find missing dates (dates without inventory or with 0 availability)
+            const missingDateStrings = allDateStrings.filter(dateStr => !availableDateStrings.includes(dateStr));
+
+            // Convert back to Date objects for return
+            const availableDates = [...new Set(availableDateStrings)].map(ds => new Date(ds));
+            const missingDates = missingDateStrings.map(ds => new Date(ds));
+
+            return {
+                availableDates,
+                missingDates,
+                totalDates: allDateStrings.length,
+                availableCount: availableDates.length,
+                missingCount: missingDates.length
+            };
+        } catch (error) {
+            throw new Error("Error checking inventory availability");
         }
     }
 }

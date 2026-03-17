@@ -1,49 +1,48 @@
-import { Router } from 'express';
-import { SubCategoryController } from '../controllers';
-import { checkRoleBased } from '../../middlewares/checkRole.middleware';
-import { protect } from '../../middlewares/auth.middleware';
+import { Router } from "express";
+import { SubCategoryController } from "../controllers";
 
 const router = Router();
 const subCategoryController = new SubCategoryController();
 
 router.post(
-    '/',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/",
     subCategoryController.createSubCategory
 );
 
-router.get('/', subCategoryController.getAllSubCategories);
+router.get(
+    "/",
+    subCategoryController.getAllSubCategories
+);
 
-router.get('/:subcategoryId', subCategoryController.getSubCategoryById);
+router.get(
+    "/:subcategoryId",
+    subCategoryController.getSubCategoryById
+);
+
 
 router.put(
-    '/:subcategoryId',
-    // validateRequest(validateUpdateSubCategory),
+    "/:subcategoryId",
     subCategoryController.updateSubCategory
 );
 
 router.post(
-    '/:subcategoryId/variants',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/:subcategoryId/variants",
     subCategoryController.addVariantToSubCategory
 );
 
+
 router.post(
-    '/:subcategoryId/addons',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/:subcategoryId/addons",
     subCategoryController.addAddonToSubCategory
 );
 
 router.delete(
-    '/:subcategoryId/variants/:variantId',
+    "/:subcategoryId/variants/:variantId",
     subCategoryController.removeVariantFromSubCategory
 );
 
 router.delete(
-    '/:subcategoryId/addons/:addonId',
+    "/:subcategoryId/addons/:addonId",
     subCategoryController.removeAddonFromSubCategory
 );
 

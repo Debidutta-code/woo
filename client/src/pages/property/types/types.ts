@@ -1,3 +1,5 @@
+import type { IMasterPartnersWProperty } from "../property/types";
+
 export interface IProperty {
     id: string,
     propertyName: string;
@@ -16,14 +18,7 @@ export interface IPropertyDetails {
             description: string
         };
     };
-    destinationType: {
-        masterDestinationType: {
-
-            id: string;
-            destinationTypeName: string
-            description: string;
-        }
-    };
+    
     propertyType: {
         masterPropertyType: {
 
@@ -36,6 +31,10 @@ export interface IPropertyDetails {
     propertyRoom: string[];
     description: string;
     propertyCode: string;
+    propertyVideos?: {
+      url: string;
+      thumbnail: string | null;
+    }
 }
 export interface IPropertyAddress {
     propertyId: string;
@@ -52,14 +51,16 @@ export interface IPropertyAddress {
 }
 export interface INewGBP {
     name: string;
-    type: "group" | "brand" | "property";
+    type: "group" | "brand" | "property" | "custom";
     creationId?: string;
     level: number;
-    images: string[]
+    images: string[];
+    isCustom?: boolean;
+    assignTo?: string;
 }
 export interface ICreation {
     id: string;
-    type: string;
+    type: "group" | "brand" | "property"|"custom";
     name: string;
     images:string[];
     level0Users?: string;
@@ -74,10 +75,18 @@ export interface ICreation {
     groupIds?: string[];
     brandIds?: string[];
     propertyIds?: string[];
-
+    property?:{
+        isDraft:boolean;
+    }
 }
 
 export interface Icreations {
+    groups: ICreation[];
+    brands: ICreation[];
+    properties: ICreation[];
+    customs: ICreation[];
+}
+export interface ICcreations {
     groups: ICreation[];
     brands: ICreation[];
     properties: ICreation[];
@@ -153,4 +162,30 @@ export interface IGroupManagersMapping {
 }
 export interface IBrandManagersMapping {
     brandManagers: IUnmappedUsers[]
+}
+export interface ICustomManagersMapping {
+    customAdmins: IUnmappedUsers[]
+}
+export interface IntegrationDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    partner: IMasterPartnersWProperty | null;
+    propertyId: string;
+    onIntegrationSuccess: () => void;
+    onSubmit: (data: IntegrationSubmitData) => Promise<void>;
+
+}
+
+export interface IntegrationSubmitData {
+    propertyId: string;
+    masterIntegrationId: string;
+    fields: Array<{ requiredFieldId: string; value: string }>;
+}
+
+export interface FieldError {
+    [fieldId: string]: string;
+}
+
+export interface FieldValue {
+    [fieldId: string]: string;
 }

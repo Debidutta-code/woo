@@ -101,10 +101,10 @@ export class DashBoardRepository {
             prisma.reservation.findMany({
                 where: { propertyId: { in: propertyIds } },
                 select: {
-                    reservationStatus: true,
-                    from: true,
-                    to: true,
-                    Guests: true
+                    bookingStatus: true,
+                    checkInDate: true,
+                    checkOutDate: true,
+                    guests: true
                 }
             }),
             // Today's check-ins
@@ -142,7 +142,7 @@ export class DashBoardRepository {
         let cancelled = 0;
 
         reservations.forEach(reservation => {
-            const status = reservation.reservationStatus;
+            const status = reservation.bookingStatus;
             statusMap.set(status, (statusMap.get(status) || 0) + 1);
             if (status === 'cancelled') {
                 cancelled++;
@@ -161,14 +161,14 @@ export class DashBoardRepository {
         let totalGuests = 0;
 
         reservations.forEach(reservation => {
-            const checkIn = new Date(reservation.from);
-            const checkOut = new Date(reservation.to);
+            const checkIn = new Date(reservation.checkInDate);
+            const checkOut = new Date(reservation.checkOutDate);
             const stayDuration = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
             totalStayDays += stayDuration;
-            
+
             // Parse guests JSON to count
             try {
-                const guestsData = reservation.Guests ;
+                const guestsData = reservation.guests as any;
                 if (Array.isArray(guestsData)) {
                     totalGuests += guestsData.length;
                 }
@@ -217,7 +217,7 @@ export class DashBoardRepository {
             prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed'
+                    bookingStatus: 'confirmed'
                 },
                 _sum: { amount: true }
             }),
@@ -225,7 +225,7 @@ export class DashBoardRepository {
             prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed',
+                    bookingStatus: 'confirmed',
                     createdAt: { gte: today }
                 },
                 _sum: { amount: true }
@@ -234,7 +234,7 @@ export class DashBoardRepository {
             prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed',
+                    bookingStatus: 'confirmed',
                     createdAt: { gte: thisWeekStart }
                 },
                 _sum: { amount: true }
@@ -243,7 +243,7 @@ export class DashBoardRepository {
             prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed',
+                    bookingStatus: 'confirmed',
                     createdAt: { gte: thisMonthStart }
                 },
                 _sum: { amount: true }
@@ -252,7 +252,7 @@ export class DashBoardRepository {
             prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed',
+                    bookingStatus: 'confirmed',
                     createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
                 },
                 _sum: { amount: true }
@@ -261,7 +261,7 @@ export class DashBoardRepository {
             prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed'
+                    bookingStatus: 'confirmed'
                 },
                 _avg: { amount: true }
             })
@@ -269,7 +269,7 @@ export class DashBoardRepository {
 
         // Payment status breakdown based on booking status
         const paymentStatusBreakdown = await prisma.reservation.groupBy({
-            by: ['reservationStatus'],
+            by: ['bookingStatus'],
             where: { propertyId: { in: propertyIds } },
             _sum: { amount: true, paidAmount: true },
             _count: true
@@ -279,7 +279,7 @@ export class DashBoardRepository {
         const pendingPayments = await prisma.reservation.aggregate({
             where: {
                 propertyId: { in: propertyIds },
-                reservationStatus: 'pending'
+                bookingStatus: 'pending'
             },
             _sum: { extraAmountToPay: true },
             _count: true
@@ -316,7 +316,7 @@ export class DashBoardRepository {
             const dayRevenue = await prisma.reservation.aggregate({
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed',
+                    bookingStatus: 'confirmed',
                     createdAt: { gte: dayStart, lte: dayEnd }
                 },
                 _sum: { amount: true }
@@ -337,7 +337,7 @@ export class DashBoardRepository {
             monthOverMonthGrowth,
             revPAR: Number(revPAR.toFixed(2)),
             paymentStatusBreakdown: paymentStatusBreakdown.map(p => ({
-                status: p.reservationStatus,
+                status: p.bookingStatus,
                 amount: p._sum.amount || 0,
                 count: p._count
             })),
@@ -350,154 +350,243 @@ export class DashBoardRepository {
         };
     }
 
-public async getStatisticsComparison(
-  propertyIds: string[],
-  comparisonType: 'date' | 'month' | 'year',
-  selectedDate: Date
-): Promise<IStatisticsComparison> {
-  // Calculate date ranges based on comparison type
-  const periods = this.calculateComparisonPeriods(comparisonType, selectedDate);
-  
-  // Fetch data for both periods in parallel
-  const [currentPeriodData, previousPeriodData] = await Promise.all([
-    this.getStatisticsForPeriod(propertyIds, periods.current.start, periods.current.end),
-    this.getStatisticsForPeriod(propertyIds, periods.previous.start, periods.previous.end)
-  ]);
-  
-  // Calculate percentage changes
-  return {
-    bookings: this.calculateChange(currentPeriodData.bookings, previousPeriodData.bookings),
-    cancelledBookings: this.calculateChange(currentPeriodData.cancelledBookings, previousPeriodData.cancelledBookings),
-    revenue: this.calculateChange(currentPeriodData.revenue, previousPeriodData.revenue),
-    averageBookingValue: this.calculateChange(currentPeriodData.averageBookingValue, previousPeriodData.averageBookingValue),
-    roomNights: this.calculateChange(currentPeriodData.roomNights, previousPeriodData.roomNights),
-    period: periods
-  };
-}
+    /**
+     * Room Analytics - Based on Room types and Inventory
+     */
+    // private async getRoomAnalytics(propertyIds: string[]): Promise<IRoomAnalytics> {
+    //     const [roomTypeStats, inventoryData] = await Promise.all([
+    //         // Room type statistics
+    //         prisma.room.findMany({
+    //             where: { propertyId: { in: propertyIds } },
+    //             select: {
+    //                 roomType: true,
+    //                 roomName: true,
+    //                 totalRoom: true
+    //             }
+    //         }),
+    //         // Get current inventory availability
+    //         prisma.inventory.findMany({
+    //             where: {
+    //                 propertyCode: { in: propertyIds },
+    //                 date: new Date().toISOString().split('T')[0]
+    //             }
+    //         })
+    //     ]);
 
-private calculateComparisonPeriods(type: 'date' | 'month' | 'year', selectedDate: Date): IComparisonPeriod {
-  const current = { start: new Date(), end: new Date(), label: '' };
-  const previous = { start: new Date(), end: new Date(), label: '' };
-  
-  if (type === 'date') {
-    // Today vs Yesterday
-    current.start = new Date(selectedDate);
-    current.start.setHours(0, 0, 0, 0);
-    current.end = new Date(selectedDate);
-    current.end.setHours(23, 59, 59, 999);
-    current.label = 'Today';
-    
-    previous.start = new Date(selectedDate);
-    previous.start.setDate(previous.start.getDate() - 1);
-    previous.start.setHours(0, 0, 0, 0);
-    previous.end = new Date(selectedDate);
-    previous.end.setDate(previous.end.getDate() - 1);
-    previous.end.setHours(23, 59, 59, 999);
-    previous.label = 'Yesterday';
-  } else if (type === 'month') {
-    // Selected month vs previous month
-    current.start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-    current.end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
-    current.label = current.start.toLocaleString('default', { month: 'long', year: 'numeric' });
-    
-    previous.start = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1);
-    previous.end = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 0, 23, 59, 59, 999);
-    previous.label = previous.start.toLocaleString('default', { month: 'long', year: 'numeric' });
-  } else {
-    // 12 months ending in selected month vs previous 12 months
-    current.end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
-    current.start = new Date(current.end);
-    current.start.setMonth(current.start.getMonth() - 11);
-    current.start.setDate(1);
-    current.start.setHours(0, 0, 0, 0);
-    current.label = `${current.start.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${current.end.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
-    
-    previous.end = new Date(current.start);
-    previous.end.setDate(previous.end.getDate() - 1);
-    previous.end.setHours(23, 59, 59, 999);
-    previous.start = new Date(previous.end);
-    previous.start.setMonth(previous.start.getMonth() - 11);
-    previous.start.setDate(1);
-    previous.start.setHours(0, 0, 0, 0);
-    previous.label = `${previous.start.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${previous.end.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
-  }
-  
-  return { current, previous };
-}
+    //     const totalRooms = roomTypeStats.reduce((sum, room) => sum + room.totalRoom, 0);
+    //     const totalAvailable = inventoryData.reduce((sum, inv) => sum + inv.availability, 0);
+    //     const occupiedRooms = Math.max(0, totalRooms - totalAvailable);
+    //     const occupancyRate = totalRooms > 0 ? (occupiedRooms / totalRooms) * 100 : 0;
 
-private async getStatisticsForPeriod(propertyIds: string[], startDate: Date, endDate: Date) {
-  const [bookingsData, revenueData, roomNightsData] = await Promise.all([
-    // Get bookings count and cancelled bookings
-    prisma.reservation.findMany({
-      where: {
-        propertyId: { in: propertyIds },
-        createdAt: { gte: startDate, lte: endDate }
-      },
-      select: {
-        reservationStatus: true,
-        amount: true,
-        checkInDate: true,
-        checkOutDate: true
-      }
-    }),
-    // Get confirmed revenue
-    prisma.reservation.aggregate({
-      where: {
-        propertyId: { in: propertyIds },
-        reservationStatus: 'confirmed', // ✅ correct
-        createdAt: { gte: startDate, lte: endDate }
-      },
-      _sum: { amount: true },
-      _count: true
-    }),
-    // Calculate room nights - only for confirmed bookings
-    prisma.reservation.findMany({
-      where: {
-        propertyId: { in: propertyIds },
-        reservationStatus: 'confirmed', // ✅ Changed: only confirmed bookings have room nights
-        createdAt: { gte: startDate, lte: endDate }
-      },
-      select: {
-        checkInDate: true,
-        checkOutDate: true
-      }
-    })
-  ]);
-  
-  const totalBookings = bookingsData.length;
-  const cancelledBookings = bookingsData.filter(b => b.reservationStatus === 'cancelled').length; // ✅ correct
-  const revenue = revenueData._sum.amount || 0;
-  const confirmedBookings = revenueData._count;
-  const averageBookingValue = confirmedBookings > 0 ? revenue / confirmedBookings : 0;
-  
-  // Calculate total room nights
-  const roomNights = roomNightsData.reduce((total, booking) => {
-    const checkIn = new Date(booking.checkInDate);
-    const checkOut = new Date(booking.checkOutDate);
-    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-    return total + nights;
-  }, 0);
-  
-  return {
-    bookings: totalBookings,
-    cancelledBookings,
-    revenue,
-    averageBookingValue,
-    roomNights
-  };
-}
+    //     // Room type occupancy
+    //     const roomTypeOccupancy = roomTypeStats.map(roomType => {
+    //         const inventory = inventoryData.find(inv => inv.roomTypeCode === roomType.roomType);
+    //         const available = inventory?.availability || roomType.totalRoom;
+    //         const occupied = roomType.totalRoom - available;
+    //         const occupancyRateForType = roomType.totalRoom > 0
+    //             ? (occupied / roomType.totalRoom * 100).toFixed(2)
+    //             : '0';
 
-private calculateChange(current: number, previous: number) {
-  const percentageChange = previous > 0 
-    ? ((current - previous) / previous) * 100 
-    : current > 0 ? 100 : 0;
-    
-  return {
-    current,
-    previous,
-    percentageChange: Number(percentageChange.toFixed(2))
-  };
-}
+    //         return {
+    //             roomType: roomType.roomType,
+    //             roomName: roomType.roomName,
+    //             totalRooms: roomType.totalRoom,
+    //             occupiedRooms: occupied,
+    //             availableRooms: available,
+    //             occupancyRate: occupancyRateForType
+    //         };
+    //     });
+
+    //     // Get reserved rooms from today's reservations
+    //     const today = new Date();
+    //     today.setHours(0, 0, 0, 0);
+    //     const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+    //     const reservedRooms = await prisma.reservation.count({
+    //         where: {
+    //             propertyId: { in: propertyIds },
+    //             checkInDate: { gte: today, lt: tomorrow },
+    //             bookingStatus: 'confirmed'
+    //         }
+    //     });
+
+    //     const checkedInRooms = await prisma.reservation.count({
+    //         where: {
+    //             propertyId: { in: propertyIds },
+    //             checkInDate: { lt: today },
+    //             checkOutDate: { gte: today },
+    //             bookingStatus: 'confirmed'
+    //         }
+    //     });
+
+    //     return {
+    //         totalRooms,
+    //         occupiedRooms,
+    //         availableRooms: totalAvailable,
+    //         dirtyRooms: 0, // No longer tracked
+    //         reservedRooms,
+    //         checkedInRooms,
+    //         tentativeRooms: 0, // No longer tracked
+    //         occupancyRate: occupancyRate.toFixed(2),
+    //         roomStatusBreakdown: [
+    //             { status: 'available', count: totalAvailable },
+    //             { status: 'occupied', count: occupiedRooms }
+    //         ],
+    //         roomTypeStats,
+    //         roomTypeOccupancy
+    //     };
+    // }
+
+    // Add this method to your DashBoardRepository class
+
+    public async getStatisticsComparison(
+        propertyIds: string[],
+        comparisonType: 'date' | 'month' | 'year',
+        selectedDate: Date
+    ): Promise<IStatisticsComparison> {
+        // Calculate date ranges based on comparison type
+        const periods = this.calculateComparisonPeriods(comparisonType, selectedDate);
+
+        // Fetch data for both periods in parallel
+        const [currentPeriodData, previousPeriodData] = await Promise.all([
+            this.getStatisticsForPeriod(propertyIds, periods.current.start, periods.current.end),
+            this.getStatisticsForPeriod(propertyIds, periods.previous.start, periods.previous.end)
+        ]);
+
+        // Calculate percentage changes
+        return {
+            bookings: this.calculateChange(currentPeriodData.bookings, previousPeriodData.bookings),
+            cancelledBookings: this.calculateChange(currentPeriodData.cancelledBookings, previousPeriodData.cancelledBookings),
+            revenue: this.calculateChange(currentPeriodData.revenue, previousPeriodData.revenue),
+            averageBookingValue: this.calculateChange(currentPeriodData.averageBookingValue, previousPeriodData.averageBookingValue),
+            roomNights: this.calculateChange(currentPeriodData.roomNights, previousPeriodData.roomNights),
+            period: periods
+        };
+    }
+
+    private calculateComparisonPeriods(type: 'date' | 'month' | 'year', selectedDate: Date): IComparisonPeriod {
+        const current = { start: new Date(), end: new Date(), label: '' };
+        const previous = { start: new Date(), end: new Date(), label: '' };
+
+        if (type === 'date') {
+            // Today vs Yesterday
+            current.start = new Date(selectedDate);
+            current.start.setHours(0, 0, 0, 0);
+            current.end = new Date(selectedDate);
+            current.end.setHours(23, 59, 59, 999);
+            current.label = 'Today';
+
+            previous.start = new Date(selectedDate);
+            previous.start.setDate(previous.start.getDate() - 1);
+            previous.start.setHours(0, 0, 0, 0);
+            previous.end = new Date(selectedDate);
+            previous.end.setDate(previous.end.getDate() - 1);
+            previous.end.setHours(23, 59, 59, 999);
+            previous.label = 'Yesterday';
+        } else if (type === 'month') {
+            // Selected month vs previous month
+            current.start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+            current.end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
+            current.label = current.start.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            previous.start = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1);
+            previous.end = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 0, 23, 59, 59, 999);
+            previous.label = previous.start.toLocaleString('default', { month: 'long', year: 'numeric' });
+        } else {
+            // 12 months ending in selected month vs previous 12 months
+            current.end = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0, 23, 59, 59, 999);
+            current.start = new Date(current.end);
+            current.start.setMonth(current.start.getMonth() - 11);
+            current.start.setDate(1);
+            current.start.setHours(0, 0, 0, 0);
+            current.label = `${current.start.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${current.end.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
+
+            previous.end = new Date(current.start);
+            previous.end.setDate(previous.end.getDate() - 1);
+            previous.end.setHours(23, 59, 59, 999);
+            previous.start = new Date(previous.end);
+            previous.start.setMonth(previous.start.getMonth() - 11);
+            previous.start.setDate(1);
+            previous.start.setHours(0, 0, 0, 0);
+            previous.label = `${previous.start.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${previous.end.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
+        }
+
+        return { current, previous };
+    }
+
+    private async getStatisticsForPeriod(propertyIds: string[], startDate: Date, endDate: Date) {
+        const [bookingsData, revenueData, roomNightsData] = await Promise.all([
+            // Get bookings count and cancelled bookings
+            prisma.reservation.findMany({
+                where: {
+                    propertyId: { in: propertyIds },
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                select: {
+                    bookingStatus: true,
+                    amount: true,
+                    checkInDate: true,
+                    checkOutDate: true
+                }
+            }),
+            // Get confirmed revenue
+            prisma.reservation.aggregate({
+                where: {
+                    propertyId: { in: propertyIds },
+                    bookingStatus: 'confirmed', // ✅ correct
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                _sum: { amount: true },
+                _count: true
+            }),
+            // Calculate room nights - only for confirmed bookings
+            prisma.reservation.findMany({
+                where: {
+                    propertyId: { in: propertyIds },
+                    bookingStatus: 'confirmed', // ✅ Changed: only confirmed bookings have room nights
+                    createdAt: { gte: startDate, lte: endDate }
+                },
+                select: {
+                    checkInDate: true,
+                    checkOutDate: true
+                }
+            })
+        ]);
+
+        const totalBookings = bookingsData.length;
+        const cancelledBookings = bookingsData.filter(b => b.bookingStatus === 'cancelled').length; // ✅ correct
+        const revenue = revenueData._sum.amount || 0;
+        const confirmedBookings = revenueData._count;
+        const averageBookingValue = confirmedBookings > 0 ? revenue / confirmedBookings : 0;
+
+        // Calculate total room nights
+        const roomNights = roomNightsData.reduce((total, booking) => {
+            const checkIn = new Date(booking.checkInDate);
+            const checkOut = new Date(booking.checkOutDate);
+            const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+            return total + nights;
+        }, 0);
+
+        return {
+            bookings: totalBookings,
+            cancelledBookings,
+            revenue,
+            averageBookingValue,
+            roomNights
+        };
+    }
+
+    private calculateChange(current: number, previous: number) {
+        const percentageChange = previous > 0
+            ? ((current - previous) / previous) * 100
+            : current > 0 ? 100 : 0;
+
+        return {
+            current,
+            previous,
+            percentageChange: Number(percentageChange.toFixed(2))
+        };
+    }
     /**
      * Guest Analytics
      */
@@ -579,7 +668,7 @@ private calculateChange(current: number, previous: number) {
                 _sum: { totalPrice: true }
             }),
             prisma.bookingAddon.groupBy({
-                by: ['addonId'],
+                by: ['addonId', 'name'],
                 where: {
                     Reservation: {
                         propertyId: { in: propertyIds }
@@ -604,25 +693,45 @@ private calculateChange(current: number, previous: number) {
             addonCount,
             popularAddons: popularAddons.map(a => ({
                 addonId: a.addonId,
+                addonName: a.name,
                 revenue: a._sum.totalPrice || 0,
                 bookingCount: a._count
             }))
         };
     }
 
+    /**
+     * Booking Source Analytics
+     */
+
     private async getBookingSourceAnalytics(propertyIds: string[]): Promise<IBookingSourceAnalytics> {
-        // TODO: Add bookingSource field to Reservation model in schema
+        const sourceBreakdown = await prisma.reservation.groupBy({
+            by: ['bookingSource'],
+            where: {
+                propertyId: { in: propertyIds }
+            },
+            _count: true,
+            _sum: { amount: true }
+        });
+
         return {
-            sourceBreakdown: []
+            sourceBreakdown: sourceBreakdown.map(s => ({
+                source: s.bookingSource,
+                count: s._count,
+                revenue: s._sum.amount || 0
+            }))
         };
     }
 
+    /**
+     * Payment Method Analytics
+     */
     private async getPaymentMethodAnalytics(propertyIds: string[]): Promise<IPaymentMethodAnalytics> {
         const methodBreakdown = await prisma.reservation.groupBy({
             by: ['paymentMethod'],
             where: {
                 propertyId: { in: propertyIds },
-                reservationStatus: 'confirmed'
+                bookingStatus: 'confirmed'
             },
             _sum: { paidAmount: true },
             _count: true
@@ -637,16 +746,23 @@ private calculateChange(current: number, previous: number) {
         };
     }
 
+    /**
+     * Top Performing Properties Analytics
+     */
     private async getTopPerformingProperties(propertyIdsAndCodes: IPropertyCodeAndIds[]): Promise<ITopPerformingProperties> {
         try {
             const propertyIds = propertyIdsAndCodes.map(p => p.id);
+
+            // ✅ FIX: Create proper date for today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             // Revenue by property
             const revenueByProperty = await prisma.reservation.groupBy({
                 by: ['propertyId'],
                 where: {
                     propertyId: { in: propertyIds },
-                    reservationStatus: 'confirmed'
+                    bookingStatus: 'confirmed'
                 },
                 _sum: { amount: true }
             });
@@ -669,11 +785,12 @@ private calculateChange(current: number, previous: number) {
                 _sum: { totalRoom: true }
             });
 
+            // ✅ FIX: Use Date object instead of string
             const inventoryByProperty = await prisma.inventory.groupBy({
                 by: ['propertyCode'],
                 where: {
                     propertyCode: { in: propertyIdsAndCodes.map(p => p.code) },
-                    date: new Date().toISOString().split('T')[0]
+                    date: today  // ✅ Changed from string to Date
                 },
                 _sum: { availability: true }
             });
@@ -737,6 +854,7 @@ private calculateChange(current: number, previous: number) {
                 topByOccupancy
             };
         } catch (error) {
+            console.error("Error in getTopPerformingProperties:", error); // ✅ Added logging
             return {
                 topByRevenue: [],
                 topByBookings: [],

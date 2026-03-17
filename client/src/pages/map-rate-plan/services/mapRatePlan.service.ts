@@ -1,6 +1,6 @@
 import createAxiosInstance from "@/components/axiosInstance";
 import type { ICreateCharges, IAdditionalGuestAmount, IBaseGuestAmounts, CreateMappingPayload } from "../types";
-import {  getMultiRoomRentPrice } from "../api"
+import { getRoomRentPrice } from "../api"
 const axiosInstance = createAxiosInstance();
 
 
@@ -19,6 +19,7 @@ export const createMappingService = async (
             roomTypeCode: data.roomTypeCode,
             roomTypeName: roomTypeName,
             baseByGuestAmounts: data.baseByGuestAmounts.map((item) => ({
+                ageQualifyingCode: item.ageQualifyingCode,
                 numberOfGuests: item.numberOfGuests,
                 amountBeforeTax: item.amountBeforeTax,
             })),
@@ -103,44 +104,54 @@ export const updateMappedPriceService = async (
     }
 };
 
-export const deleteMappingService = async (chargeId: string) => {
-    try {
-        const response = await axiosInstance.delete(
-            `/ari/rate-plan/delete-charges/${chargeId}`
-        );
-
-        return response.data;
-    } catch (error: any) {
-        console.error("Error deleting mapping:", error);
-        return {
-            success: false,
-            message: error.response?.data?.message || "Failed to delete mapping",
-            error: error.message,
-        };
-    }
-};
-
-export const getMultiRoomRentPriceService = async (
+export const getRoomRentPriceService = (
     propertyId: string,
-    rooms: {
-        ratePlanCode: string;
-        invTypeCode: string;
-        startDate: Date;
-        endDate: Date;
-        noOfChildren: number;
-        noOfAdults: number;
-        noOfRooms: number;
-    }[]
-) => {
+    invTypeCode: string,
+    startDate: Date,
+    endDate: Date,
+    noOfChildren: number,
+    noOfAdults: number,
+    noOfRooms: number,
+    ratePlanCode: string) => {
     try {
-        console.log("Serv called")
-        const response = await getMultiRoomRentPrice(propertyId, rooms);
-        return response;
-    } catch (error: any) {
-        console.error("Error in getMultiRoomRentPriceService:", error);
-        return {
-            success: false,
-            message: error?.message || "Failed to calculate multi-room prices",
-        };
+        if (!propertyId) {
+            return { success: false, message: 'Property is not chosen' };
+        }
+        if (!invTypeCode) {
+            return { success: false, message: 'Room type is not chosen' };
+        }
+        if (!startDate) {
+            return { success: false, message: 'Start date is not chosen' };
+        }
+        if (!endDate) {
+            return { success: false, message: 'End date is not chosen' };
+        }
+        if (startDate > endDate) {
+            return { success: false, message: 'Start date cannot be after end date' };
+        }
+        if (noOfAdults < 1) {
+            return { success: false, message: 'At least 1 adult is required' };
+        }
+        if (noOfChildren < 0) {
+            return { success: false, message: "Number of children can't be less than 0" };
+        }
+        if (noOfRooms < 1) {
+            return { success: false, message: 'At least 1 room is required' };
+        }
+        if (!ratePlanCode) {
+            return { success: false, message: 'Rate plan is not chosen' };
+        }
+        return getRoomRentPrice(
+            propertyId,
+            invTypeCode,
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0],
+            noOfChildren.toString(),
+            noOfAdults.toString(),
+            noOfRooms.toString(),
+            ratePlanCode
+        );
+    } catch (error) {
+        return { success: false, message: 'Error occurred while fetching mapped rate plan' };
     }
-};
+}

@@ -1,3 +1,5 @@
-import AccessControl from './access.controller';
+import AccessControl from "./access.controller"
 
-export { AccessControl };
+export {
+    AccessControl
+}

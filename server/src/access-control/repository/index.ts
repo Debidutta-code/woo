@@ -1,2 +1,4 @@
-import AccessDao from './access.repository';
-export { AccessDao };
+import AccessDao from "./access.repository"
+export {
+    AccessDao
+}

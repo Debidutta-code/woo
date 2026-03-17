@@ -3,7 +3,8 @@ export interface RoomTypes {
     roomName: string;
     roomType: string;
     totalRoom: number;
-
+    maxNumberOfAdults: number;
+    maxNumberOfChildren: number;
 }
 
 
@@ -15,10 +16,12 @@ export interface SelectedRoom {
     availableRooms: number;
     startDate: string;
     endDate: string;
+    pushFromCalender?: boolean; // Add this
+
 }
 
 
-export interface Loader{
+export interface Loader {
     isLoading: boolean;
     text: string;
 }

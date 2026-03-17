@@ -37,13 +37,10 @@ export default function CreateMemberDialog({
   loading
 }: CreateMemberDialogProps) {
   const { user } = useAppSelector((state) => state.user);
-        const { access } = useAppSelector((state) => state.access);
-
   const [formData, setFormData] = useState<ICreateUser>({
     firstName: '',
     lastName: '',
     email: '',
-    userName: '',
     password: '',
     confirmPassword: '',
     role: '',
@@ -79,42 +76,13 @@ export default function CreateMemberDialog({
       firstName: '',
       lastName: '',
       email: '',
-      userName: '',
       password: '',
       confirmPassword: '',
       role: '',
       level: 0
     });
   };
-  const generateUserName = (firstName: string, lastName: string | null, email: string | null): string => {
-    if (!firstName) return '';
-    
-    const cleanFirst = firstName.toLowerCase().replace(/[^a-z]/g, '');
-    const cleanLast = lastName ? lastName.toLowerCase().replace(/[^a-z]/g, '') : '';
-    
-    let letters = cleanFirst + cleanLast;
-    
-    if (letters.length < 4 && email) {
-      const emailLetters = email.split('@')[0].toLowerCase().replace(/[^a-z]/g, '');
-      letters += emailLetters;
-    }
-    
-    if (letters.length < 4) {
-      letters = (letters + 'user').substring(0, 4);
-    }
-    
-    const letterCount = Math.min(Math.max(letters.length, 4), 6);
-    const letterPart = letters.substring(0, letterCount);
-    
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    const combined = timestamp + random;
-    
-    const numberCount = letterCount === 4 ? 4 : 2;
-    const numberPart = combined.toString().slice(-numberCount);
-    
-    return `${letterPart}${numberPart}`;
-  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       onOpenChange(open);
@@ -123,17 +91,12 @@ export default function CreateMemberDialog({
       }
     }}>
       <DialogTrigger asChild>
-        {access?.canCreateMembers &&(
-
         <Button>
           <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           Add New Member
         </Button>
-        )
-
-        }
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[70vh] overflow-y-auto">
         <DialogHeader>
@@ -182,8 +145,8 @@ export default function CreateMemberDialog({
             <Input
               id="email"
               type="email"
-              value={formData.email?formData.email:''}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value?e.target.value:'' })}
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               aria-invalid={!!getErrorMessage('email')}
               aria-describedby={getErrorMessage('email') ? "email-error" : undefined}
             />
@@ -193,27 +156,7 @@ export default function CreateMemberDialog({
               </p>
             )}
           </div>
-          <div className="space-y-2">
-            <div className='flex justify-between flex-row-reverse'>
-              <Button size={"sm"} variant={"outline"} onClick={() => setFormData({ ...formData, userName: generateUserName(formData.firstName, formData.lastName, formData.email) })}>
-              Generate User Name  
-            </Button>
-            <Label htmlFor="userName">User Name</Label>
-            </div>
-            <Input
-              id="userName"
-              type="text"
-              value={formData.userName?formData.userName:''}
-              onChange={(e) => setFormData({ ...formData, userName: e.target.value?e.target.value:'' })}
-              aria-invalid={!!getErrorMessage('userName')}
-              aria-describedby={getErrorMessage('userName') ? "userName-error" : undefined}
-            />
-            {getErrorMessage('userName') && (
-              <p id="userName-error" className="text-sm text-red-500 mt-1">
-                {getErrorMessage('userName')}
-              </p>
-            )}
-          </div>
+
           {/* Password Field */}
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>

@@ -18,7 +18,7 @@ export default function ProgressBarChart({ data, title }: ProgressBarChartProps)
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {data?.map((item, index) => {
+          {data.map((item, index) => {
             const percentage = (item.value / item.total) * 100;
             
             return (

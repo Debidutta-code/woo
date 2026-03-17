@@ -247,6 +247,11 @@ export default function AddOnDialog({
                                 <SelectContent>
                                     <SelectItem value="per_stay">Per Stay</SelectItem>
                                     <SelectItem value="per_night">Per Night</SelectItem>
+                                    <SelectItem value="per_person_per_night">Per Person Per Night</SelectItem>
+                                    <SelectItem value="per_room_per_night">Per Room Per Night</SelectItem>
+                                    <SelectItem value="per_person_per_stay">Per Person Per Stay</SelectItem>
+                                    <SelectItem value="per_person_per_room">Per Person Per Room</SelectItem>
+                                    <SelectItem value="per_room">Per Room</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -324,6 +329,7 @@ export default function AddOnDialog({
             <ImageUploadModal
                 isOpen={isImageModalOpen}
                 onClose={() => setIsImageModalOpen(false)}
+                // uploadImages={uploadImages}
                 onUploadSuccess={handleImageUploadSuccess}
             />
         </Dialog>

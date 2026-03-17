@@ -1,6 +1,5 @@
 import createAxiosInstance from "@/components/axiosInstance";
 import type { IAddonCreate, IAddonUpdate } from "../interface"
-import { data } from "react-router-dom";
 const axiosInstance = createAxiosInstance();
 export const fetchAddOns = async (propertyId: string) => {
     try {
@@ -19,7 +18,7 @@ export const fetchAddOns = async (propertyId: string) => {
 }
 export const createAddOn = async (addOnData: IAddonCreate, propertyId: string) => {
     try {
-        console.log(data)
+        // console.log(data)
         const response = await axiosInstance.post('/addon/addons', { ...addOnData, propertyId: propertyId });
         return response.data;
     } catch (error: any) {

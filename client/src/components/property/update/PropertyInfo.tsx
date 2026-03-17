@@ -21,7 +21,6 @@ import {
   Phone,
   Tag,
   House,
-  // MapPin,
   Camera,
   Upload,
   X,
@@ -30,6 +29,7 @@ import {
 // Type Definitions
 import type {
   IPropertyCategory,
+  
   IPropertyType,
 } from "./types/types";
 import type {IPropertyDetails} from "../types/types"
@@ -93,7 +93,7 @@ export default function PropertyInfo({
   useEffect(() => {
     const fetchManagementDetails = async () => {
       try {
-        const [categoryRes, typeRes] = await Promise.all([
+        const [categoryRes,  typeRes] = await Promise.all([
           getAllCategory(),
           getAllPropertyType(),
         ]);
@@ -119,9 +119,9 @@ export default function PropertyInfo({
       selectedObject = propertyCategories.find(
         (cat) => cat.id === selectedValue
       );
-    } else   {
+    } else  {
       selectedObject = propertyTypes.find((type) => type.id === selectedValue);
-    }
+    } 
 
     if (selectedObject) {
       modifyPropertyDetails((prev) => ({
@@ -222,7 +222,7 @@ export default function PropertyInfo({
               onChange={(e) =>
                 handleInputChange("propertyContact", e.target.value)
               }
-              placeholder="+91 9876543210"
+              placeholder=" 9876543210"
               className={cn(
                 "h-10 border-gray-300 focus:border-black focus:ring-0",
                 errors?.propertyContact && "border-red-500 focus:border-red-600"
@@ -301,37 +301,6 @@ export default function PropertyInfo({
             )}
           </div>
 
-          {/* Destination */}
-          {/* <div>
-            <Label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
-              <MapPin className="w-4 h-4" /> Destination *
-            </Label>
-            <select
-              value={property.destinationType?.masterDestinationType?.id || ""}
-              onChange={(e) =>
-                handleSelectChange("destinationType", e.target.value)
-              }
-              className={cn(
-                "w-full h-10 border border-gray-300 rounded-md px-3 text-gray-900 bg-white focus:border-black focus:outline-none focus:ring-0",
-                errors?.destinationType && "border-red-500 focus:border-red-600"
-              )}
-            >
-              <option value="" disabled>
-                Choose destination
-              </option>
-              {destinationTypes.map((dest) => (
-                <option key={dest.id} value={dest.id}>
-                  {dest.destinationTypeName}
-                </option>
-              ))}
-            </select>
-            {errors?.destinationType?.id && (
-              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {errors.destinationType.id._errors[0]}
-              </p>
-            )}
-          </div> */}
         </div>
       </div>
 
@@ -469,6 +438,7 @@ export default function PropertyInfo({
       <ImageUploadModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        // uploadImages={uploadImages}
         onUploadSuccess={handleUploadSuccess}
       />
 

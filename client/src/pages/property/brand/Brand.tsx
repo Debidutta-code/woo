@@ -6,24 +6,23 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { IBrandDetails, IBrandManagersMapping, ICreation, IUpdateCreation } from '../types/types';
 import Loader from '@/components/Loader/Loader';
-import CreateEntityDialog from '@/components/creationDialog';
+import CreateEntityDialog from '@/components/creation/creationDialog';
 import BackButton from '@/components/shared/BackButton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { handleDialogOpenChange } from '../utills/handleDialogOpenChange';
-import { User2Icon, MoreVertical, CloudCog, Upload, Trash2 } from 'lucide-react';
+import { User2Icon, MoreVertical, CloudCog, Upload, Trash2, Settings } from 'lucide-react';
 import { assignUserToProperty } from '../api/api';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import ImageSlider from '@/components/shared/ImageSlider';
 import ImageUploadModal from '@/components/property/ImageUploadModal';
-import {  useAppSelector } from '@/redux/hooks';
+import DeleteCreationDialog from "@/components/creation/Delete-Creation.dialog";
 
 
 export default function page() {
-  const { user } = useAppSelector((state) => state.user);
-    const { brandId } = useParams<{ brandId: string }>();
+    const { creationId } = useParams<{ creationId: string }>();
     const [brandManagers, setBrandManagers] = useState<IBrandManagersMapping>({
         brandManagers: []
     })
@@ -59,8 +58,8 @@ export default function page() {
     const fetchGroup = async () => {
         try {
 
-            if (!brandId) return;
-            const response = await getBrandCreationId(brandId);
+            if (!creationId) return;
+            const response = await getBrandCreationId(creationId);
             if (response.success) {
                 setCreations(response.data.properties)
                 setBrandDetails(response.data.brandData)
@@ -69,14 +68,14 @@ export default function page() {
                 toast.error(response.message || "Failed to fetch")
             }
         } catch (error) {
-            console.log(error)
+            // console.log(error)
         } finally {
             setIsLoading(false)
         }
     };
     useEffect(() => {
         fetchGroup();
-    }, [brandId])
+    }, [creationId])
     if (isLoading) {
         return (
             <div className='min-h-screen w-full flex justify-center items-center'>
@@ -85,13 +84,10 @@ export default function page() {
         );
     }
     const fetchUsers = async () => {
-        if(user?.userLevel===0){
-            return
-        }
         try {
             const response = await getUsersForMapping();
             if (response.success) {
-                console.log("Fetched users for mapping:", response.data);
+                // console.log("Fetched users for mapping:", response.data);
                 const data = response.data;
                 setBrandManagers(data);
             } else {
@@ -103,24 +99,24 @@ export default function page() {
         }
     }
     const handleAddMember = async () => {
-        
         if (!selectedUser) {
             toast.error("Please select a user");
             return;
         }
-        if (!brandId) {
+        if (!creationId) {
             toast.error("Invalid Creation");
             return;
         }
         setIsAssigningUser(true);
         try {
             const response = await assignUserToProperty({
-                creationId: brandId,
+                creationId: creationId,
                 userId: selectedUser,
                 role: "group_manager"
             });
             if (response.success) {
                 toast.success("User assigned successfully");
+                // Reset form
                 setSelectedUser('');
                 // You might want to refresh the property data or user list here
             } else {
@@ -160,12 +156,12 @@ export default function page() {
     };
 
     const handleUpdateBrand = async () => {
-        if (!brandId) {
+        if (!creationId) {
             toast.error('Invalid Brand ID');
             return;
         }
         try {
-            const response = await updateCreationService(brandId, updateBrandDetails.name, updateBrandDetails.images, updateBrandDetails.isActive);
+            const response = await updateCreationService(creationId, updateBrandDetails.name, updateBrandDetails.images, updateBrandDetails.isActive);
             if (!response.success) {
                 toast.error(response.message || 'Failed to update brand');
                 return;
@@ -203,8 +199,8 @@ export default function page() {
                                     Parent: <span className="font-semibold text-gray-800">{brandDetails.under}</span>
                                 </p>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${brandDetails.isActive
-                                        ? 'bg-green-100 text-green-700 ring-1 ring-green-200'
-                                        : 'bg-red-100 text-red-700 ring-1 ring-red-200'
+                                    ? 'bg-green-100 text-green-700 ring-1 ring-green-200'
+                                    : 'bg-red-100 text-red-700 ring-1 ring-red-200'
                                     }`}>
                                     {brandDetails.isActive ? '● Active' : '● Inactive'}
                                 </span>
@@ -340,7 +336,10 @@ export default function page() {
                         </Dialog>
 
                         <div className="px-2">
-                            <CreateEntityDialog currentTab={currentTab} creationId={brandId ? brandId : ""} level={2} fetchProperties={fetchGroup} />
+                            <CreateEntityDialog creationType={"brand"} currentTab={currentTab} creationId={creationId ? creationId : ""} level={2} fetchProperties={fetchGroup} />
+                        </div>
+                        <div className="px-2">
+                            <DeleteCreationDialog type={"brand"} name={updateBrandDetails.name} id={creationId ? creationId : ""} />
                         </div>
                     </DropdownMenuContent>
 
@@ -416,6 +415,7 @@ export default function page() {
                     <ImageUploadModal
                         isOpen={isImageUploadModalOpen}
                         onClose={() => setIsImageUploadModalOpen(false)}
+                        // uploadImages={uploadImages}
                         onUploadSuccess={handleUploadSuccess}
                     />
 
@@ -454,32 +454,42 @@ export default function page() {
                         {creations?.map((item: ICreation) => (
                             <div
                                 key={item.id}
-                                className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200"
+                                className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
                             >
-                                <div className="w-full h-48 overflow-hidden bg-gray-100">
-                                    <img 
-                                        src={item.images[0]} 
-                                        alt={item.name} 
-                                        className="w-full h-full object-cover" 
-                                    />
-                                </div>
-                                <div className="p-4">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <h3 className="font-semibold text-lg text-gray-900 truncate">
+                                <img src={item.images[0]} alt={item.name} width={400} height={200} className="rounded-lg mb-3" />
+
+                                <div className="flex justify-between items-start mb-3">
+                                    <h3 className="font-semibold text-lg text-gray-900 truncate">
                                         {item.name}
                                     </h3>
-                                    </div>
+                                </div>
 
-                                    {/* Actions */}
-                                    <div className="mt-4 flex space-x-2">
-                                        <Button variant="outline" size="sm" className="flex-1"
-                                            onClick={() => { navigate(`/app/property/${currentTab}/${item.id}`) }}>
-                                            View Details
-                                        </Button>
-                                        {/* <Button variant="outline" size="sm">
-                                            Edit
-                                        </Button> */}
-                                    </div>
+                                <div className="mt-4 flex space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className={`${item.type === "property" ? item.property?.isDraft && "flex-1" : "flex-1"}`}
+                                        onClick={() => {
+                                            item.type != "property" ?
+                                                navigate(`/app/property/${currentTab}/${item.id}`) :
+                                                navigate(`/property/${item.propertyId}`)
+                                        }}
+                                    >
+                                        View Details
+                                    </Button>
+                                    {
+                                        item.type == "property" && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className={`${item.type === "property" && !item.property?.isDraft && "flex-1"}`}
+
+                                                onClick={() => navigate(`/app/property/${currentTab}/${item.id}`)}
+                                            >
+                                                <Settings className="h-4 w-4" />
+                                            </Button>
+                                        )
+                                    }
                                 </div>
                             </div>
                         ))}

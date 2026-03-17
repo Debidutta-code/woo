@@ -9,8 +9,7 @@ import type { ITicket } from "./interfaces";
 import { TicketsTable, CreateTicketDialog } from "./components";
 import { getAllTicketsService } from "./services";
 import Loader from "@/components/Loader/Loader";
-import type { ILoader } from "@/components/Loader/Loader.type"
-import type { IPropertyCodeAndIds } from "../dashboard/interface";
+import type { ILoader, IPropertyCodeAndIds } from "../dashboard/interface";
 import { fetchPropertiesService } from "../dashboard/services";
 export default function ContactSupport() {
   const user = useSelector((state: RootState) => state.user.user);

@@ -11,7 +11,7 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 
 const loginSchema = z.object({
-  cred: z.string().min(1, { message: "Email or Username is required" }),
+  email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters long." })
@@ -22,61 +22,46 @@ const loginSchema = z.object({
 
 export default function LoginForm() {
   const [loginDetails, setLoginDetails] = useState({
-    cred: "",
+    email: "",
     password: "",
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({ cred: '', password: '' });
+  const [errors, setErrors] = useState({ email: '', password: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUser();
     const savedCredentials = localStorage.getItem("swiftRoomsLogCred");
     if (savedCredentials) {
       try {
         const cred = JSON.parse(savedCredentials);
-        setLoginDetails({ cred: cred.cred, password: cred.password });
+        setLoginDetails({ email: cred.email, password: cred.password });
         setRememberMe(true);
       } catch (e) {
+        console.error("Failed to parse saved credentials from localStorage", e);
       }
     }
   }, []);
-  const fetchUser = async () => {
-      try {
-        const axiosInstance = AxiosInstance();
-        const response = await axiosInstance.get('/user/me');
-        if (response.data.success) {
-          navigate('/app');
-        } else {
-          
-        }
-      } catch (error: any) {
-        
-      }
-    };
+
   const handleLogin = async () => {
     const validation = loginSchema.safeParse(loginDetails);
 
     if (!validation.success) {
       const { fieldErrors } = validation.error.flatten();
       setErrors({
-        cred: fieldErrors.cred ? fieldErrors.cred[0] : '',
+        email: fieldErrors.email ? fieldErrors.email[0] : '',
         password: fieldErrors.password ? fieldErrors.password[0] : '',
       });
       return;
     }
 
-    setErrors({ cred: '', password: '' });
+    setErrors({ email: '', password: '' });
     setIsLoading(true);
 
     try {
       const axiosInstance = AxiosInstance();
-      const response = await axiosInstance.post("/auth/login", {
-        cred: loginDetails.cred,
-        password: loginDetails.password
-      });
+      const response = await axiosInstance.post("/auth/login", loginDetails);
 
       if (response?.data?.success) {
         if (rememberMe) {
@@ -105,9 +90,9 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex bg-background ">
+    <div className="min-h-screen flex bg-background">
       {/* Left Side - Hero Section */}
-      <div className="lg:flex hidden  lg:w-1/2 relative bg-primary  h-screen">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden" style={{ backgroundImage: "url('/swiftrooms-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'hsl(var(--primary))' }}>
         {/* Animated Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full filter blur-3xl animate-blob"></div>
@@ -121,24 +106,18 @@ export default function LoginForm() {
         {/* Diagonal Line Accent */}
         <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
 
+        {/* Grayish Overlay */}
+        <div className="absolute inset-0 bg-gray-900/50 z-5"></div>
+
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground w-full">
           {/* Logo & Brand */}
-          <div className="animate-fade-in">
-            <div className="flex items-center space-x-3 mb-2">
-              {/* <img 
-                src="/swiftrooms.jpeg" 
-                alt="SwiftRooms Logo" 
-                className="h-12 w-auto object-contain"
-              /> */}
-              <h1 className="text-2xl font-bold tracking-tight">Property Management System</h1>
-            </div>
-          </div>
+         
 
           {/* Main Content */}
           <div className="space-y-8 animate-fade-in-delay">
             <div>
-              <h2 className="text-4xl font-bold mb-4 leading-tight">
+              <h2 className="text-4xl mt-10 font-bold mb-4 leading-tight">
                 Manage your properties
                 <br />
                 <span className="relative inline-block">
@@ -146,7 +125,7 @@ export default function LoginForm() {
                   <span className="absolute bottom-1 left-0 w-full h-3 bg-white/20"></span>
                 </span>
               </h2>
-              <p className="text-muted-foreground text-lg leading-relaxed max-w-md">
+              <p className="text-lg leading-relaxed max-w-md">
                 Streamline operations, maximize revenue, and deliver exceptional guest experiences all in one place.
               </p>
             </div>
@@ -173,57 +152,62 @@ export default function LoginForm() {
           </div>
 
           {/* Footer */}
-          <div className="text-sm text-muted-foreground/60 animate-fade-in">
-            © {new Date().getFullYear()} SwiftRooms. All rights reserved.
+          <div className="text-sm animate-fade-in">
+            © {new Date().getFullYear()} Revchill. All rights reserved.
           </div>
         </div>
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative overflow-y-auto min-h-screen">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative">
         {/* Subtle Pattern */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTAgMGg0MHY0MEgweiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
 
         <div className="w-full max-w-md relative z-10 animate-fade-in-up">
           {/* Mobile Logo */}
-          <div className=" flex items-center justify-center mb-2">
+          <div className="lg:hidden flex items-center justify-center mb-8">
             <img 
-              src="/swiftrooms.jpeg" 
-              alt="SwiftRooms Logo" 
+              src="/revchill.png" 
+              alt="Revchill Logo" 
               className="h-16 w-auto object-contain"
             />
           </div>
 
           <Card className="border shadow-xl">
-            <CardHeader className="space-y-2 text-center pb-2">
+            <CardHeader className="space-y-2 text-center pb-8">
+               <img 
+                src="/revchill.png" 
+                alt="Revchill Logo" 
+                className="h-12 w-auto hidden lg:block object-contain"
+              />
               <CardTitle className="text-3xl font-bold">Welcome Back</CardTitle>
               <CardDescription className="text-base">
                 Sign in to access your dashboard
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Email/Username Field */}
+              {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
-                  Email or Username
+                  Email Address
                 </Label>
                 <div className="relative group">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 transition-colors group-focus-within:text-foreground" />
                   <Input
                     id="email"
-                    type="text"
-                    placeholder="you@company.com or username"
+                    type="email"
+                    placeholder="you@company.com"
                     disabled={isLoading}
-                    value={loginDetails.cred}
-                    onChange={(e) => setLoginDetails({ ...loginDetails, cred: e.target.value })}
+                    value={loginDetails.email}
+                    onChange={(e) => setLoginDetails({ ...loginDetails, email: e.target.value })}
                     onKeyPress={handleKeyPress}
                     className="pl-11 h-12 transition-all"
                     required
-                    autoComplete="username"
+                    autoComplete="r"
                   />
                 </div>
-                {errors.cred && (
-                  <p className="text-destructive text-sm mt-1 animate-shake">{errors.cred}</p>
+                {errors.email && (
+                  <p className="text-destructive text-sm mt-1 animate-shake">{errors.email}</p>
                 )}
               </div>
 
@@ -301,6 +285,7 @@ export default function LoginForm() {
                   'Sign In'
                 )}
               </Button>
+
             </CardContent>
           </Card>
         </div>

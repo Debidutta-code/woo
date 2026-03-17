@@ -1,9 +1,10 @@
+import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
+
 export interface CreateRatePlan {
     ratePlanName: string;
     b2bAvailable: boolean;
     b2cAvailable: boolean;
-    minimumLengthOfStay: number;
-    maximumLengthOfStay?: number;
+    roomOnlyVisible: boolean;
 }
 
 export interface RatePlan {
@@ -13,8 +14,7 @@ export interface RatePlan {
     ratePlanCode: string;
     b2bAvailable: boolean;
     b2cAvailable: boolean;
-    minimumLengthOfStay?: number;
-    maximumLengthOfStay?: number;
+    roomOnlyVisible: boolean;
     cancellationPolicy?: string | null;
     cancellationPolicyId?: string | null;
     createdAt?: string;
@@ -24,6 +24,44 @@ export interface RatePlan {
     guaranteePolicyId?: string | null;
     taxGroupId?: string | null;
     updatedAt?: string;
+    ratePlanRules?: RatePlanRule | null;
+    Addons?: RatePlanWithAddon[] | null;
+}
+export interface RatePlanWithAddon {
+    id: string;
+    ratePlanId: string;
+    addonId: string;
+    addonName: string;
+    addonType: string;
+    addonPrice: number;
+    addonDescription: string;
+    addonImage: string;
+    addonIsActive: boolean;
+}
+export interface RatePlanRule {
+    id: string;
+    ratePlanId: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    minLos: number;
+    maxLos?: number | null;
+    discountType?: "percentage" | "flat" | "none";
+    discountValue?: number | null;
+    isActive: boolean;
+    isAutoApplied: boolean;
+    currencyCode:CurrencyCode
+}
+export interface ICRatePlanRule{
+    ratePlanId: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    minLos: number;
+    maxLos?: number | null;
+    discountType?: "percentage" | "flat" | "none";
+    discountValue?: number | null;
+    isActive: boolean;
+    isAutoApplied: boolean;
+    currencyCode:CurrencyCode
 }
 export interface LoaderProps {
     isLoading: boolean;

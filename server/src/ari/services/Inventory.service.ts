@@ -1,13 +1,14 @@
 import { InventoryDao } from '../repository';
 import { errorResponse, successResponse } from '../../utils/return';
-import { IWeekdayCharges, IWeekdayAdditionalCharges } from '../types/utills';
 import {
     ICreateInventoryRepo,
     AdditionalGuestAmount,
     BaseGuestAmount,
     ICharges,
 } from '../types';
-
+import { toUTC } from '../../utils';
+import { getCurrencyConverter } from '../../currency-maping/utils';
+import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
 class InventoryServices {
     public static async getInventoryServices(
         hotelCode: string,
@@ -57,7 +58,8 @@ class InventoryServices {
         roomType: string,
         startDate: string,
         endDate: string,
-        availableRooms: number
+        availableRooms: number,
+        pushFromCalender?: boolean
     ) {
         try {
             const property = await InventoryDao.isPropertyExists(propertyCode);
@@ -114,7 +116,10 @@ class InventoryServices {
             } else {
                 return errorResponse('Failed to added/updated availability');
             }
-        } catch (error: any) {
+        } catch (error) {
+            if (error instanceof Error) {
+                return errorResponse('Failed to add inventory', error.message);
+            }
             return errorResponse('Failed to add/update availability');
         }
     }
@@ -127,14 +132,20 @@ class InventoryServices {
         ratePlanCode: string,
         baseGuestAmounts: BaseGuestAmount[],
         additionalGuestAmounts: AdditionalGuestAmount[],
-        currencyCode: string,
+        currencyCode: CurrencyCode,
         startDate: string,
         endDate: string
     ) {
         try {
-            const room = await InventoryDao.getRoom(propertyId, roomTypeCode);
+            const [room, { convert, baseCurrency }] = await Promise.all([
+                InventoryDao.getRoom(propertyId, roomTypeCode),
+                getCurrencyConverter(propertyId, currencyCode)
+            ]);
+
             if (!room) {
-                return errorResponse('No room found');
+                return errorResponse(
+                    `No room found with roomTypeCode: ${roomTypeCode} for property: ${propertyId}`
+                );
             }
 
             // Validate date range
@@ -149,7 +160,74 @@ class InventoryServices {
                 );
             }
 
-            // Create ICharges object for each date in the range
+            const inventoryCheck =
+                await InventoryDao.checkInventoryAvailability(
+                    propertyCode,
+                    roomTypeCode,
+                    startDate,
+                    endDate
+                );
+            if (inventoryCheck.availableDates.length === 0) {
+                return errorResponse(
+                    `Please add your inventory before mapping rate plans for this room `
+                );
+            }
+
+            if (inventoryCheck.missingDates.length > 0) {
+                // Create charges only for dates with inventory
+                const mappedRI: ICharges[] = [];
+                for (const dateStr of inventoryCheck.availableDates) {
+                    const convertedBaseGuestAmounts = baseGuestAmounts.map(
+                        bg => ({
+                            noOfGuests: bg.numberOfGuests,
+                            amount: convert(bg.amountBeforeTax),
+                            ageQualifyingCode: bg.ageQualifyingCode,
+                        })
+                    );
+                    const convertedAdditionalGuestAmounts =
+                        additionalGuestAmounts.map(ag => ({
+                            ageCode: ag.ageQualifyingCode as '10' | '8' | '5',
+                            amount: convert(ag.amount),
+                        }));
+
+                    mappedRI.push({
+                        propertyCode,
+                        roomTypeName,
+                        roomTypeCode,
+                        ratePlanName,
+                        ratePlanCode,
+                        baseGuestAmounts: convertedBaseGuestAmounts,
+                        additionalGuestAmounts: convertedAdditionalGuestAmounts,
+                        currencyCode: baseCurrency,
+                        date: dateStr,
+                    });
+                }
+                const daoRes = await InventoryDao.mapRatePlans(mappedRI);
+
+                if (daoRes) {
+                    // Format the missing dates for better readability
+                    const firstMissing = inventoryCheck.missingDates[0];
+                    const lastMissing =
+                        inventoryCheck.missingDates[
+                        inventoryCheck.missingDates.length - 1
+                        ];
+
+                    return successResponse(
+                        `Rate plan mapped successfully for available dates. WARNING: Please update your inventory from ${firstMissing} to ${lastMissing} to map rate plans for the remaining dates.`,
+                        {
+                            ...daoRes,
+                            warning: {
+                                message: 'Inventory missing for some dates',
+                                missingDates: inventoryCheck.missingDates,
+                                missingDateRange: `${firstMissing} to ${lastMissing}`,
+                                mappedDates: inventoryCheck.availableDates,
+                            },
+                        }
+                    );
+                } else {
+                    return errorResponse('Failed to map rate plans');
+                }
+            }
             const mappedRI: ICharges[] = [];
             for (
                 let d = new Date(start.getTime());
@@ -160,17 +238,16 @@ class InventoryServices {
                     .toISOString()
                     .split('T')[0];
 
-                // Convert BaseGuestAmount to IBaseGuestAmounts
                 const convertedBaseGuestAmounts = baseGuestAmounts.map(bg => ({
                     noOfGuests: bg.numberOfGuests,
-                    amount: bg.amountBeforeTax,
+                    amount: convert(bg.amountBeforeTax),
+                    ageQualifyingCode: bg.ageQualifyingCode,
                 }));
 
-                // Convert AdditionalGuestAmount to IAdditionalGuestAmount
                 const convertedAdditionalGuestAmounts =
                     additionalGuestAmounts.map(ag => ({
                         ageCode: ag.ageQualifyingCode as '10' | '8' | '5',
-                        amount: ag.amount,
+                        amount: convert(ag.amount),
                     }));
 
                 mappedRI.push({
@@ -181,20 +258,25 @@ class InventoryServices {
                     ratePlanCode,
                     baseGuestAmounts: convertedBaseGuestAmounts,
                     additionalGuestAmounts: convertedAdditionalGuestAmounts,
-                    currencyCode,
-                    date: yyyyMmDd,
+                    currencyCode: baseCurrency,
+                    date: toUTC(yyyyMmDd),
                 });
             }
-
             const daoRes = await InventoryDao.mapRatePlans(mappedRI);
             if (daoRes) {
-                return successResponse('Mapping successful', daoRes);
+                return successResponse('Rate plan mapped successfully', daoRes);
             } else {
-                return errorResponse('Failed to map ');
+                return errorResponse('Failed to map rate plans');
             }
-        } catch (error: any) {
-            console.log('Error', error?.message);
-            return errorResponse('Failed to map room with rateplan');
+        } catch (error) {
+            // console.log(error)
+            if (error instanceof Error) {
+                return errorResponse(
+                    'Failed to map room with rate plan',
+                    error.message
+                );
+            }
+            return errorResponse('Failed to map room with rate plan');
         }
     }
 }

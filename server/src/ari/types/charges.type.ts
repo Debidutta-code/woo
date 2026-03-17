@@ -1,26 +1,28 @@
 export interface maxOccupancy {
-    total: number;
-    adults: number;
-    children: number;
+  total: number;
+  adults: number;
+  children: number;
 }
-export type qualifyingAgeCode = '10' | '8' | '5';
+export type qualifyingAgeCode="10"|"8"|"5"
 
-export interface IBaseGuestAmounts {
+export interface IBaseGuestAmounts{
     noOfGuests: number;
     amount: number;
+    ageQualifyingCode:string;
 }
-export interface IAdditionalGuestAmount {
+export interface IAdditionalGuestAmount{
     ageCode: qualifyingAgeCode;
     amount: number;
 }
 export interface ICharges {
-    propertyCode: string;
-    ratePlanCode: string;
-    roomTypeCode: string;
-    ratePlanName: string;
-    roomTypeName: string;
-    baseGuestAmounts: IBaseGuestAmounts[];
-    additionalGuestAmounts: IAdditionalGuestAmount[];
-    currencyCode: string;
-    date: String;
+  propertyCode: string;
+  ratePlanCode: string;
+  roomTypeCode: string;
+  ratePlanName:string;
+  roomTypeName:string;
+  baseGuestAmounts: IBaseGuestAmounts[];
+  additionalGuestAmounts: IAdditionalGuestAmount[];
+  currencyCode: string;
+  date: Date;
+  
 }

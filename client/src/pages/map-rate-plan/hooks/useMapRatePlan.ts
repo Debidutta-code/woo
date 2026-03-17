@@ -7,14 +7,10 @@ import {
     fetchRoomTypesService, 
     createMappingService,
     getMappedRatePlansService,
-    updateMappedPriceService,
-    deleteMappingService
+    updateMappedPriceService 
 } from "../services";
-import { useAppSelector } from "@/redux/hooks";
 
 export function useMapRatePlan(propertyId: string | undefined) {
-    const { access } = useAppSelector((state) => state.access);
-    
     const [charges, setCharges] = useState<Charges[]>([]);
     const [filters, setFilters] = useState<IFilterProps>({
         roomTypeCode: "",
@@ -50,9 +46,6 @@ export function useMapRatePlan(propertyId: string | undefined) {
         try {
             setIsLoading(true);
 
-            if(!access?.canViewRatePlan) {
-                return;
-            }
             const [ratePlansRes, roomTypesRes] = await Promise.all([
                 fetchRatePlansService(propertyId!),
                 fetchRoomTypesService(propertyId!),
@@ -88,10 +81,6 @@ export function useMapRatePlan(propertyId: string | undefined) {
     };
 
     const handleSearch = async (page: number = 1) => {
-        if (!access?.canCreateRoomAvailability) {
-            toast.error("You do not have permission to view room prices");
-            return;
-        }
         if (!propertyId) {
             toast.error("Property ID is missing");
             return;
@@ -101,7 +90,7 @@ export function useMapRatePlan(propertyId: string | undefined) {
             setIsLoading(true);
             const response = await getMappedRatePlansService(propertyId, filters, page);
             
-            console.log("API Response:", response);
+            // console.log("API Response:", response);
 
             if (response.success && response.data) {
                 setCharges(response.data.data || []);
@@ -131,7 +120,7 @@ export function useMapRatePlan(propertyId: string | undefined) {
     };
 
     const handlePageChange = (page: number) => {
-        console.log("Page change requested:", page);
+        // console.log("Page change requested:", page);
         setCurrentPage(page);
         handleSearch(page);
         // Scroll to top of table
@@ -143,10 +132,9 @@ export function useMapRatePlan(propertyId: string | undefined) {
     };
 
     const handleSaveNewMapping = async (newMapping: ICreateCharges) => {
-        if(!access?.canMapRatePlan) {
-            return;
-        }
         try {
+            console.log("Saving new mapping:", newMapping);
+            console.log(ratePlans, roomTypes);
             const ratePlan = ratePlans.find(rp => rp.ratePlanCode === newMapping.ratePlanCode);
             const roomType = roomTypes.find(rt => rt.roomType === newMapping.roomTypeCode);
 
@@ -163,7 +151,7 @@ export function useMapRatePlan(propertyId: string | undefined) {
             );
 
             if (response.success) {
-                toast.success("Mapping created successfully!");
+                toast.success(response.message || "Mapping created successfully!");
                 setIsCreateDialogOpen(false);
                 // Refresh current page after creating
                 handleSearch(currentPage);
@@ -176,9 +164,6 @@ export function useMapRatePlan(propertyId: string | undefined) {
     };
 
     const handleUpdateMapping = async (updatedMapping: IUpdatedCharges) => {
-        if(!access?.canUpdateRoomPrice) {
-            return;
-        }
         try {
             const response = await updateMappedPriceService(
                 updatedMapping.id,
@@ -203,20 +188,12 @@ export function useMapRatePlan(propertyId: string | undefined) {
     };
 
     const handleDeleteMapping = async (mapping: Charges) => {
+        // Remove the mapping from the charges array
+        setCharges((prevCharges) => prevCharges.filter((charge) => charge.id !== mapping.id));
+        toast.success("Mapping deleted successfully!");
         
-        try {
-            const response = await deleteMappingService(mapping.id);
-            
-            if (response.success) {
-                toast.success("Mapping deleted successfully!");
-                // Refresh current page after deletion
-                await handleSearch(currentPage);
-            } else {
-                toast.error(response.message || "Failed to delete mapping");
-            }
-        } catch (error) {
-            toast.error("Failed to delete mapping");
-        }
+        // Refresh current page after deletion
+        await handleSearch(currentPage);
     };
 
     return {

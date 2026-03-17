@@ -23,3 +23,23 @@ export interface IAmenity {
   description?: string;
   icon?: string;
 }
+
+export interface ILoyaltyGuestField {
+  id: string;
+  fieldName: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+export interface IPaymentIntegration {
+  id: string;
+  name: string;
+  isActive: boolean;
+  propertyPaymentIntegrations:[{
+    id:string;
+    propertyId:string;
+    paymentIntegrationId:string;
+    isActive:boolean;
+    outletId:string;
+  }]
+}
+export * from "./integration.interface";

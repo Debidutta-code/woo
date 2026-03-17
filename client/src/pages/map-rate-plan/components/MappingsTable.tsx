@@ -38,7 +38,6 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import Loader from "@/components/Loader/Loader";
 import type { Charges } from "../types";
-import { useAppSelector } from "@/redux/hooks";
 
 interface MappingsTableProps {
     mappings: Charges[];
@@ -63,7 +62,6 @@ export default function MappingsTable({
 }: MappingsTableProps) {
     const [viewPriceDetails, setViewPriceDetails] = useState<Charges | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<Charges | null>(null);
-    const { access } = useAppSelector((state) => state.access);
 
     return (
         <>
@@ -92,8 +90,8 @@ export default function MappingsTable({
                                     <TableHeader>
                                         <TableRow className="bg-gray-50">
                                             <TableHead className="font-semibold">Date</TableHead>
-                                            <TableHead className="font-semibold">Rate Plan</TableHead>
                                             <TableHead className="font-semibold">Room Type</TableHead>
+                                            <TableHead className="font-semibold">Rate Plan</TableHead>
                                             <TableHead className="font-semibold">Price</TableHead>
                                             <TableHead className="font-semibold">Available Rooms</TableHead>
                                             <TableHead className="font-semibold">Sell Stopped</TableHead>
@@ -107,8 +105,8 @@ export default function MappingsTable({
                                                 <TableCell className="font-medium">
                                                     {mapping.date ? format(new Date(mapping.date), "MMM dd, yyyy") : "N/A"}
                                                 </TableCell>
-                                                <TableCell>{mapping.ratePlanName}</TableCell>
                                                 <TableCell>{mapping.roomTypeName}</TableCell>
+                                                <TableCell>{mapping.ratePlanName}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-2">
                                                         <span className="font-semibold text-green-600">
@@ -121,9 +119,9 @@ export default function MappingsTable({
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() => setViewPriceDetails(mapping)}
-                                                            className="h-7 w-7 p-0 hover:bg-blue-50"
+                                                            className="h-7 w-7 p-0 hover:bg-primary/10"
                                                         >
-                                                            <Eye className="w-4 h-4 text-blue-600" />
+                                                            <Eye className="w-4 h-4 text-primary" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -143,8 +141,6 @@ export default function MappingsTable({
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="center" className="w-40">
-                                                            {access?.canUpdateRoomPrice&&(
-
                                                             <DropdownMenuItem
                                                                 onClick={() => onEdit(mapping)}
                                                                 className="cursor-pointer"
@@ -152,7 +148,6 @@ export default function MappingsTable({
                                                                 <Edit className="w-4 h-4 mr-2" />
                                                                 Update
                                                             </DropdownMenuItem>
-                                                            )}
                                                             <DropdownMenuItem
                                                                 onClick={() => setViewPriceDetails(mapping)}
                                                                 className="cursor-pointer"
@@ -228,7 +223,7 @@ export default function MappingsTable({
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Base Amount</p>
+                                    <p className="text-sm text-gray-500">Base amount for first guest</p>
                                     <p className="font-semibold text-green-600">
                                         {Number(viewPriceDetails.baseGuestAmounts[0]?.amountBeforeTax || 0).toFixed(2)}  {viewPriceDetails.currencyCode}
                                     </p>
@@ -245,7 +240,7 @@ export default function MappingsTable({
                             {viewPriceDetails.baseGuestAmounts && viewPriceDetails.baseGuestAmounts.length > 0 && (
                                 <div>
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                        <span className="w-2 h-2 bg-primary rounded-full"></span>
                                         Base Guest Amounts
                                     </h4>
                                     <div className="rounded-md border">
@@ -259,7 +254,7 @@ export default function MappingsTable({
                                             <TableBody>
                                                 {viewPriceDetails.baseGuestAmounts.map((guest, index) => (
                                                     <TableRow key={index}>
-                                                        <TableCell className="font-medium">{guest.numberOfGuests} Guest(s)</TableCell>
+                                                        <TableCell className="font-medium">{guest.ageQualifyingCode==="10"?`Base amount for ${guest.numberOfGuests} Adult `:`Base amount for ${guest.numberOfGuests} Children `}</TableCell>
                                                         <TableCell className="text-right font-semibold text-green-600">
                                                             {Number(guest.amountBeforeTax).toFixed(2)} {viewPriceDetails.currencyCode}
                                                         </TableCell>
@@ -276,7 +271,7 @@ export default function MappingsTable({
                                 <div>
                                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                                         <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                                        Additional Guest Amounts
+                                        Additional Guest Charges
                                     </h4>
                                     <div className="rounded-md border">
                                         <Table>
@@ -290,7 +285,7 @@ export default function MappingsTable({
                                                 {viewPriceDetails.additionalGuestAmounts.map((guest, index) => (
                                                     <TableRow key={index}>
                                                         <TableCell className="font-medium">
-                                                            Age Code: {guest.ageQualifyingCode}
+                                                            {guest.ageQualifyingCode === "10" ? "Additional Charge for Adults" : "Additional Charge for Children"}
                                                         </TableCell>
                                                         <TableCell className="text-right font-semibold text-purple-600">
                                                             {Number(guest.amount).toFixed(2)} {viewPriceDetails.currencyCode}

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, XCircle, Loader2, Eye, EyeOff } from 'lucide-react';
-import { verifyResetToken, resetPasswordWithToken } from '@/components/api/forgetEmail.api';
+import { verifyResetToken, resetPasswordWithToken } from '../api/forgetEmail.api';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 

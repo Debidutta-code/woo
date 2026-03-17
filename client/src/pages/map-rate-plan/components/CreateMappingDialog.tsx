@@ -1,8 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Plus, X, Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { Plus, X, Loader2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -11,12 +9,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,11 +21,13 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ICreateCharges, RatePlan, RoomTypes, IBaseGuestAmounts, IAdditionalGuestAmount, qualifyingAgeCode } from "../types";
+import { currencies } from "@/components/currency-code/cuurency";
+import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
 
 interface CreateMappingDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onSave: (mapping: ICreateCharges) => void;
+    onSave: (mapping: ICreateCharges) => Promise<void>;
     ratePlans: RatePlan[];
     roomTypes: RoomTypes[];
     filters: {
@@ -52,60 +46,170 @@ export default function CreateMappingDialog({
     roomTypes,
     filters,
 }: CreateMappingDialogProps) {
-    const [formData, setFormData] = useState<ICreateCharges>({
+    // Local form state separates adults and children base amounts so UI and validation
+    // can enforce per-room limits. Before submit we will merge them into the
+    // expected ICreateCharges shape and call onSave.
+    type LocalForm = {
+        ratePlanCode: string;
+        roomTypeCode: string;
+        startDate: string;
+        endDate: string;
+        currencyCode: string;
+        adultsBase: IBaseGuestAmounts[];
+        childrenBase: IBaseGuestAmounts[];
+        additionalGuestAmounts: IAdditionalGuestAmount[];
+    };
+
+    const [localForm, setLocalForm] = useState<LocalForm>({
         ratePlanCode: filters.ratePlanCode || "",
         roomTypeCode: filters.roomTypeCode || "",
         startDate: filters.startDate || "",
         endDate: filters.endDate || "",
         currencyCode: "USD",
-        baseByGuestAmounts: [{ numberOfGuests: 1, amountBeforeTax: "" }],
-        additionalGuestAmounts: [],
+        adultsBase: [{ numberOfGuests: 1, amountBeforeTax: "", ageQualifyingCode: "10" as qualifyingAgeCode }],
+        childrenBase: [] as IBaseGuestAmounts[],
+        additionalGuestAmounts: [] as IAdditionalGuestAmount[],
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleAddBaseGuestAmount = () => {
-        const nextGuestNumber = formData.baseByGuestAmounts.length + 1;
-        setFormData({
-            ...formData,
-            baseByGuestAmounts: [
-                ...formData.baseByGuestAmounts,
-                { numberOfGuests: nextGuestNumber, amountBeforeTax: "" },
-            ],
-        });
-    };
-
-    const handleRemoveBaseGuestAmount = (index: number) => {
-        if (formData.baseByGuestAmounts.length <= 1) {
-            toast.error("At least one base guest amount is required");
+    const handleAddAdultBase = () => {
+        const selectedRoom = roomTypes.find(room => room.id === localForm.roomTypeCode);
+        const current = localForm.adultsBase.length;
+        if (selectedRoom && selectedRoom.maxNumberOfAdults < current + 1) {
+            toast.error("Cannot add more adult guest rows than room allows");
             return;
         }
-        const updated = formData.baseByGuestAmounts.filter((_, i) => i !== index);
-        setFormData({ ...formData, baseByGuestAmounts: updated });
-    };
-
-    const handleBaseGuestAmountChange = (index: number, field: keyof IBaseGuestAmounts, value: number) => {
-        const updated = [...formData.baseByGuestAmounts];
-        updated[index] = { ...updated[index], [field]: value };
-        setFormData({ ...formData, baseByGuestAmounts: updated });
-    };
-
-    const handleAddAdditionalGuestAmount = () => {
-        // Find the first available age code that hasn't been selected
-        const availableOptions = ["10", "8", "5"];
-        const usedCodes = formData.additionalGuestAmounts.map(item => item.ageQualifyingCode);
-        const nextAvailableCode = (availableOptions.find(code => !usedCodes.includes(code as qualifyingAgeCode)) || "10") as qualifyingAgeCode;
-        
-        setFormData({   
-            ...formData,
-            additionalGuestAmounts: [
-                ...formData.additionalGuestAmounts,
-                { ageQualifyingCode: nextAvailableCode, amount: 0 },
+        const nextGuestNumber = current + 1;
+        setLocalForm({
+            ...localForm,
+            adultsBase: [
+                ...localForm.adultsBase,
+                { numberOfGuests: nextGuestNumber, amountBeforeTax: "", ageQualifyingCode: "10" as qualifyingAgeCode },
             ],
         });
     };
 
+    const handleAddChildBase = () => {
+        const selectedRoom = roomTypes.find(room => room.id === localForm.roomTypeCode);
+        const current = localForm.childrenBase.length;
+        if (selectedRoom && selectedRoom.maxNumberOfChildren < current + 1) {
+            toast.error("Cannot add more child guest rows than room allows");
+            return;
+        }
+        const nextGuestNumber = current + 1;
+        setLocalForm({
+            ...localForm,
+            childrenBase: [
+                ...localForm.childrenBase,
+                { numberOfGuests: nextGuestNumber, amountBeforeTax: "", ageQualifyingCode: "8" as qualifyingAgeCode },
+            ],
+        });
+    };
+
+    const handleRemoveAdultBase = (index: number) => {
+        if (localForm.adultsBase.length <= 1) {
+            toast.error("At least one adult base amount is required");
+            return;
+        }
+        const updated = localForm.adultsBase
+            .filter((_, i) => i !== index)
+            .map((item, i) => ({ ...item, numberOfGuests: i + 1 }));
+        setLocalForm({ ...localForm, adultsBase: updated });
+    };
+
+    const handleRemoveChildBase = (index: number) => {
+        const updated = localForm.childrenBase
+            .filter((_, i) => i !== index)
+            .map((item, i) => ({ ...item, numberOfGuests: i + 1 }));
+        setLocalForm({ ...localForm, childrenBase: updated });
+    };
+
+    const handleAdultBaseChange = (index: number, field: keyof IBaseGuestAmounts, value: number | string) => {
+        const selectedRoom = roomTypes.find(room => room.id === localForm.roomTypeCode);
+        const updated = [...localForm.adultsBase];
+        let newValue: any = value;
+        if (field === 'numberOfGuests') {
+            const n = Number(value) || 0;
+            if (n < 1) {
+                newValue = 1;
+            } else if (selectedRoom && n > selectedRoom.maxNumberOfAdults) {
+                newValue = selectedRoom.maxNumberOfAdults;
+                toast.error(`Number of adults cannot exceed ${selectedRoom.maxNumberOfAdults}`);
+            } else {
+                newValue = n;
+            }
+        }
+        updated[index] = { ...updated[index], [field]: newValue } as any;
+        setLocalForm({ ...localForm, adultsBase: updated });
+    };
+
+    const handleChildBaseChange = (index: number, field: keyof IBaseGuestAmounts, value: number | string) => {
+        const selectedRoom = roomTypes.find(room => room.id === localForm.roomTypeCode);
+        const updated = [...localForm.childrenBase];
+        let newValue: any = value;
+        if (field === 'numberOfGuests') {
+            const n = Number(value) || 0;
+            if (n < 1) {
+                newValue = 1;
+            } else if (selectedRoom && n > selectedRoom.maxNumberOfChildren) {
+                newValue = selectedRoom.maxNumberOfChildren;
+                toast.error(`Number of children cannot exceed ${selectedRoom.maxNumberOfChildren}`);
+            } else {
+                newValue = n;
+            }
+        }
+        updated[index] = { ...updated[index], [field]: newValue } as any;
+        setLocalForm({ ...localForm, childrenBase: updated });
+    };
+
+    useEffect(() => {
+        const selectedRoom = roomTypes.find(room => room.id === localForm.roomTypeCode);
+        if (!selectedRoom) return;
+
+        let changed = false;
+        let adults = localForm.adultsBase;
+        let children = localForm.childrenBase;
+
+        if (adults.length > selectedRoom.maxNumberOfAdults) {
+            adults = adults.slice(0, selectedRoom.maxNumberOfAdults).map((a, i) => ({ ...a, numberOfGuests: i + 1 }));
+            changed = true;
+            toast(`Trimmed adult rows to room max (${selectedRoom.maxNumberOfAdults})`);
+        }
+        if (children.length > selectedRoom.maxNumberOfChildren) {
+            children = children.slice(0, selectedRoom.maxNumberOfChildren).map((c, i) => ({ ...c, numberOfGuests: i + 1 }));
+            changed = true;
+            toast(`Trimmed children rows to room max (${selectedRoom.maxNumberOfChildren})`);
+        }
+
+        if (changed) {
+            setLocalForm({ ...localForm, adultsBase: adults, childrenBase: children });
+        }
+    }, [localForm.roomTypeCode]);
+    const availableAgeCodes: qualifyingAgeCode[] = ["10", "8", "5"];
+
+    const handleAddAdditionalGuestAmount = () => {
+        const selectedAgeCodes = localForm.additionalGuestAmounts.map(item => item.ageQualifyingCode);
+
+        const nextAgeCode = availableAgeCodes.find(code => !selectedAgeCodes.includes(code));
+
+        if (!nextAgeCode) {
+            toast.error("All age categories have been added (Adult, Child, Infant)");
+            return;
+        }
+
+        setLocalForm({
+            ...localForm,
+            additionalGuestAmounts: [
+                ...localForm.additionalGuestAmounts,
+                { ageQualifyingCode: nextAgeCode as qualifyingAgeCode, amount: 0 },
+            ],
+        });
+    };
+
+    // Your handleRemoveAdditionalGuestAmount stays the same
     const handleRemoveAdditionalGuestAmount = (index: number) => {
-        const updated = formData.additionalGuestAmounts.filter((_, i) => i !== index);
-        setFormData({ ...formData, additionalGuestAmounts: updated });
+        const updated = localForm.additionalGuestAmounts.filter((_, i) => i !== index);
+        setLocalForm({ ...localForm, additionalGuestAmounts: updated });
     };
 
     const handleAdditionalGuestAmountChange = (
@@ -113,56 +217,96 @@ export default function CreateMappingDialog({
         field: keyof IAdditionalGuestAmount,
         value: string | number
     ) => {
-        const updated = [...formData.additionalGuestAmounts];
+        const updated = [...localForm.additionalGuestAmounts];
         updated[index] = { ...updated[index], [field]: value };
-        setFormData({ ...formData, additionalGuestAmounts: updated });
+        setLocalForm({ ...localForm, additionalGuestAmounts: updated });
     };
 
-    const handleSubmit = () => {
-        // Validation
-        if (!formData.ratePlanCode) {
+    const handleSubmit = async () => {
+        if (!localForm.ratePlanCode) {
             toast.error("Please select a rate plan");
             return;
         }
-        if (!formData.roomTypeCode) {
+        if (!localForm.roomTypeCode) {
             toast.error("Please select a room type");
             return;
         }
-        if (!formData.startDate || !formData.endDate) {
+        if (!localForm.startDate || !localForm.endDate) {
             toast.error("Please select start and end dates");
             return;
         }
-        if (formData.baseByGuestAmounts.length === 0) {
-            toast.error("At least one base guest amount is required");
+        if (localForm.adultsBase.length === 0) {
+            toast.error("At least one adult base amount is required");
             return;
         }
 
-        // Check if all amounts are valid
-        const hasInvalidAmount = formData.baseByGuestAmounts.some((item) => parseFloat(item.amountBeforeTax) <= 0);
+        const combinedBase = [...localForm.adultsBase, ...localForm.childrenBase];
+        const hasInvalidAmount = combinedBase.some((item) => parseFloat(String(item.amountBeforeTax)) <= 0);
         if (hasInvalidAmount) {
             toast.error("All base guest amounts must be greater than 0");
             return;
         }
+        setIsSubmitting(true);
+        try {
+            const payload: ICreateCharges = {
+                ratePlanCode: localForm.ratePlanCode,
+                roomTypeCode: localForm.roomTypeCode,
+                startDate: localForm.startDate,
+                endDate: localForm.endDate,
+                currencyCode: localForm.currencyCode as CurrencyCode,
+                baseByGuestAmounts: [
+                    ...localForm.adultsBase.map(a => ({ ...a, ageQualifyingCode: "10" as qualifyingAgeCode })),
+                    ...localForm.childrenBase.map(c => ({ ...c, ageQualifyingCode: "8" as qualifyingAgeCode })),
+                ],
+                additionalGuestAmounts: localForm.additionalGuestAmounts,
+            };
 
-        onSave(formData);
-        handleClose();
+            await onSave(payload);
+
+            // Reset local form on success
+            setLocalForm({
+                ratePlanCode: filters.ratePlanCode || "",
+                roomTypeCode: filters.roomTypeCode || "",
+                startDate: filters.startDate || "",
+                endDate: filters.endDate || "",
+                currencyCode: "USD",
+                adultsBase: [{ numberOfGuests: 1, amountBeforeTax: "", ageQualifyingCode: "10" as qualifyingAgeCode }],
+                childrenBase: [],
+                additionalGuestAmounts: [],
+            });
+        } catch (error) {
+            console.error("Failed to create mapping:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleClose = () => {
-        setFormData({
+        if (isSubmitting) {
+            toast.error("Please wait while mapping is being created");
+            return;
+        }
+        setLocalForm({
             ratePlanCode: filters.ratePlanCode || "",
             roomTypeCode: filters.roomTypeCode || "",
             startDate: filters.startDate || "",
             endDate: filters.endDate || "",
             currencyCode: "USD",
-            baseByGuestAmounts: [{ numberOfGuests: 1, amountBeforeTax: "" }],
+            adultsBase: [{ numberOfGuests: 1, amountBeforeTax: "", ageQualifyingCode: "10" as qualifyingAgeCode }],
+            childrenBase: [],
             additionalGuestAmounts: [],
         });
         onOpenChange(false);
     };
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
+        <Dialog open={open} onOpenChange={(open) => {
+            if (!open && isSubmitting) {
+                toast.error("Please wait while mapping is being created");
+                return;
+            }
+            if (!open) handleClose();
+        }}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl">Create New Mapping</DialogTitle>
@@ -174,33 +318,35 @@ export default function CreateMappingDialog({
                 <div className="space-y-6 py-4">
                     {/* Basic Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Room Type *</Label>
-                        <Select
-                            value={formData.roomTypeCode}
-                            onValueChange={(value) =>
-                                setFormData({ ...formData, roomTypeCode: value })
-                            }
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select room type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roomTypes.map((room) => (
-                                    <SelectItem key={room.id} value={room.roomType}>
-                                        {room.roomName} ({room.roomType})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                        <div className="space-y-2">
+                            <Label>Room Type *</Label>
+                            <Select
+                                value={localForm.roomTypeCode}
+                                onValueChange={(value) =>
+                                    setLocalForm({ ...localForm, roomTypeCode: value })
+                                }
+                                disabled={isSubmitting}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select room type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roomTypes.map((room) => (
+                                        <SelectItem key={room.id} value={room.roomType}>
+                                            {room.roomName} ({room.roomType})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="space-y-2">
                             <Label>Rate Plan *</Label>
                             <Select
-                                value={formData.ratePlanCode}
+                                value={localForm.ratePlanCode}
                                 onValueChange={(value) =>
-                                    setFormData({ ...formData, ratePlanCode: value })
+                                    setLocalForm({ ...localForm, ratePlanCode: value })
                                 }
+                                disabled={isSubmitting}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select rate plan" />
@@ -215,142 +361,101 @@ export default function CreateMappingDialog({
                             </Select>
                         </div>
 
-
-
                         <div className="space-y-2">
                             <Label>Start Date *</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className={cn(
-                                            "w-full h-11 justify-start text-left font-normal",
-                                            !formData.startDate && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {formData.startDate ? format(new Date(formData.startDate), "MMM dd, yyyy") : "Select start date"}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        className="rounded-md border"
-                                        mode="single"
-                                        selected={formData.startDate ? new Date(formData.startDate) : undefined}
-                                        onSelect={(date) => {
-                                            if (date) {
-                                                const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                                setFormData({ ...formData, startDate: formatted });
-                                            }
-                                        }}
-                                        disabled={(date) => {
-                                            const today = new Date(new Date().setHours(0, 0, 0, 0));
-                                            return date < today;
-                                        }}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
+                            <Input
+                                type="date"
+                                value={localForm.startDate}
+                                onChange={(e) =>
+                                    setLocalForm({ ...localForm, startDate: e.target.value })
+                                }
+                                min={new Date().toISOString().split("T")[0]}
+                                disabled={isSubmitting}
+                            />
                         </div>
 
                         <div className="space-y-2">
                             <Label>End Date *</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        className={cn(
-                                            "w-full h-11 justify-start text-left font-normal",
-                                            !formData.endDate && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {formData.endDate ? format(new Date(formData.endDate), "MMM dd, yyyy") : "Select end date"}
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        className="rounded-md border"
-                                        mode="single"
-                                        selected={formData.endDate ? new Date(formData.endDate) : undefined}
-                                        onSelect={(date) => {
-                                            if (date) {
-                                                const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                                                setFormData({ ...formData, endDate: formatted });
-                                            }
-                                        }}
-                                        disabled={(date) => {
-                                            const today = new Date(new Date().setHours(0, 0, 0, 0));
-                                            if (date < today) return true;
-                                            if (formData.startDate && date < new Date(formData.startDate)) return true;
-                                            return false;
-                                        }}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
+                            <Input
+                                type="date"
+                                value={localForm.endDate}
+                                onChange={(e) => setLocalForm({ ...localForm, endDate: e.target.value })}
+                                min={localForm.startDate || new Date().toISOString().split("T")[0]}
+                                disabled={isSubmitting}
+                            />
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Currency Code</Label>
-                            <Input
-                                value={formData.currencyCode}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, currencyCode: e.target.value })
-                                }
-                                placeholder="USD"
-                            />
+                            <Label htmlFor="currencyCode">Currency Code</Label>
+                            <Select
+                                value={localForm.currencyCode}
+                                onValueChange={(value) => setLocalForm({ ...localForm, currencyCode: value as CurrencyCode })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {currencies.map((currency) => (
+                                        <SelectItem key={currency.code} value={currency.code}>
+                                            {currency.name} ({currency.symbol})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
+
                     </div>
 
                     {/* Base Guest Amounts */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Base Guest Amounts *</CardTitle>
+                            <CardTitle className="text-lg">Base Guest Amounts For Adults*</CardTitle>
                             <CardDescription>
-                                Set pricing based on the number of guests
+                                Set pricing based on the number of guests for Adults
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {formData.baseByGuestAmounts.map((item, index) => (
+                            {localForm.adultsBase.map((item, index) => (
                                 <div key={index} className="flex items-end gap-3">
                                     <div className="flex-1 space-y-2">
-                                        <Label>Number of Guests</Label>
+                                        <Label>Number of Adults</Label>
                                         <Input
                                             type="number"
                                             min="1"
                                             value={item.numberOfGuests}
                                             onChange={(e) =>
-                                                handleBaseGuestAmountChange(
+                                                handleAdultBaseChange(
                                                     index,
                                                     "numberOfGuests",
                                                     parseInt(e.target.value) || 0
                                                 )
                                             }
+                                            disabled={isSubmitting}
                                         />
                                     </div>
                                     <div className="flex-1 space-y-2">
-                                        <Label>Amount ($)</Label>
+                                        <Label>Amount </Label>
                                         <Input
                                             type="number"
                                             min="0"
-                                            step="0.01"
+                                            step="0.1"
                                             value={item.amountBeforeTax}
                                             onChange={(e) =>
-                                                handleBaseGuestAmountChange(
+                                                handleAdultBaseChange(
                                                     index,
                                                     "amountBeforeTax",
-                                                    parseFloat(e.target.value) || 0
+                                                    e.target.value
                                                 )
                                             }
+                                            disabled={isSubmitting}
                                         />
                                     </div>
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => handleRemoveBaseGuestAmount(index)}
-                                        disabled={formData.baseByGuestAmounts.length <= 1}
+                                        onClick={() => handleRemoveAdultBase(index)}
+                                        disabled={localForm.adultsBase.length <= 1 || isSubmitting}
                                     >
                                         <X className="w-4 h-4" />
                                     </Button>
@@ -359,15 +464,81 @@ export default function CreateMappingDialog({
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={handleAddBaseGuestAmount}
+                                onClick={handleAddAdultBase}
                                 className="w-full"
+                                disabled={isSubmitting}
                             >
                                 <Plus className="w-4 h-4 mr-2" />
-                                Add Guest Amount
+                                Add Adult Guest Amount
                             </Button>
                         </CardContent>
                     </Card>
-
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Base Guest Amount for Children</CardTitle>
+                            <CardDescription>
+                                Set pricing based on the number of guests for children
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {localForm.childrenBase.map((item, index) => (
+                                <div key={index} className="flex items-end gap-3">
+                                    <div className="flex-1 space-y-2">
+                                        <Label>Number of Children</Label>
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            value={item.numberOfGuests}
+                                            onChange={(e) =>
+                                                handleChildBaseChange(
+                                                    index,
+                                                    "numberOfGuests",
+                                                    parseInt(e.target.value) || 0
+                                                )
+                                            }
+                                            disabled={isSubmitting}
+                                        />
+                                    </div>
+                                    <div className="flex-1 space-y-2">
+                                        <Label>Amount </Label>
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            step="0.1"
+                                            value={item.amountBeforeTax}
+                                            onChange={(e) =>
+                                                handleChildBaseChange(
+                                                    index,
+                                                    "amountBeforeTax",
+                                                    e.target.value
+                                                )
+                                            }
+                                            disabled={isSubmitting}
+                                        />
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => handleRemoveChildBase(index)}
+                                        disabled={isSubmitting}
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleAddChildBase}
+                                className="w-full"
+                                disabled={isSubmitting}
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Children Guest Amount
+                            </Button>
+                        </CardContent>
+                    </Card>
                     {/* Additional Guest Amounts */}
                     <Card>
                         <CardHeader>
@@ -377,7 +548,7 @@ export default function CreateMappingDialog({
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {formData.additionalGuestAmounts.map((item, index) => (
+                            {localForm.additionalGuestAmounts.map((item, index) => (
                                 <div key={index} className="flex items-end gap-3">
                                     <div className="flex-1 space-y-2">
                                         <Label>Age Code</Label>
@@ -386,34 +557,31 @@ export default function CreateMappingDialog({
                                             onValueChange={(value) =>
                                                 handleAdditionalGuestAmountChange(index, "ageQualifyingCode", value)
                                             }
+                                            disabled={isSubmitting}
                                         >
                                             <SelectTrigger>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {[
-                                                    { value: "10", label: "Adult" },
-                                                    { value: "8", label: "Child" },
-                                                    { value: "5", label: "Infant" },
-                                                ].filter((option) => {
-                                                    // Show current selection or options not yet selected by other rows
-                                                    return (
-                                                        option.value === item.ageQualifyingCode ||
-                                                        !formData.additionalGuestAmounts.some(
-                                                            (guest, guestIndex) => 
-                                                                guestIndex !== index && guest.ageQualifyingCode === option.value
-                                                        )
-                                                    );
-                                                }).map((option) => (
-                                                    <SelectItem key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </SelectItem>
-                                                ))}
+                                                {["10", "8", "5"]
+                                                    .filter(code => {
+                                                        // Show current selection and only available codes that aren't used elsewhere
+                                                        return item.ageQualifyingCode === code ||
+                                                            !localForm.additionalGuestAmounts.some((guest, i) =>
+                                                                i !== index && guest.ageQualifyingCode === code
+                                                            );
+                                                    })
+                                                    .map((code) => (
+                                                        <SelectItem key={code} value={code}>
+                                                            {code === "10" ? "Adult" : code === "8" ? "Child" : "Infant"}
+                                                        </SelectItem>
+                                                    ))
+                                                }
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="flex-1 space-y-2">
-                                        <Label>Amount ($)</Label>
+                                        <Label>Amount </Label>
                                         <Input
                                             type="number"
                                             min="0"
@@ -426,6 +594,7 @@ export default function CreateMappingDialog({
                                                     parseFloat(e.target.value) || 0
                                                 )
                                             }
+                                            disabled={isSubmitting}
                                         />
                                     </div>
                                     <Button
@@ -433,6 +602,7 @@ export default function CreateMappingDialog({
                                         variant="outline"
                                         size="icon"
                                         onClick={() => handleRemoveAdditionalGuestAmount(index)}
+                                        disabled={isSubmitting}
                                     >
                                         <X className="w-4 h-4" />
                                     </Button>
@@ -443,7 +613,7 @@ export default function CreateMappingDialog({
                                 variant="outline"
                                 onClick={handleAddAdditionalGuestAmount}
                                 className="w-full"
-                                disabled={formData.additionalGuestAmounts.length >= 3}
+                                disabled={isSubmitting}
                             >
                                 <Plus className="w-4 h-4 mr-2" />
                                 Add Additional Guest Amount
@@ -453,10 +623,29 @@ export default function CreateMappingDialog({
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={handleClose}>
+                    <Button
+                        variant="outline"
+                        onClick={handleClose}
+                        disabled={isSubmitting}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit}>Create Mapping</Button>
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Creating Mapping...
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Create Mapping
+                            </>
+                        )}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

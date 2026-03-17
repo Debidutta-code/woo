@@ -160,6 +160,7 @@ export default function DataTable({
       </div>
 
       {/* Pagination */}
+      {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-700">
             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedData?.length)} of{' '}
@@ -187,6 +188,7 @@ export default function DataTable({
             </Button>
           </div>
         </div>
+      )}
     </div>
   );
 }

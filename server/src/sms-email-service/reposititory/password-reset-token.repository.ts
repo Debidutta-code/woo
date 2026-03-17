@@ -1,7 +1,5 @@
-import PasswordResetToken, {
-    IPasswordResetToken,
-} from '../models/password-reset-token.model';
-import crypto from 'crypto';
+import PasswordResetToken, { IPasswordResetToken } from "../models/password-reset-token.model";
+import crypto from "crypto";
 
 class PasswordResetTokenRepository {
     // Create a new reset token (invalidate old ones first)
@@ -30,13 +28,11 @@ class PasswordResetTokenRepository {
     }
 
     // Verify reset token and get email
-    async verifyResetToken(
-        token: string
-    ): Promise<{ email: string; isValid: boolean }> {
+    async verifyResetToken(token: string): Promise<{ email: string; isValid: boolean }> {
         const resetToken = await PasswordResetToken.findOne({ token });
 
         if (!resetToken) {
-            return { email: '', isValid: false };
+            return { email: "", isValid: false };
         }
 
         // Check if token is expired
@@ -54,7 +50,10 @@ class PasswordResetTokenRepository {
 
     // Mark token as used
     async markTokenAsUsed(token: string): Promise<void> {
-        await PasswordResetToken.updateOne({ token }, { isUsed: true });
+        await PasswordResetToken.updateOne(
+            { token },
+            { isUsed: true }
+        );
     }
 
     // Delete expired tokens (cleanup)

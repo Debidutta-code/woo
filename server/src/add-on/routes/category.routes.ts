@@ -1,41 +1,38 @@
-import { Router } from 'express';
-import { CategoryController } from '../controllers';
-import { protect } from '../../middlewares/auth.middleware';
-import { checkRoleBased } from '../../middlewares/checkRole.middleware';
+import { Router } from "express";
+import { CategoryController } from "../controllers";
 
 const router = Router();
 const categoryController = new CategoryController();
 
-
 router.post(
-    '/',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/",
     categoryController.createCategory
 );
 
+router.get(
+    "/",
+    categoryController.getAllCategories
+);
 
-router.get('/', categoryController.getAllCategories);
 
+router.get(
+    "/:categoryId",
+    categoryController.getCategoryById
+);
 
-router.get('/:categoryId', categoryController.getCategoryById);
 
 router.put(
-    '/:categoryId',
+    "/:categoryId",
     categoryController.updateCategory
 );
 
+
 router.post(
-    '/:categoryId/subcategories',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/:categoryId/subcategories",
     categoryController.addSubCategoryToCategory
 );
-
 router.delete(
-    '/:categoryId/subcategories/:subcategoryId',
-    protect,
-    checkRoleBased('canAddAddons'),
+    "/:categoryId/subcategories/:subcategoryId",
     categoryController.removeSubCategoryFromCategory
 );
 

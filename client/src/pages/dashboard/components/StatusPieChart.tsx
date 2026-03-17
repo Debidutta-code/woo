@@ -12,7 +12,7 @@ interface StatusPieChartProps {
 }
 
 export default function StatusPieChart({ data, title }: StatusPieChartProps) {
-  const total = data?.reduce((sum, item) => sum + item.value, 0);
+  const total = data.reduce((sum, item) => sum + item.value, 0);
 
 
   // Calculate pie chart segments
@@ -28,7 +28,7 @@ export default function StatusPieChart({ data, title }: StatusPieChartProps) {
           {/* Pie Chart */}
           <div className="relative w-40 h-40 flex-shrink-0">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              {data?.map((item, index) => {
+              {data.map((item, index) => {
                 const percentage = (item.value / total) * 100;
                 const startPercent = cumulativePercent;
                 cumulativePercent += percentage;
@@ -73,7 +73,7 @@ export default function StatusPieChart({ data, title }: StatusPieChartProps) {
 
           {/* Legend */}
           <div className="flex-1 space-y-2">
-            {data?.map((item, index) => {
+            {data.map((item, index) => {
               const percentage = ((item.value / total) * 100).toFixed(1);
               
               return (

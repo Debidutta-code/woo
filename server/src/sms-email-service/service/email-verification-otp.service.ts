@@ -1,11 +1,9 @@
-import nodemailer from 'nodemailer';
-import { EmailOTPRepository } from '../reposititory';
-import {
-    generateOTPEmailTemplate,
-    generateWelcomeEmailTemplate,
-    generatePasswordResetLinkTemplate,
-} from '../templates';
-import { config } from '../../config';
+import nodemailer from "nodemailer";
+import { EmailOTPRepository } from "../reposititory";
+import { generateOTPEmailTemplate, 
+    generatePasswordResetLinkTemplate } from "../templatesss";
+import { config } from "../../config";
+
 export class EmailService {
     private transporter: nodemailer.Transporter;
     private otpRepository: EmailOTPRepository;
@@ -14,21 +12,18 @@ export class EmailService {
 
     constructor() {
         this.otpRepository = new EmailOTPRepository();
-        this.senderEmail = process.env.SENDER_EMAIL || 'info@swiftrooms.ai';
-        this.senderName = process.env.SENDER_NAME || 'SwiftRooms';
+        this.senderEmail = config.senderEmail!;
+        this.senderName = config.senderName!;
 
-        // Initialize nodemailer transporter
-        // Use EMAIL_USER for Gmail authentication, SENDER_EMAIL for display
         this.transporter = nodemailer.createTransport({
-            service: 'gmail',
+            service: "gmail",
             auth: {
-                user: config.emailUser,
-                pass: config.emailPassword,
+                user: config.senderEmail,
+                pass: config.senderEmailPassword,
             },
         });
     }
 
-    // Generate a 6-digit OTP
     private generateOTP(): string {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
@@ -36,19 +31,15 @@ export class EmailService {
     // Send OTP email
     async sendOTPEmail(
         email: string,
-        purpose: 'email_verification' | 'password_reset' | 'login'
+        purpose: "email_verification" | "password_reset" | "login"
     ): Promise<{ success: boolean; message: string }> {
         try {
             // Check if there's a recent OTP
-            const existingOTP = await this.otpRepository.getOTPStatus(
-                email,
-                purpose
-            );
+            const existingOTP = await this.otpRepository.getOTPStatus(email, purpose);
             if (existingOTP && existingOTP.remainingAttempts <= 0) {
                 return {
                     success: false,
-                    message:
-                        'Maximum OTP attempts reached. Please try again later.',
+                    message: "Maximum OTP attempts reached. Please try again later.",
                 };
             }
 
@@ -61,9 +52,9 @@ export class EmailService {
             // Prepare email content
             const htmlContent = generateOTPEmailTemplate(otp, purpose, email);
             const subject = {
-                email_verification: 'Verify Your Email - SwiftRooms',
-                password_reset: 'Reset Your Password - SwiftRooms',
-                login: 'Your Login Code - SwiftRooms',
+                email_verification: "Verify Your Email - RevChill",
+                password_reset: "Reset Your Password - RevChill",
+                login: "Your Login Code - RevChill",
             }[purpose];
 
             // Send email
@@ -76,16 +67,13 @@ export class EmailService {
 
             return {
                 success: true,
-                message: 'OTP sent successfully to your email',
+                message: "OTP sent successfully to your email",
             };
         } catch (error) {
-            console.error('Error sending OTP email:', error);
+            console.error("Error sending OTP email:", error);
             return {
                 success: false,
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to send OTP email',
+                message: error instanceof Error ? error.message : "Failed to send OTP email",
             };
         }
     }
@@ -94,113 +82,42 @@ export class EmailService {
     async verifyOTP(
         email: string,
         otp: string,
-        purpose: 'email_verification' | 'password_reset' | 'login'
+        purpose: "email_verification" | "password_reset" | "login"
     ): Promise<{ success: boolean; message: string }> {
         try {
-            const otpDoc = await this.otpRepository.verifyOTP(
-                email,
-                otp,
-                purpose
-            );
+            const otpDoc = await this.otpRepository.verifyOTP(email, otp, purpose);
 
             if (!otpDoc) {
                 return {
                     success: false,
-                    message: 'Invalid or expired OTP',
+                    message: "Invalid or expired OTP",
                 };
             }
 
             return {
                 success: true,
-                message: 'OTP verified successfully',
+                message: "OTP verified successfully",
             };
         } catch (error) {
-            console.error('Error verifying OTP:', error);
+            console.error("Error verifying OTP:", error);
             return {
                 success: false,
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to verify OTP',
+                message: error instanceof Error ? error.message : "Failed to verify OTP",
             };
         }
     }
 
-    // Send welcome email
-    async sendWelcomeEmail(
-        email: string,
-        name: string
-    ): Promise<{ success: boolean; message: string }> {
-        try {
-            const htmlContent = generateWelcomeEmailTemplate(name);
-
-            await this.transporter.sendMail({
-                from: `"${this.senderName}" <${this.senderEmail}>`,
-                to: email,
-                subject: 'Welcome to SwiftRooms!',
-                html: htmlContent,
-            });
-
-            return {
-                success: true,
-                message: 'Welcome email sent successfully',
-            };
-        } catch (error) {
-            console.error('Error sending welcome email:', error);
-            return {
-                success: false,
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to send welcome email',
-            };
-        }
-    }
-
-    // Send custom email
-    async sendCustomEmail(
-        to: string,
-        subject: string,
-        htmlContent: string
-    ): Promise<{ success: boolean; message: string }> {
-        try {
-            await this.transporter.sendMail({
-                from: `"${this.senderName}" <${this.senderEmail}>`,
-                to,
-                subject,
-                html: htmlContent,
-            });
-
-            return {
-                success: true,
-                message: 'Email sent successfully',
-            };
-        } catch (error) {
-            console.error('Error sending custom email:', error);
-            return {
-                success: false,
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to send email',
-            };
-        }
-    }
 
     // Send password reset link
-    async sendPasswordResetLink(
-        email: string,
-        resetToken: string
-    ): Promise<{ success: boolean; message: string }> {
+    async sendPasswordResetLink(email: string, resetToken: string): Promise<{ success: boolean; message: string }> {
         try {
             // Generate reset link
-            const frontendUrl =
-                process.env.FRONTEND_URL || 'http://localhost:5173';
+            const frontendUrl = config.frontendUrl || "http://localhost:5173";
             const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
             // Prepare email content
             const htmlContent = generatePasswordResetLinkTemplate(resetLink);
-            const subject = 'Reset Your Password - SwiftRooms';
+            const subject = "Reset Your Password - RevChill";
 
             // Send email
             await this.transporter.sendMail({
@@ -212,32 +129,17 @@ export class EmailService {
 
             return {
                 success: true,
-                message: 'Password reset link sent successfully to your email',
+                message: "Password reset link sent successfully to your email",
             };
         } catch (error) {
-            console.error('Error sending password reset link:', error);
+            console.error("Error sending password reset link:", error);
             return {
                 success: false,
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to send password reset link',
+                message: error instanceof Error ? error.message : "Failed to send password reset link",
             };
         }
     }
 
-    // Clean up expired OTPs (can be run as a cron job)
-    async cleanupExpiredOTPs(): Promise<number> {
-        try {
-            const deletedCount = await this.otpRepository.deleteExpiredOTPs();
-            console.log(`Cleaned up ${deletedCount} expired OTPs`);
-            return deletedCount;
-        } catch (error) {
-            console.error('Error cleaning up expired OTPs:', error);
-            return 0;
-        }
-    }
 }
 
-// Export singleton instance
 export const emailService = new EmailService();

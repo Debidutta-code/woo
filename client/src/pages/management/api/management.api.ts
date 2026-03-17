@@ -64,7 +64,36 @@ export const deletePropertyType = async (propertyTypeName: string) => {
   }
 };
 
+// Destination Type APIs
+export const getDestinationTypes = async () => {
+  try {
+    const response = await axios.get("/property-management/property/management/destination-type/get");
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data ;
+  }
+};
 
+export const createDestinationType = async (destinationTypeName: string, description: string) => {
+  try {
+    const response = await axios.post("/property-management/property/management/destination-type/create", {
+      destinationTypeName,
+      description,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data ;
+  }
+};
+
+export const deleteDestinationType = async (destinationTypeName: string) => {
+  try {
+    const response = await axios.delete(`/property-management/property/management/destination-type/delete/${destinationTypeName}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data ;
+  }
+};
 
 // Property Amenity APIs
 export const getPropertyAmenities = async (type: string = "property") => {
@@ -127,5 +156,72 @@ export const deleteRoomAmenities = async (amenities: string[]) => {
     return response.data;
   } catch (error: any) {
     throw error.response?.data ;
+  }
+};
+
+// Loyalty Guest Fields APIs
+export const getLoyaltyGuestFields = async () => {
+  try {
+    const response = await axios.get("/property-management/property/management/loyalty-guest-field/");
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data ;
+  }
+};
+
+export const createLoyaltyGuestFields = async (fields: string[]) => {
+  try {
+    const response = await axios.post("/property-management/property/management/loyalty-guest-field/", {
+      fields,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data ;
+  }
+};
+
+export const deleteLoyaltyGuestField = async (id: string) => {
+  try {
+    const response = await axios.post(`/property-management/property/management/loyalty-guest-field/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data ;
+  }
+};
+// Payment Integration APIs
+export const getPaymentIntegrations = async (propertyId:string) => {
+  try {
+    const response = await axios.get(`/property-management/property/management/payment-integrations?propertyId=${propertyId}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data;
+  }
+};
+export const getMasterPaymentIntegrations = async () => {
+  try {
+    const response = await axios.get(`/property-management/property/management/payment-integrations/master-payment-integrations`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data;
+  }
+};
+
+export const createPaymentIntegration = async (name: string) => {
+  try {
+    const response = await axios.post("/property-management/property/management/payment-integrations/", {
+      name,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data;
+  }
+};
+
+export const deletePaymentIntegration = async (id: string) => {
+  try {
+    const response = await axios.delete(`/property-management/property/management/payment-integrations/${id}`);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data;
   }
 };

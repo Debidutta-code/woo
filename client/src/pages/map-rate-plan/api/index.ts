@@ -1,3 +1,3 @@
-import {startStopSellAPI,getMultiRoomRentPrice} from "./start-stop-sell.api";
+import {startStopSellAPI,getRoomRentPrice} from "./start-stop-sell.api";
 
-export {startStopSellAPI,getMultiRoomRentPrice};
+export {startStopSellAPI,getRoomRentPrice};

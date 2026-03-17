@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { IFilterProps, RatePlan, RoomTypes } from "../types";
-import { useAppSelector } from '@/redux/hooks';
+import { useState } from "react";
 
 interface FilterSectionProps {
     filters: IFilterProps;
@@ -41,8 +41,8 @@ export default function FilterSection({
     onSearch,
     onCreateMapping,
 }: FilterSectionProps) {
-    const { access } = useAppSelector((state) => state.access);
-
+    const [startDateOpen, setStartDateOpen] = useState(false);
+    const [endDateOpen, setEndDateOpen] = useState(false);
     return (
         <Card className="shadow-lg mb-6">
             <CardHeader className="border-b bg-white">
@@ -111,7 +111,7 @@ export default function FilterSection({
                     {/* Start Date */}
                     <div className="space-y-2">
                         <Label className="text-sm font-semibold">Start Date</Label>
-                        <Popover >
+                        <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
@@ -124,14 +124,16 @@ export default function FilterSection({
                                     {dateRange.from ? format(dateRange.from, "MMM dd, yyyy") : "Select date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="" align="start">
+                            <PopoverContent className=" p-0" align="start">
                                 <CalendarComponent
-                                    className="rounded-md border "
+                                    className="rounded-md border w-full"
                                     mode="single"
                                     selected={dateRange.from}
-                                    onSelect={(date) => handleDateSelect({ from: date, to: dateRange.to })}
+                                    onSelect={(date) => {
+                                        handleDateSelect({ from: date, to: dateRange.to });
+                                        setStartDateOpen(false); // ← closes the popover
+                                    }}
                                     disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-
                                     initialFocus
                                 />
                             </PopoverContent>
@@ -141,7 +143,7 @@ export default function FilterSection({
                     {/* End Date */}
                     <div className="space-y-2">
                         <Label className="text-sm font-semibold">End Date</Label>
-                        <Popover >
+                        <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant="outline"
@@ -154,12 +156,16 @@ export default function FilterSection({
                                     {dateRange.to ? format(dateRange.to, "MMM dd, yyyy") : "Select date"}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="" align="start">
+                            <PopoverContent className=" p-0" align="start">
                                 <CalendarComponent
-                                    className="rounded-md border "
+                                    className="rounded-md border w-full"
+
                                     mode="single"
                                     selected={dateRange.to}
-                                    onSelect={(date) => handleDateSelect({ from: dateRange.from, to: date })}
+                                    onSelect={(date) => {
+                                        handleDateSelect({ from: dateRange.from, to: date });
+                                        setEndDateOpen(false); 
+                                    }}
                                     disabled={(date) => {
                                         const today = new Date(new Date().setHours(0, 0, 0, 0));
                                         if (date < today) return true;
@@ -175,20 +181,19 @@ export default function FilterSection({
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 mt-6">
-                    {access?.canCreateRoomAvailability && (
 
-                        <Button onClick={onSearch} className="flex-1" variant="outline">
-                            <Search className="w-4 h-4 mr-2" />
-                            Search Mappings
-                        </Button>
-                    )}
-
-                    {access?.canMapRatePlan && (
-                        <Button onClick={onCreateMapping} className="flex-1">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Create New Mapping
-                        </Button>
-                    )}
+                    <Button onClick={onSearch} className="flex-1" variant="outline">
+                        <Search className="w-4 h-4 mr-2" />
+                        Search Mappings
+                    </Button>
+                    {/* <Button onClick={onStartStopSell} className="flex-1/2" variant="terciary">
+                        <Activity className="w-4 h-4 mr-2" />
+                        Start/Stop Sell
+                    </Button> */}
+                    <Button onClick={onCreateMapping} className="flex-1">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New Mapping
+                    </Button>
                 </div>
             </CardContent>
         </Card>

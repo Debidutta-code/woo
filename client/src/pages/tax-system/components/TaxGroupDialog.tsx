@@ -200,7 +200,7 @@ export default function TaxGroupDialog({
                                                     <Badge variant="outline" className="text-xs">
                                                         {rule.type === "percentage"
                                                             ? `${rule.value}%`
-                                                            : `₹${rule.value}`}
+                                                            : `$${rule.value}`}
                                                     </Badge>
                                                     <span>•</span>
                                                     <span>
@@ -210,14 +210,7 @@ export default function TaxGroupDialog({
                                                     </span>
                                                     <span>•</span>
                                                     <span>Priority: {rule.priority}</span>
-                                                    {rule.isInclusive && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <Badge variant="secondary" className="text-xs">
-                                                                Inclusive
-                                                            </Badge>
-                                                        </>
-                                                    )}
+                                                  
                                                 </div>
                                                 {rule.description && (
                                                     <p className="text-xs text-gray-400 line-clamp-1">

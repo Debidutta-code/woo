@@ -11,6 +11,7 @@ datasource db {
 
 enum Role {
   super_admin
+  custom_admin
   group_manager
   brand_manager
   hotel_manager
@@ -18,11 +19,28 @@ enum Role {
   revenue_manager
 }
 
+enum geoRestrictionType {
+  percentage
+  fixed
+  restricted
+}
+
+enum geoRestrictionTypeAction {
+  increase
+  decrease
+}
+
+enum ReservationAddonType {
+  included
+  selected
+}
+
 enum CreationType {
   group
   property
   brand
   super
+  custom
 }
 
 enum RoomView {
@@ -31,11 +49,6 @@ enum RoomView {
   garden
   mountain
   others
-}
-
-enum BookingSource {
-  ota
-  travel_agency
 }
 
 enum RoomUnit {
@@ -50,9 +63,172 @@ enum SmokingPolicy {
 }
 
 enum CurrencyCode {
-  USD
-  EUR
   INR
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  AED
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHF
+  CLF
+  CLP
+  CNH
+  CNY
+  COP
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  FOK
+  GBP
+  GEL
+  GGP
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  IMP
+  IQD
+  IRR
+  ISK
+  JEP
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KID
+  KMF
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLE
+  SLL
+  SOS
+  SRD
+  SSP
+  STN
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TVD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  UYU
+  UZS
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XCD
+  XCG
+  XDR
+  XOF
+  XPF
+  YER
+  ZAR
+  ZMW
+  ZWG
+  ZWL
 }
 
 enum PaymentStatus {
@@ -73,6 +249,12 @@ enum DeviceType {
   desktop
 }
 
+enum ReservationDeviceType {
+  mobile
+  tablet
+  desktop
+}
+
 enum DiscountType {
   percentage
   flat
@@ -82,7 +264,9 @@ enum BookingStatus {
   pending
   confirmed
   cancelled
+  expired
   modified
+  no_show
 }
 
 enum AmenityType {
@@ -95,20 +279,61 @@ enum TaxType {
   fixed
 }
 
+enum commissionType {
+  percentage
+  fixed
+}
+
+enum AgencyType {
+  travel_agency
+  corporate
+}
+
+enum AgentCommissionType {
+  percentage
+  fixed
+}
+
 enum TaxApplicableOn {
   room_rate
   total_amount
 }
 
+enum AgencyApplicationStatus {
+  pending
+  approved
+  rejected
+}
+
 enum PostingRhythm {
   per_night
+  per_person_per_night
+  per_person_per_stay
   per_stay
+  per_person_per_room
+  per_room
+  per_room_per_night
 }
 
 enum PaymentMethod {
-  crypto
   pay_at_hotel
-  pay_with_crypto
+  net_banking
+  upi
+  payment_gateway
+}
+
+enum BookingSource {
+  direct
+  google
+  trip_adviser
+  trivago
+  social_media
+  agency
+}
+
+enum FolioStatus {
+  open
+  closed
 }
 
 enum GuestType {
@@ -127,60 +352,27 @@ enum userIdentityCardType {
 }
 
 enum ReservationStatus {
-  pending
-  confirmed
+  reserved
+  checked_in
+  checked_out
   cancelled
-  modified
+  no_show
 }
 
-enum TicketStatus {
-  open
-  in_progress
-  resolved
-  closed
+enum LoyaltyProgramLevel {
+  basic
+  advance
 }
 
-enum TicketPriority {
-  low
-  medium
-  high
-  urgent
-}
-enum OccupancyBasedAdjustmentType {
-  percentage
-  fixed
+enum Languages {
+  en
 }
 
-enum PeriodType {
-  seasonal
-  holiday
-  special_weekend
-}
-enum geoRestrictionType {
-  percentage
-  fixed
-  restricted
-}
-enum commissionType {
-  percentage
-  fixed
+enum IntegrationTypes {
+  channel_manager
+  pms
 }
 
-enum AgencyApplicationStatus {
-  pending
-  approved
-  rejected
-}
-
-enum AgencyType {
-  travel_agency
-  corporate
-}
-
-enum AgentCommissionType {
-  percentage
-  fixed
-}
 model Creation {
   id          String       @id @default(uuid())
   type        CreationType
@@ -198,14 +390,17 @@ model Creation {
   superId       String?    @map("super_id")
   superChildren Creation[] @relation("SuperRelation")
 
-  group         Creation?  @relation("GroupRelation", fields: [groupId], references: [id])
+  group         Creation?  @relation("GroupRelation", fields: [groupId], references: [id], onDelete: Cascade)
   groupId       String?    @map("group_id")
   groupChildren Creation[] @relation("GroupRelation")
 
-  brand         Creation?  @relation("BrandRelation", fields: [brandId], references: [id])
+  brand         Creation?  @relation("BrandRelation", fields: [brandId], references: [id], onDelete: Cascade)
   brandId       String?    @map("brand_id")
   brandChildren Creation[] @relation("BrandRelation")
 
+  custom         Creation?  @relation("CustomRelation", fields: [customId], references: [id], onDelete: Cascade)
+  customId       String?    @map("custom_id")
+  customChildren Creation[] @relation("CustomRelation")
   // 1:1 relation to Property
   property   Property?
   propertyId String?   @unique @map("property_id")
@@ -222,6 +417,9 @@ model Creation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  //loyalty
+  loyaltyProgramConfig CreationLoyaltyConfig?
+
   // Indexes
   @@index([type])
   @@index([createdById])
@@ -236,8 +434,7 @@ model User {
   id        String  @id @default(uuid())
   firstName String  @map("first_name")
   lastName  String  @map("last_name")
-  email     String? @unique
-  userName  String? @unique @map("user_name")
+  email     String  @unique
   password  String
   role      Role    @default(staff)
   userLevel Int     @default(0) @map("user_level")
@@ -266,12 +463,12 @@ model User {
   level4Creation   Creation? @relation("Level4Users", fields: [level4CreationId], references: [id])
   level4CreationId String?   @map("level4_creation_id")
 
-  propertiesCreated Property[]       @relation("PropertyCreatedBy")
-  usersCreated      User[]           @relation("UserCreatedBy")
-  creationsCreated  Creation[]       @relation("CreationCreatedBy")
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdTickets    ProblemTickets[] @relation("TicketCreatedBy")
+  propertiesCreated Property[] @relation("PropertyCreatedBy")
+  usersCreated      User[]     @relation("UserCreatedBy")
+  creationsCreated  Creation[] @relation("CreationCreatedBy")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  // RecivedPayments        Payments[]         @relation("PaymentProcessedBy")
 
   @@index([createdById])
   @@index([creationId])
@@ -300,39 +497,41 @@ model Property {
   createdBy   User   @relation("PropertyCreatedBy", fields: [createdById], references: [id])
   createdById String @map("created_by_id")
 
-  creation          Creation                   @relation(fields: [creationId], references: [id])
-  creationId        String                     @unique @map("creation_id")
-  isB2BAvailable    Boolean                    @default(false) @map("is_b2b_available")
-  isB2CAvailable    Boolean                    @default(true) @map("is_b2c_available")
-  // Embedded Data (1:1 relations)
-  propertyCategory  PropertyCategory?
-  propertyType      PropertyType?
-  propertyAddress   PropertyAddress?
-  propertyAmenities PropertyAmenitySelection[]
-  bankDetails       BankDetails?
+  creation   Creation @relation(fields: [creationId], references: [id], onDelete: Cascade)
+  creationId String   @unique @map("creation_id")
 
-  // Children
-  propertyRooms           Room[]
-  ratePlans               RatePlan[]
-  bookingEngineConfig     BookingEngineConfigurations?
-  promoCodes              PromoCode[]
-  taxRules                TaxRule[]                    @relation("PropertyTaxRules")
-  taxGroups               TaxGroup[]                   @relation("PropertyTaxGroups")
-  addOns                  Addon[]
-  Guests                  Guests[]
-  Policy                  Policy[]
-  propertyConfigs         PropertyConfigs?
-  reservations            Reservation[]
-  createdAt               DateTime                     @default(now())
-  updatedAt               DateTime                     @updatedAt
-  problemTickets          ProblemTickets[]
-  dynamicPricings         DynamicPricing[]
-  occupancyBasedPricings  OccupancyBasedPricing[]
-  seasonalHolidayPricings SeasonalHolidayPricing[]
-  weekendPricings         WeekendPricing[]
-  geoRatePlans            GeoRatePlan[]
-  commission              commission?
-  agenticProperties       AgenticProperty[]
+  // Embedded Data (1:1 relations)
+  propertyCategory            PropertyCategory?
+  propertyType                PropertyType?
+  propertyAddress             PropertyAddress?
+  bankDetails                 BankDetails?
+  propertyVideos              PropertyVideo?
+  bookingEngineConfig         BookingEngineConfigurations?
+  propertyConfigs             PropertyConfigs?
+  Commissions                 PropertyCommission?
+  loyaltyProgramConfig        PropertyLoyaltyConfig?
+  LoyalityGuests              LoyalityGuest[]
+  propertyEmails              PropertyEmails[]
+  reservations                Reservation[]
+  propertyAmenities           PropertyAmenitySelection[]
+  propertyRooms               Room[]
+  ratePlans                   RatePlan[]
+  promoCodes                  PromoCode[]
+  taxRules                    TaxRule[]                    @relation("PropertyTaxRules")
+  taxGroups                   TaxGroup[]                   @relation("PropertyTaxGroups")
+  addOns                      Addon[]
+  Guests                      Guests[]
+  Policy                      Policy[]
+  agenticProperties           AgenticProperty[]
+  geoRatePlans                GeoRatePlan[]
+  promotions                  Promotion[]
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  customizableDeals           CustomizableDeal[]
+  propertyPaymentIntegrations PropertyPaymentIntegration[]
+  payments                    Payment[]
+  propertyIntegrations        PropertyIntegrations[]
+  bookingOffsets              BookingOffset[]
 
   @@index([createdById])
   @@index([creationId])
@@ -340,19 +539,44 @@ model Property {
   @@map("properties")
 }
 
+model PropertyEmails {
+  id         String   @id @default(uuid())
+  propertyId String   @map("property_id")
+  email      String
+  Property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, email])
+}
+
 model PropertyConfigs {
   id         String   @id @default(uuid())
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId String   @unique @map("property_id")
 
-  pmsIntegrationActive Boolean @default(true) @map("pms_integration_active")
-  selfAriActive        Boolean @default(true) @map("self_ari_active")
-
-  reservationResetTime String   @default("9:30") @map("reservation_reset_time")
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  pmsIntegrationActive            Boolean      @default(true) @map("pms_integration_active")
+  channelManagerIntegrationActive Boolean      @default(true) @map("channel_manager_integration_active")
+  selfAriActive                   Boolean      @default(true) @map("self_ari_active")
+  isB2bAvailable                  Boolean      @default(true) @map("is_b2b_available")
+  isB2cAvailable                  Boolean      @default(true) @map("is_b2c_available")
+  showVideo                       Boolean      @default(true) @map("show_video")
+  commission                      Boolean      @default(false)
+  timezone                        String       @default("Asia/Kolkata") @map("timezone")
+  baseCurrency                    CurrencyCode @default(INR) @map("base_currency")
+  reservationResetMinutes         Int          @default(570) @map("reservation_reset_minutes")
+  createdAt                       DateTime     @default(now())
+  updatedAt                       DateTime     @updatedAt
 
   @@map("property_configs")
+}
+
+model MasterLoyaltyRegistrationFields {
+  id String @id @default(uuid())
+
+  fieldName String
+
+  LoyaltyProgramFieldConfigs LoyaltyProgramFieldConfig[]
+
+  @@map("master_loyalty_registration_fields")
 }
 
 model MasterPropertyCategory {
@@ -406,7 +630,7 @@ model PropertyCategory {
   masterCategory   MasterPropertyCategory @relation(fields: [masterCategoryId], references: [id])
   masterCategoryId String                 @map("master_category_id")
 
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId String   @unique @map("property_id")
 
   @@map("property_categories")
@@ -417,7 +641,7 @@ model PropertyType {
   masterPropertyType   MasterPropertyType @relation(fields: [masterPropertyTypeId], references: [id])
   masterPropertyTypeId String             @map("master_property_type_id")
 
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId String   @unique @map("property_id")
 
   @@map("property_types")
@@ -426,7 +650,7 @@ model PropertyType {
 model PropertyAmenitySelection {
   id String @id @default(uuid())
 
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId String   @map("property_id")
 
   amenity   MasterAmenity @relation(fields: [amenityId], references: [id])
@@ -440,7 +664,7 @@ model PropertyAmenitySelection {
 model RoomAmenitySelection {
   id String @id @default(uuid())
 
-  room   Room   @relation(fields: [roomId], references: [id])
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId String @map("room_id")
 
   amenity   MasterAmenity @relation(fields: [amenityId], references: [id])
@@ -464,7 +688,7 @@ model PropertyAddress {
   latitude     Float
   longitude    Float
 
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId String   @unique @map("property_id")
 
   @@map("property_addresses")
@@ -477,36 +701,38 @@ model Room {
   totalRoom           Int           @map("total_room")
   floor               Int
   roomView            RoomView      @default(others) @map("room_view")
-  roomSize            Decimal       @map("room_size")
+  roomSize            Float         @map("room_size")
   roomUnit            RoomUnit      @default(sqft) @map("room_unit")
   smokingPolicy       SmokingPolicy @default(non_smoking) @map("smoking_policy")
   maxOccupancy        Int           @map("max_occupancy")
   maxNumberOfAdults   Int           @map("max_number_of_adults")
   maxNumberOfChildren Int           @map("max_number_of_children")
-  numberOfBedrooms    Int?          @default(1) @map("number_of_bedrooms")
-  numberOfLivingRoom  Int?          @default(0) @map("number_of_living_room")
-  extraBed            Int?          @default(0) @map("extra_bed")
-  description         String?
-  view360Link         String?       @map("360_view_link")
-  image               String[]
-  available           Boolean       @default(true)
-  isDeleted           Boolean       @default(false) @map("is_deleted")
+  numberOfBedrooms    Int           @default(1) @map("number_of_bedrooms")
+  numberOfBeds        Int           @default(1) @map("number_of_beds")
+  numberOfLivingRoom Int      @default(0) @map("number_of_living_room")
+  extraBed           Int      @default(0) @map("extra_bed")
+  description        String?
+  priority           Int      @default(0) @map("priority")
+  view360Link        String?  @map("360_view_link")
+  image              String[]
+  available          Boolean  @default(true)
+  isDeleted          Boolean  @default(false) @map("is_deleted")
 
-  property                Property                 @relation(fields: [propertyId], references: [id])
-  propertyId              String                   @map("property_id")
-  isB2BAvailable          Boolean                  @default(false) @map("is_b2b_available")
-  isB2CAvailable          Boolean                  @default(true) @map("is_b2c_available")
-  roomAmenities           RoomAmenitySelection[]
-  occupancyBasedPricings  OccupancyBasedPricing[]
-  seasonalHolidayPricings SeasonalHolidayPricing[]
-  weekendPricings         WeekendPricing[]
-  geoRatePlans            GeoRatePlan[]
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String   @map("property_id")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  roomAmenities RoomAmenitySelection[]
+  roomVideos    RoomVideo?
+  agenticRooms  AgenticRoom[]
+  geoRatePlans  GeoRatePlan[]
+  promotions    Promotion[]
 
-  agenticRooms AgenticRoom[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  customizableDeals CustomizableDeal[]
 
+  @@unique([propertyId, roomType])
+  @@unique([propertyId, roomName])
   @@index([propertyId])
   @@index([roomType])
   @@index([available])
@@ -520,34 +746,27 @@ model AccessControl {
   level    Int     @default(0)
   isActive Boolean @default(true) @map("is_active")
 
-  //crud for hotels
-  canCreateHotel Boolean @default(false) @map("can_create_hotel")
-  canUpdateHotel Boolean @default(false) @map("can_update_hotel")
-  canDeleteHotel Boolean @default(false) @map("can_delete_hotel")
-  canViewHotel   Boolean @default(true) @map("can_view_hotel")
-
+  // Permissions
+  canCreateHotel            Boolean @default(false) @map("can_create_hotel")
+  canUpdateHotel            Boolean @default(false) @map("can_update_hotel")
+  canDeleteHotel            Boolean @default(false) @map("can_delete_hotel")
+  canViewHotel              Boolean @default(true) @map("can_view_hotel")
   canUpdatePaymentDetails   Boolean @default(false) @map("can_update_payment_details")
-  //crud for rate plans
   canCreateRatePlan         Boolean @default(false) @map("can_create_rate_plan")
   canViewRatePlan           Boolean @default(false) @map("can_view_rate_plan")
   canUpdateRatePlan         Boolean @default(false) @map("can_update_rate_plan")
   canDeleteRatePlan         Boolean @default(false) @map("can_delete_rate_plan")
-  //crud for inventory
   canAddInventory           Boolean @default(false) @map("can_add_inventory")
   canCreateRoomAvailability Boolean @default(false) @map("can_create_room_availability")
   canMapRatePlan            Boolean @default(false) @map("can_map_rate_plan")
   canUpdateRoomPrice        Boolean @default(false) @map("can_update_room_price")
-  //crud for bookings
   canSeeBookingDetails      Boolean @default(false) @map("can_see_booking_details")
   canUpdateBookingStatus    Boolean @default(false) @map("can_update_booking_status")
-  //crud for analytics
   canViewAnalytics          Boolean @default(false) @map("can_view_analytics")
-  //crud for members
   canCreateMembers          Boolean @default(false) @map("can_create_members")
   canViewMembers            Boolean @default(false) @map("can_view_members")
   canUpdateMembers          Boolean @default(false) @map("can_update_members")
   canDeleteMembers          Boolean @default(false) @map("can_delete_members")
-  //crud for users
   canCreateLevel0User       Boolean @default(false) @map("can_create_level0_user")
   canCreateLevel1User       Boolean @default(false) @map("can_create_level1_user")
   canCreateLevel2User       Boolean @default(false) @map("can_create_level2_user")
@@ -560,66 +779,19 @@ model AccessControl {
   canDeleteLevel1User       Boolean @default(false) @map("can_delete_level1_user")
   canDeleteLevel2User       Boolean @default(false) @map("can_delete_level2_user")
   canDeleteLevel3User       Boolean @default(false) @map("can_delete_level3_user")
-  //crud for logs
   canViewLogs               Boolean @default(false) @map("can_view_logs")
-  //crud for roles
   canCreateNewRole          Boolean @default(false) @map("can_create_new_role")
   canViewAccess             Boolean @default(false) @map("can_view_access")
   canModifyAccess           Boolean @default(false) @map("can_modify_access")
   canDeleteRole             Boolean @default(false) @map("can_delete_role")
-  //crud for policies
   canCreatePolicy           Boolean @default(false) @map("can_create_policy")
   canUpdatePolicy           Boolean @default(false) @map("can_update_policy")
   canDeletePolicy           Boolean @default(false) @map("can_delete_policy")
-  //crud for management apis
   canCDCategory             Boolean @default(false) @map("can_cd_category")
   canCDPropertyType         Boolean @default(false) @map("can_cd_property_type")
   canCDDestinationType      Boolean @default(false) @map("can_cd_destination_type")
   canCDAmenity              Boolean @default(false) @map("can_cd_amenity")
   canSeeDraftedProperties   Boolean @default(false) @map("can_see_drafted_properties")
-
-  //new Access controllers
-  //start stop sell api
-
-  canModifyStartStopSell Boolean @default(false) @map("can_modify_start_stop_sell")
-
-  canCreateRoomTypes Boolean @default(false) @map("can_create_room_types")
-  canUpdateRoomTypes Boolean @default(false) @map("can_update_room_types")
-  canDeleteRoomTypes Boolean @default(false) @map("can_delete_room_types")
-  //front office apis
-  //reservation apis
-
-  //Addons Management
-  canAddAddons            Boolean @default(false) @map("can_add_addons")
-  canViewAddons           Boolean @default(false) @map("can_view_addons")
-  canUpdateAddons         Boolean @default(false) @map("can_update_addons")
-  canDeleteAddons         Boolean @default(false) @map("can_delete_addons")
-  canAddAddonsForBookings Boolean @default(false) @map("can_add_addons_for_bookings")
-  //Tax Management
-  canAddTax               Boolean @default(false) @map("can_add_tax")
-  canViewTax              Boolean @default(false) @map("can_view_tax")
-  canUpdateTax            Boolean @default(false) @map("can_update_tax")
-  canDeleteTax            Boolean @default(false) @map("can_delete_tax")
-  canCreateTaxGroup       Boolean @default(false) @map("can_create_tax_group")
-  canDeleteTaxGroup       Boolean @default(false) @map("can_delete_tax_group")
-  canAddTaxToRatePlans    Boolean @default(false) @map("can_add_tax_to_rate_plans")
-  canAddPolicyToRatePlans Boolean @default(false) @map("can_add_policy_to_rate_plans")
-  canAdd360Images         Boolean @default(false) @map("can_add_360_images")
-
-  canCreateCTA         Boolean @default(false) @map("can_create_cta")
-  canUpdateCTA         Boolean @default(false) @map("can_update_cta")
-  canDeleteCTA         Boolean @default(false) @map("can_delete_cta")
-  canViewCTA           Boolean @default(false) @map("can_view_cta")
-  canCreateGeoRatePlan Boolean @default(false) @map("can_create_geo_rate_plan")
-  canUpdateGeoRatePlan Boolean @default(false) @map("can_update_geo_rate_plan")
-  canDeleteGeoRatePlan Boolean @default(false) @map("can_delete_geo_rate_plan")
-  canViewGeoRatePlan   Boolean @default(false) @map("can_view_geo_rate_plan")
-
-  // --- Reservation Management ---
-  canCreateReservation Boolean @default(false) @map("can_create_reservation")
-  canViewReservation   Boolean @default(false) @map("can_view_reservation")
-  canCancelReservation Boolean @default(false) @map("can_cancel_reservation")
-  canAmendReservation  Boolean @default(false) @map("can_amend_reservation")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -635,49 +807,54 @@ model Charge {
   roomTypeCode  String
   roomTypeName  String
   currencyCode  CurrencyCode @default(INR)
-  date          DateTime
+  date          DateTime     @db.Date
   isAvailable   Boolean      @default(true)
   // Days of week applicability
   isSaleStopped Boolean      @default(false) @map("is_sale_stopped") // for start/stop sales
-  isCTAApplied  Boolean      @default(false) @map("is_cta_applied")
-  isCTDApplied  Boolean      @default(false) @map("is_ctd_applied")
 
-  monApplicable Boolean @default(true) @map("mon_applicable")
-  tueApplicable Boolean @default(true) @map("tue_applicable")
-  wedApplicable Boolean @default(true) @map("wed_applicable")
-  thuApplicable Boolean @default(true) @map("thu_applicable")
-  friApplicable Boolean @default(true) @map("fri_applicable")
-  satApplicable Boolean @default(true) @map("sat_applicable")
-  sunApplicable Boolean @default(true) @map("sun_applicable")
+  monApplicable       Boolean @default(true) @map("mon_applicable")
+  tueApplicable       Boolean @default(true) @map("tue_applicable")
+  wedApplicable       Boolean @default(true) @map("wed_applicable")
+  thuApplicable       Boolean @default(true) @map("thu_applicable")
+  friApplicable       Boolean @default(true) @map("fri_applicable")
+  satApplicable       Boolean @default(true) @map("sat_applicable")
+  sunApplicable       Boolean @default(true) @map("sun_applicable")
+  isClosedToArrival   Boolean @default(false) @map("is_closed_to_arrival")
+  isClosedToDeparture Boolean @default(false) @map("is_closed_to_departure")
+  restrictionNotes    String? @map("restriction_notes")
 
   // Relations
+  ratePlan               RatePlan                @relation(fields: [ratePlanCode], references: [ratePlanCode], onDelete: Cascade)
+  // room                   Room?                 @relation(fields: [roomId], references: [id], onDelete: Cascade)
   baseGuestAmounts       ChargeBaseByGuest[]
   additionalGuestAmounts ChargeAdditionalGuest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([propertyCode, roomTypeCode, ratePlanCode, date])
+  @@unique([propertyCode, roomTypeCode, ratePlanCode, date])
   @@map("charges")
 }
 
 model ChargeBaseByGuest {
-  id              String  @id @default(uuid())
-  charge          Charge  @relation(fields: [chargeId], references: [id])
+  id              String @id @default(uuid())
+  charge          Charge @relation(fields: [chargeId], references: [id], onDelete: Cascade)
   chargeId        String
-  amountBeforeTax Decimal @map("amount_before_tax")
-  numberOfGuests  Int     @map("number_of_guests")
+    ageQualifyingCode String @default("10") @map("age_qualifying_code")
+
+  amountBeforeTax Float  @map("amount_before_tax")
+  numberOfGuests  Int    @map("number_of_guests")
 
   @@index([chargeId])
   @@map("charge_base_by_guests")
 }
 
 model ChargeAdditionalGuest {
-  id                String  @id @default(uuid())
-  charge            Charge  @relation(fields: [chargeId], references: [id])
+  id                String @id @default(uuid())
+  charge            Charge @relation(fields: [chargeId], references: [id], onDelete: Cascade)
   chargeId          String
-  ageQualifyingCode String  @map("age_qualifying_code")
-  amount            Decimal
+  ageQualifyingCode String @map("age_qualifying_code")
+  amount            Float
 
   @@index([chargeId])
   @@map("charge_additional_guests")
@@ -687,7 +864,7 @@ model Inventory {
   id           String   @id @default(uuid())
   propertyCode String   @map("property_code")
   roomTypeCode String   @map("room_type_code")
-  date         String
+  date         DateTime @db.Date
   availability Int
   ratePlans    String[] @map("rate_plans")
 
@@ -700,16 +877,16 @@ model Inventory {
 }
 
 model RatePlan {
-  id           String @id @default(uuid())
-  ratePlanName String @map("rate_plan_name")
-  ratePlanCode String @unique @map("rate_plan_code")
-
+  id              String       @id @default(uuid())
+  ratePlanName    String       @map("rate_plan_name")
+  ratePlanCode    String       @unique @map("rate_plan_code")
+  deviceType      DeviceType[] @map("device_type")
   // Back relation to Property
-  property        Property @relation(fields: [propertyId], references: [id])
-  propertyId      String   @map("property_id")
+  property        Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId      String       @map("property_id")
   // Policies
-  depositPolicy   Policy?  @relation("RateAmountToDepositPolicy", fields: [depositPolicyId], references: [id])
-  depositPolicyId String?  @map("deposit_policy_id")
+  depositPolicy   Policy?      @relation("RateAmountToDepositPolicy", fields: [depositPolicyId], references: [id])
+  depositPolicyId String?      @map("deposit_policy_id")
 
   cancellationPolicy   Policy? @relation("RateAmountToCancellationPolicy", fields: [cancellationPolicyId], references: [id])
   cancellationPolicyId String? @map("cancellation_policy_id")
@@ -720,17 +897,54 @@ model RatePlan {
   taxGroup   TaxGroup? @relation(fields: [taxGroupId], references: [id])
   taxGroupId String?   @map("tax_group_id")
 
-  b2bAvailable Boolean @default(false) @map("b2b_available")
-  b2cAvailable Boolean @default(true) @map("b2c_available")
+  roomOnlyVisible Boolean @default(true) @map("room_only_visible")
+  b2bAvailable    Boolean @default(false) @map("b2b_available")
+  b2cAvailable    Boolean @default(true) @map("b2c_available")
 
-  minimumLenghthOfStay Int  @default(1) @map("minimum_length_of_stay")
-  maximumLengthOfStay  Int? @map("maximum_length_of_stay")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  charges           Charge[]
+  ratePlanRules     RatePlanRule?
+  Addons            RatePlanWithAddon[]
+  geoRatePlans      GeoRatePlan[]
+  promotions        Promotion[]
+  TouristTaxs       TouristTaxes[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  customizableDeals CustomizableDeal[]
+  bookingOffsets    BookingOffset[]
 
   @@index([propertyId])
   @@map("rate_plans")
+}
+
+model BookingOffset {
+  id String @id @default(uuid())
+
+  propertyId String @map("property_id")
+
+  ratePlanCode                String @map("rate_plan_code")
+  ratePlanId                  String @map("rate_plan_id")
+  ratePlanName                String @map("rate_plan_name")
+  //these payments are to be set in hours format
+  // for booking
+  minimumAdvanceBookingOffset Int?   @map("minimum_advance_booking_offset")
+  maximumAdvanceBookingOffset Int?   @map("maximum_advance_booking_offset")
+  // for amend
+  minimumAmendBookingOffset   Int?   @map("minimum_amend_booking_offset")
+  maximumAmendBookingOffset   Int?   @map("maximum_amend_booking_offset")
+
+  // for cancel
+  minimumCancelBookingOffset Int?     @map("minimum_cancel_booking_offset")
+  maximumCancelBookingOffset Int?     @map("maximum_cancel_booking_offset")
+  isActive                   Boolean  @default(true) @map("is_active")
+  date                       DateTime @db.Date
+
+  createdAt DateTime @default(now())
+
+  ratePlan RatePlan @relation(fields: [ratePlanCode], references: [ratePlanCode], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([ratePlanId, date])
+  @@map("booking_offsets")
 }
 
 model Policy {
@@ -739,7 +953,7 @@ model Policy {
   type        PolicyType
   description String
   propertyId  String     @map("property_id")
-  property    Property   @relation(fields: [propertyId], references: [id])
+  property    Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   // Reverse relations
   usedInDepositFor      RatePlan[] @relation("RateAmountToDepositPolicy")
@@ -755,14 +969,11 @@ model Policy {
 }
 
 model BankDetails {
-  id                     String  @id @default(uuid())
-  accountHolder          String  @map("account_holder")
-  accountNumber          String  @map("account_number")
-  ifsc                   String
-  upiId                  String? @map("upi_id")
-  activatedPaymentMethod Json    @default("{}") @map("activated_payment_method")
+  id             String  @id @default(uuid())
+  payAtHotel     Boolean @default(true) @map("pay_at_hotel")
+  paymentGateway Boolean @default(false) @map("payment_gateway")
 
-  property   Property @relation(fields: [propertyId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId String   @unique @map("property_id")
 
   createdAt DateTime @default(now())
@@ -772,14 +983,16 @@ model BankDetails {
 }
 
 model BookingEngineConfigurations {
-  id             String   @id @default(uuid())
-  property       Property @relation(fields: [propertyId], references: [id])
-  propertyId     String   @unique @map("property_id")
-  primaryColor   String   @map("primary_color")
-  secondaryColor String   @map("secondary_color")
-  bannerImage    String   @map("banner_image")
-  logo           String
-  favicon        String
+  id              String   @id @default(uuid())
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId      String   @unique @map("property_id")
+  primaryColor    String   @map("primary_color")
+  secondaryColor  String   @map("secondary_color")
+  tertiaryColor   String   @map("tertiary_color")
+  buttonTextColor String   @map("button_text_color")
+  bannerImage     String?  @map("banner_image")
+  logo            String
+  url             String?  @map("website_url")
 
   @@map("booking_engine_configurations")
 }
@@ -787,12 +1000,13 @@ model BookingEngineConfigurations {
 model PromoCode {
   id                String       @id @default(uuid())
   name              String
-  code              String
+  code              String       @unique
   description       String?
   propertyId        String       @map("property_id")
-  property          Property     @relation(fields: [propertyId], references: [id])
+  property          Property     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   discountType      DiscountType @map("discount_type")
   discountValue     Float        @map("discount_value")
+  currencyCode      CurrencyCode @default(AED) @map("currency_code")
   validFrom         DateTime     @map("valid_from")
   validTo           DateTime     @map("valid_to")
   minBookingAmount  Float?       @map("min_booking_amount")
@@ -802,21 +1016,16 @@ model PromoCode {
   isApplicableForDesktop   Boolean @default(false) @map("is_applicable_for_desktop")
   isApplicableForTablet    Boolean @default(false) @map("is_applicable_for_tablet")
 
-  isApplicableForWalkIn    Boolean @default(false) @map("is_applicable_for_walk_in")
-  isApplicableForOTA       Boolean @default(false) @map("is_applicable_for_ota")
-  isApplicableForCorporate Boolean @default(false) @map("is_applicable_for_corporate")
-
   usageLimit          Int?          @map("usage_limit")
-  usageLimitPerUser   Int?          @map("usage_limit_per_user")
   applicableRoomTypes Json[]        @map("applicable_room_types")
   applicableRatePlans Json[]        @map("applicable_rate_plans")
   isActive            Boolean       @default(true) @map("is_active")
   isDeleted           Boolean       @default(false) @map("is_deleted")
-  reservations        Reservation[]
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @updatedAt @map("updated_at")
+  reservations        Reservation[]
 
-  @@unique([propertyId, code])
+  @@index([propertyId, code])
   @@index([id, code])
   @@index([propertyId, name])
   @@map("promo_codes")
@@ -831,12 +1040,13 @@ model TaxRule {
   description  String?         @map("description") @db.Text
   validFrom    DateTime        @map("valid_from")
   validTo      DateTime        @map("valid_to")
-  isInclusive  Boolean         @default(false) @map("is_inclusive")
+  isInclusive  Boolean         @default(false) @map("is_inclusive") // to be removed when the database reset happens
   priority     Int             @default(0) @map("priority")
+  currencyCode CurrencyCode    @default(AED) @map("currency_code")
 
   // Relations
   propertyId String   @map("property_id")
-  property   Property @relation(fields: [propertyId], references: [id], name: "PropertyTaxRules")
+  property   Property @relation(fields: [propertyId], references: [id], name: "PropertyTaxRules", onDelete: Cascade)
 
   taxGroupRules TaxGroupRule[]
 
@@ -853,7 +1063,7 @@ model TaxGroup {
   isActive Boolean @default(false) @map("is_active")
 
   propertyId    String         @map("property_id")
-  property      Property       @relation(fields: [propertyId], references: [id], name: "PropertyTaxGroups")
+  property      Property       @relation(fields: [propertyId], onDelete: Cascade, references: [id], name: "PropertyTaxGroups")
   taxGroupRules TaxGroupRule[]
   ratePlans     RatePlan[]
 
@@ -869,8 +1079,8 @@ model TaxGroupRule {
   taxGroupId String @map("tax_group_id")
   taxRuleId  String @map("tax_rule_id")
 
-  taxGroup TaxGroup @relation(fields: [taxGroupId], references: [id])
-  taxRule  TaxRule  @relation(fields: [taxRuleId], references: [id])
+  taxGroup TaxGroup @relation(fields: [taxGroupId], references: [id], onDelete: Cascade)
+  taxRule  TaxRule  @relation(fields: [taxRuleId], references: [id], onDelete: Cascade)
 
   @@unique([taxGroupId, taxRuleId])
   @@map("tax_group_rules")
@@ -912,68 +1122,95 @@ model AddonVariant {
 }
 
 model Addon {
-  id            String              @id @default(uuid())
-  propertyId    String
-  categoryId    String?
-  subcategoryId String?
-  variantId     String?
-  code          String              @unique
-  name          String
-  postingRhythm PostingRhythm       @default(per_stay)
-  description   String?
-  isActive      Boolean             @default(true)
-  images        String[]
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  property      Property            @relation(fields: [propertyId], references: [id])
-  subCategory   AddonSubCategory?   @relation(fields: [subcategoryId], references: [id])
-  category      AddonCategory?      @relation(fields: [categoryId], references: [id])
-  addonVariant  AddonVariant?       @relation("AddonToVariant", fields: [variantId], references: [id])
-  bookingAddons BookingAddon[]
-  availability  AddonAvailability[]
+  id                                String                              @id @default(uuid())
+  propertyId                        String
+  categoryId                        String?
+  subcategoryId                     String?
+  variantId                         String?
+  ratePlanId                        String?                             @map("rate_plan_id")
+  code                              String                              @unique
+  name                              String
+  postingRhythm                     PostingRhythm                       @default(per_stay)
+  description                       String?
+  isActive                          Boolean                             @default(true)
+  images                            String[]
+  createdAt                         DateTime                            @default(now())
+  updatedAt                         DateTime                            @updatedAt
+  property                          Property                            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  subCategory                       AddonSubCategory?                   @relation(fields: [subcategoryId], references: [id])
+  category                          AddonCategory?                      @relation(fields: [categoryId], references: [id])
+  addonVariant                      AddonVariant?                       @relation("AddonToVariant", fields: [variantId], references: [id])
+  bookingAddons                     BookingAddon[]
+  availability                      AddonAvailability[]
+  ratePlans                         RatePlanWithAddon[]
+  customizableDealsApplicableAddons CustomizableDealsApplicableAddons[]
+  ChildAddons                       ChildAddon[]
+}
+
+model ChildAddon {
+  id                 String        @id @default(uuid())
+  addonId            String
+  Addon              Addon         @relation(fields: [addonId], references: [id], onDelete: Cascade)
+  minAge             Int           @map("min_age")
+  maxAge             Int           @map("max_age")
+  discountApplicable Boolean       @default(false) @map("discount_applicable")
+  discountType       DiscountType? @default(percentage) @map("discount_type")
+  discountAmount     Float?        @default(0) @map("discount_amount")
+  currencyCode       CurrencyCode? @default(INR) @map("currency_code")
+}
+
+model RatePlanWithAddon {
+  id         String   @id @default(uuid())
+  ratePlanId String   @map("rate_plan_id")
+  addonId    String   @map("addon_id")
+  ratePlan   RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+  addon      Addon    @relation(fields: [addonId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([ratePlanId, addonId])
+  @@map("rate_plan_with_addon")
 }
 
 model BookingAddon {
-  id                  String   @id @default(uuid())
+  id                  String               @id @default(uuid())
   reservationId       String
   addonId             String
   name                String
   unitPrice           Float
   quantity            Int
   totalPrice          Float
-  currencyCode        String   @default("INR")
+  currencyCode        String               @default("INR")
   specialInstructions String?
-  date                DateTime @default(now())
+  date                DateTime             @default(now())
+  type                ReservationAddonType @default(included)
 
   Reservation Reservation @relation(fields: [reservationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  addon       Addon         @relation(fields: [addonId], references: [id])
-  addOnPrices AddOnPrices[]
+  addon Addon @relation(fields: [addonId], references: [id])
 }
 
 model AddonAvailability {
   id           String   @id @default(uuid())
   addonId      String
   // propertyId   String
-  date         DateTime
+  date         DateTime @db.Date
   price        Float
   currencyCode String   @default("INR") @db.VarChar(5)
   isAvailable  Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  addon        Addon    @relation(fields: [addonId], references: [id], onDelete: Cascade)
 
-  addon Addon @relation(fields: [addonId], references: [id])
+  @@unique([addonId, date])
 }
 
-// Pms Models
-
 model Reservation {
-  id          String @id @default(uuid())
-  bookingCode String @unique @map("booking_code")
+  id String @id @default(uuid()) @map("id") @db.VarChar(36)
 
+  // Property & Room
   propertyId   String  @map("property_id") @db.VarChar(36)
   propertyCode String? @map("property_code") @db.VarChar(50)
   hotelName    String? @map("hotel_name") @db.VarChar(150)
@@ -981,78 +1218,116 @@ model Reservation {
   roomTypeCode String? @map("room_type_code") @db.VarChar(50)
   ratePlanCode String? @map("rate_plan_code") @db.VarChar(50)
 
-  bookedAt DateTime
+  bookingCode String @unique @map("booking_code") @db.VarChar(50)
 
-  reservationStatus ReservationStatus @default(pending)
+  // Dates
+  bookedAt DateTime @default(now()) @map("booked_at")
 
-  noOfAdults   Int
-  noOfChildren Int
-  noOfInfants  Int
+  checkInDate    DateTime   @map("check_in_date") @db.Date
+  checkOutDate   DateTime   @map("check_out_date") @db.Date
+  countryCode    String     @map("country_code") @db.VarChar(5)
+  timezone       String     @map("timezone") @db.VarChar(50)
+  deviceTypes    DeviceType @map("device_types")
+  // Primary Guest Relation (one-to-many: one guest can have multiple reservations)
+  primaryGuestId String     @map("primary_guest_id") @db.VarChar(36)
+  primaryGuest   Guests     @relation("ReservationPrimaryGuest", fields: [primaryGuestId], references: [id])
 
-  from DateTime
-  to   DateTime
+  // Guest Data
+  guests           Json    @map("guests")
+  bookingUserEmail String  @map("booking_user_email") @db.VarChar(150)
+  bookingUserPhone String? @map("booking_user_phone") @db.VarChar(50)
 
-  checkInDate  DateTime @map("check_in_date")
-  checkOutDate DateTime @map("check_out_date")
-
-  additionalNotes String?
-
-  primaryGuestId   String
-  bookingUserEmail String        @map("booking_user_email") @db.VarChar(150)
-  bookingUserPhone String?       @map("booking_user_phone") @db.VarChar(50)
-  isDeleted        Boolean       @default(false)
-  paymentMethod    PaymentMethod @default(pay_at_hotel) @map("payment_method")
-  paymentImages    Json?         @map("payment_images")
-
+  // Pricing
   amount       Float        @map("amount")
   currencyCode CurrencyCode @default(INR) @map("currency_code")
   finalPrice   Json?        @map("final_price")
 
-  paidAmount       Float   @default(0) @map("paid_amount")
-  extraAmountToPay Float   @default(0) @map("extra_amount_to_pay")
-  refundAmount     Float   @default(0) @map("refund_amount")
-  isPromoUsed      Boolean @default(false) @map("is_promo_used")
-  promoId          String? @map("promo_id") @db.VarChar(36)
+  paidAmount       Float @default(0) @map("paid_amount")
+  extraAmountToPay Float @default(0) @map("extra_amount_to_pay")
+  refundAmount     Float @default(0) @map("refund_amount")
 
+  // Payment
+  paymentMethod PaymentMethod @default(pay_at_hotel) @map("payment_method")
+  paymentImages Json?         @map("payment_images")
+
+  // Booking Status
+  bookingStatus      BookingStatus @default(confirmed) @map("booking_status")
+  cancellationReason String?       @map("cancellation_reason") @db.VarChar(255)
+
+  // Booking Source
+  bookingSource BookingSource @default(direct) @map("source")
+
+  // Promo
+  isPromoUsed      Boolean   @default(false) @map("is_promo_used")
+  promoId          String?   @map("promo_id") @db.VarChar(36)
+  //store this in utc
+  actualCheckInAt  DateTime? @map("actual_check_in_at")
+  actualCheckOutAt DateTime? @map("actual_check_out_at")
+  cancelledAt      DateTime? @map("cancelled_at")
+  agencyId         String?   @map("agency_id") @db.VarChar(36)
+
+  // Audit
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   // Relations
-  Guests       Guests[] @relation("ReservationGuests")
-  PrimaryGuest Guests   @relation("ReservationPrimaryGuest", fields: [primaryGuestId], references: [id])
 
-  // ReservationRooms        ReservationRoom[]
-  PartialReservationRooms PartialReservationRoom[]
-  addOns                  BookingAddon[]
-  priceBreakdowns         ReservationPriceBrakeDown[]
-  PromoCode               PromoCode?                  @relation(fields: [promoId], references: [id])
-  
-  agencyId String? @map("agency_id")
-  Agency   Agency? @relation(fields: [agencyId], references: [id])
-  
-  // Folio                   Folio[]
-  property  Property @relation(fields: [propertyId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  property              Property                    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  promo                 PromoCode?                  @relation(fields: [promoId], references: [id])
+  addOns                BookingAddon[]
+  priceBreakdowns       ReservationPriceBrakeDown[]
+  agency                Agency?                     @relation(fields: [agencyId], references: [id])
+  reservationPromotions ReservationPromotion[]
+  payments              Payment[]
+  reservationGuests     ReservationGuest[]
 
   @@index([propertyCode])
   @@index([propertyId])
-  @@index([agencyId])
+  @@index([roomTypeCode])
+  @@index([ratePlanCode])
+  @@index([bookingStatus])
+  @@index([bookingSource])
+  @@index([primaryGuestId])
   @@map("reservations")
 }
 
-model PartialReservationRoom {
+model ReservationGuest {
   id            String      @id @default(uuid())
-  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   reservationId String      @map("reservation_id")
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 
-  roomTypeCode String @map("room_type_code")
-  roomTypeName String @map("room_type_name")
-  quantity     Int    @default(1) @map("quantity")
-  ratePlanCode String @map("rate_plan_code")
-  ratePlanName String @map("rate_plan_name")
-  noOfAdults   Int    @map("no_of_adults")
-  noOfChildren Int    @default(0) @map("no_of_children")
-  noOfInfants  Int    @default(0) @map("no_of_infants")
+  firstName   String    @map("first_name")
+  lastName    String    @map("last_name")
+  type        GuestType @default(adult) @map("type")
+  dateOfBirth DateTime? @map("date_of_birth")
+  age         Int?      @map("age")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
-  @@map("partial_reservation_rooms")
+  @@index([reservationId])
+  @@map("reservation_guests")
+}
+
+enum ReservationPromotionType {
+  early_bird
+  mlos
+  device_specific
+  offer_for_tonight
+  normal
+}
+
+model ReservationPromotion {
+  id            String                   @id @default(uuid())
+  bookingCode   String                   @map("booking_code")
+  bookingId     String                   @map("booking_id")
+  Reservation   Reservation              @relation(fields: [bookingId], references: [id])
+  promotionType ReservationPromotionType @default(mlos) @map("promotion_type")
+  promotionId   String?                  @map("promotion_id")
+  mlosId        String?                  @map("mlos_id")
+  Promotion     Promotion?               @relation(fields: [promotionId], references: [id])
+  RatePlanRule  RatePlanRule?            @relation(fields: [mlosId], references: [id])
+  amount        Float                    @map("amount")
+  currency      CurrencyCode             @default(AED) @map("currency")
+
+  @@map("reservation_promotions")
 }
 
 model Guests {
@@ -1061,301 +1336,125 @@ model Guests {
   lastName             String                @map("last_name")
   email                String?
   phoneNumber          String?               @map("phone_number")
-  reservations         Reservation[]         @relation("ReservationGuests")
   primaryReservations  Reservation[]         @relation("ReservationPrimaryGuest")
   userType             GuestType             @default(adult) @map("user_type")
   propertyId           String                @map("property_id")
-  property             Property              @relation(fields: [propertyId], references: [id])
+  property             Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   address              String?
   city                 String?
   state                String?
   country              String?
   zipCode              String?               @map("zip_code")
-  isDeleted            Boolean               @default(false) @map("is_deleted")
   userIdentityCardType userIdentityCardType? @default(adhar_card) @map("user_identity_card")
   identityCardNumber   String?               @map("identity_card_number")
   identityCardImage    String?               @map("identity_card_image")
+  loyalityGuests       LoyalityGuest[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  isALoyalityGuest     Boolean               @default(false) @map("is_a_loyality_guest")
 
+  @@unique([propertyId, email])
   @@map("guests")
 }
 
 model ReservationPriceBrakeDown {
-  id            String      @id @default(uuid())
-  reservationId String      @map("reservation_id")
-  Reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-
-  // Breakdown amounts
-  totalBaseAmount        Decimal @default(0) @map("total_base_amount")
-  totalAdditionalCharges Decimal @default(0) @map("total_additional_charges")
-  totalAmount            Decimal @default(0) @map("total_amount")
-  averagePerNight        Decimal @default(0) @map("average_per_night")
-  numberOfNights         Int     @default(0) @map("no_of_nights")
-
-  // NEW: Tax and final amount fields
-  totalTax      Decimal @default(0) @map("total_tax")
-  priceAfterTax Decimal @default(0) @map("price_after_tax")
-
-  createdAt DateTime @default(now())
-
-  // Relations
-  TaxBrakeDowns   TaxBrakeDown[]
-  AddOnPrices     AddOnPrices[]
-  BrakeDowns      BrakeDown?
-  DailyBreakdowns DailyBreakdowns[]
+  id                     String      @id @default(uuid())
+  reservationId          String      @map("reservation_id")
+  Reservation            Reservation @relation(fields: [reservationId], references: [id])
+  additionalGuestCharges Int         @default(0) @map("additional_guest_charges")
+  baseRatePerNight       Int         @default(0) @map("base_rate_per_night")
+  numberOfNights         Int         @default(0) @map("number_of_nights")
+  priceAfterTax          Float       @default(0) @map("price_after_tax")
+  totalAmount            Float       @default(0) @map("total_amount")
+  totalTax               Float       @default(0) @map("total_tax")
+  breakdown              Json        @map("brake_down")
+  dailyBreakdown         Json[]      @map("daily_breakdown")
+  createdAt              DateTime    @default(now())
+  availableRooms         Int         @default(0) @map("available_rooms")
+  requestedRooms         Int         @default(0) @map("requested_rooms")
+  tax                    Json[]
 
   @@map("reservation_price_brake_down")
 }
 
-model TaxBrakeDown {
-  id                          String                    @id @default(uuid())
-  reservationPriceBrakeDownId String                    @map("reservation_price_brakedown_id")
-  ReservationPriceBrakeDown   ReservationPriceBrakeDown @relation(fields: [reservationPriceBrakeDownId], references: [id], onDelete: Cascade)
-  taxName                     String                    @map("tax_name")
-  taxType                     String?                   @map("tax_type")
-  taxedAmount                 Decimal                   @map("taxed_amount")
+model RoomVideo {
+  id        String   @id @default(uuid())
+  roomId    String   @unique
+  url       String
+  thumbnail String?
+  createdAt DateTime @default(now())
 
-  // NEW: Optional priority and inclusive flag for better tracking
-  priority    Int?     @map("priority")
-  isInclusive Boolean? @map("is_inclusive")
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
-  @@map("tax_brakedown")
+  @@map("room_videos")
 }
 
-model AddOnPrices {
-  id                          String                    @id @default(uuid())
-  reservationPriceBrakeDownId String                    @map("reservation_price_brakedown_id")
-  ReservationPriceBrakeDown   ReservationPriceBrakeDown @relation(fields: [reservationPriceBrakeDownId], references: [id], onDelete: Cascade)
-  bookingAddonId              String                    @map("booking_addon_id")
-  BookingAddon                BookingAddon?             @relation(fields: [bookingAddonId], references: [id])
-  totalAmount                 Decimal                   @map("total_amount")
+model PropertyVideo {
+  id         String   @id @default(uuid())
+  propertyId String   @unique
+  url        String
+  thumbnail  String?
+  createdAt  DateTime @default(now())
 
-  @@map("addon_prices")
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_videos")
 }
 
-model BrakeDown {
-  id                          String                    @id @default(uuid())
-  reservationPriceBrakeDownId String                    @unique @map("reservation_price_brakedown_id")
-  ReservationPriceBrakeDown   ReservationPriceBrakeDown @relation(fields: [reservationPriceBrakeDownId], references: [id], onDelete: Cascade)
-  totalAmount                 Decimal                   @default(0) @map("total_amount")
-  numberOfNights              Decimal                   @default(0) @map("number_of_nights")
-  averagePerNight             Decimal                   @default(0) @map("average_per_night")
-  totalBaseAmount             Decimal                   @default(0) @map("total_base_amount")
-  totalAdditionalCharges      Decimal                   @default(0) @map("total_additional_charges")
+model RatePlanRule {
+  id String @id @default(uuid())
 
-  @@map("brake_down")
-}
+  ratePlanId String   @unique @map("rate_plan_id")
+  ratePlan   RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
 
-model DailyBreakdowns {
-  id                          String                    @id @default(uuid())
-  reservationPriceBrakeDownId String                    @map("reservation_price_brakedown_id")
-  ReservationPriceBrakeDown   ReservationPriceBrakeDown @relation(fields: [reservationPriceBrakeDownId], references: [id], onDelete: Cascade)
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
 
-  date              DateTime     @map("date")
-  dayOfWeek         String       @map("day_of_week")
-  ratePlanCode      String       @map("rate_plan_code")
-  baseRate          Decimal      @map("base_rate")
-  additionalCharges Decimal      @default(0) @map("additional_charges")
-  totalPerRoom      Decimal      @map("total_per_room")
-  totalForAllRooms  Decimal      @map("total_for_all_rooms")
-  currencyCode      CurrencyCode @default(INR) @map("currency_code")
+  minLos               Int                    @default(0) @map("min_los")
+  maxLos               Int?                   @map("max_los")
+  isAutoApplied        Boolean                @default(false) @map("is_auto_applied")
+  discountType         DiscountType?          @map("discount_type")
+  currencyCode         CurrencyCode           @default(AED) @map("currency_code")
+  discountValue        Float?                 @map("discount_value")
+  ReservationPromotion ReservationPromotion[]
 
-  // Breakdown details
-  baseAmount                Decimal @map("base_amount")
-  additionalAdultCharges    Decimal @default(0) @map("additional_adult_charges")
-  additionalChildrenCharges Decimal @default(0) @map("additional_children_charges")
-  totalAdditionalCharges    Decimal @default(0) @map("total_additional_charges")
-  baseGuestsIncluded        Int     @default(0) @map("base_guests_included")
-  adultsInBaseRate          Int     @default(0) @map("adults_in_base_rate")
-  childrenInBaseRate        Int     @default(0) @map("children_in_base_rate")
-  adultsNotInBaseRate       Int     @default(0) @map("adults_not_in_base_rate")
-  childrenNotInBaseRate     Int     @default(0) @map("children_not_in_base_rate")
-
-  // Charge details (stored as JSON)
-  adultChargesDetail    Json? @map("adult_charges_detail")
-  childrenChargesDetail Json? @map("children_charges_detail")
-
-  // NEW: Daily tax information
-  taxDetails   Json?   @map("tax_details") // Array of TaxDetail objects
-  totalTax     Decimal @default(0) @map("total_tax")
-  totalWithTax Decimal @default(0) @map("total_with_tax")
-
-  @@map("daily_breakdowns")
-}
-
-model ProblemTickets {
-  id          String   @id @default(uuid())
-  ticketNo    String   @unique @map("ticket_no")
-  propertyId  String   @map("property_id")
-  Creation    Property @relation(fields: [propertyId], references: [id])
-  subject     String
-  description String?
-
-  status   TicketStatus   @default(open)
-  priority TicketPriority @default(medium)
-
-  createdById String @map("created_by_id")
-  CreatedBy   User   @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([propertyId])
-  @@index([status])
-  @@map("problem_tickets")
+  @@map("rate_plan_rules")
 }
 
-model DynamicPricing {
-  id         String   @id @default(uuid())
-  propertyId String @unique @map("property_id")
-  Property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  occupancyBasedPricings  OccupancyBasedPricing[]
-  seasonalHolidayPricings SeasonalHolidayPricing[]
-  weekendPricings         WeekendPricing[]
-
-  @@map("dynamic_pricing")
-}
-
-
-
-model OccupancyBasedPricing {
-  id               String         @id @default(uuid())
-  propertyId       String         @map("property_id")
-  property         Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  dynamicPricingId String         @map("dynamic_pricing_id")
-  dynamicPricing   DynamicPricing @relation(fields: [dynamicPricingId], references: [id], onDelete: Cascade)
-
-  roomId String @map("room_id")
-  roomType String @map("room_type")
-  roomName String @map("room_name")
-  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  minimumOccupancyPercentage Int @map("minimum_occupancy_percentage")
-  maximumOccupancyPercentage Int @map("maximum_occupancy_percentage")
-
-  adjustmentType  OccupancyBasedAdjustmentType @default(percentage) @map("adjustment_type")
-  adjustmentValue Float                      @map("adjustment_value")
-  currencyCode    CurrencyCode                 @default(INR) @map("currency_code")
-  updatedAt       DateTime                     @updatedAt
-
-  @@map("occupancy_based_pricing")
-}
-
-model SeasonalHolidayPricing {
-  id               String         @id @default(uuid())
-  propertyId       String         @map("property_id")
-  property         Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  dynamicPricingId String         @map("dynamic_pricing_id")
-  dynamicPricing   DynamicPricing @relation(fields: [dynamicPricingId], references: [id], onDelete: Cascade)
-
-  roomId String @map("room_id")
-  roomType String @map("room_type")
-  roomName String @map("room_name")
-  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  ruleName   String     @map("rule_name")
-  periodType PeriodType @default(seasonal) @map("period_type")
-
-  startDate DateTime @map("start_date")
-  endDate   DateTime @map("end_date")
-
-  adjustmentType  OccupancyBasedAdjustmentType @default(percentage) @map("adjustment_type")
-  adjustmentValue Float                      @map("adjustment_value")
-  currencyCode    CurrencyCode?                @default(INR) @map("currency_code")
-
-  updatedAt DateTime @updatedAt
-
-  @@map("seasonal_holiday_pricing")
-}
-
-model WeekendPricing {
-  id               String         @id @default(uuid())
-  propertyId       String  @unique @map("property_id")
-  property         Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  dynamicPricingId String         @map("dynamic_pricing_id")
-  dynamicPricing   DynamicPricing @relation(fields: [dynamicPricingId], references: [id], onDelete: Cascade)
-
-  roomId String @map("room_id")
-  roomType String @map("room_type")
-  roomName String @map("room_name")
-  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  weekDays   WeekendDayPricing[]
-
-  updatedAt DateTime @updatedAt
-
-  @@map("weekend_pricing")
-}
-enum WeekendDay {
-  fri_day
-  sat_day
-  sun_day
-}
-model WeekendDayPricing {
-  id               String                       @id @default(uuid())
-  day              WeekendDay                   @default(fri_day)
-  weekendPricingId String                       @map("weekend_pricing_id")
-  weekendPricing   WeekendPricing               @relation(fields: [weekendPricingId], references: [id], onDelete: Cascade)
-  adjustmentType   OccupancyBasedAdjustmentType @default(percentage) @map("adjustment_type")
-  adjustmentValue  Float                        @map("adjustment_value")
-  currencyCode     CurrencyCode?                @default(INR) @map("currency_code")
-
-  @@unique([weekendPricingId, day])
-  @@map("weekend_day_pricing")
-}
-
-
-
-model GeoRatePlan {
-  id         String   @id @default(uuid())
-  propertyId String   @map("property_id")
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  roomId   String @map("room_id")
-  roomType String @map("room_type")
-  roomName String @map("room_name")
-  room     Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  restrictionType  geoRestrictionType @default(percentage) @map("restriction_type")
-  restrictionValue Decimal            @map("restriction_value")
-  currencyCode     CurrencyCode?      @default(INR) @map("currency_code")
-
-  isActive Boolean @default(true) @map("is_active")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([propertyId, roomId])
-  @@map("geo_rate_plan")
-}
-
-
-
-model commission {
+model PropertyCommission {
   id         String   @id @default(uuid())
   propertyId String   @unique @map("property_id")
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   commissionType  commissionType @default(percentage) @map("commission_type")
-  commissionValue Decimal        @map("commission_value")
+  commissionValue Float          @map("commission_value")
   currencyCode    CurrencyCode?  @default(INR) @map("currency_code")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("commission")
+  @@map("property_commission")
+}
+
+enum CommissionOrDiscount {
+  commission
+  tax
 }
 
 model Agency {
   id                 String              @id @default(uuid())
-  agencyName         String              @map("agency_name")
+  agencyName         String              @unique @map("agency_name")
   agencyType         AgencyType          @default(travel_agency) @map("agency_type")
-  agencyEmail        String              @map("agency_email")
+  agencyEmail        String              @unique @map("agency_email")
   contactNo          String              @map("contact_no")
-  taxNo              String              @map("tax_no")
+  taxNo              String              @unique @map("tax_no")
   commissionType     AgentCommissionType @default(percentage) @map("commission_type")
-  commissionValue    Int             @map("commission_value")
+  commissionValue    Int                 @map("commission_value")
   commissionCurrency CurrencyCode?       @default(INR) @map("commission_currency")
   iataCode           String              @map("iata_code")
   address            String              @map("address")
@@ -1363,7 +1462,7 @@ model Agency {
   Agents            Agents[]
   AgenticProperties AgenticProperty[]
   Reservations      Reservation[]
-  isDeleted         Boolean          @default(false) @map("is_deleted")
+  isDeleted         Boolean           @default(false) @map("is_deleted")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
@@ -1371,28 +1470,29 @@ model Agency {
 }
 
 model AgenticProperty {
-  id           String   @id @default(uuid())
-  agencyId     String   @map("agency_id")
-  agency       Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  propertyId   String   @map("property_id")
-  propertyCode String   @map("property_code")
-  propertyName String   @map("property_name")
-  Property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  AgenticRooms      AgenticRoom[]
+  id           String        @id @default(uuid())
+  agencyId     String        @map("agency_id")
+  agency       Agency        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  propertyId   String        @map("property_id")
+  propertyCode String        @map("property_code")
+  propertyName String        @map("property_name")
+  Property     Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  AgenticRooms AgenticRoom[]
 
   isActive  Boolean  @default(true) @map("is_active")
   isDeleted Boolean  @default(false) @map("is_deleted")
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@unique([agencyId, propertyId])
   @@index([agencyId])
   @@index([propertyId])
   @@map("agentic_property")
 }
 
 model AgenticRoom {
-  id        String @id @default(uuid())
-  agenticPropertyId  String @map("agentic_property_id")
-  AgenticProperty    AgenticProperty @relation(fields: [agenticPropertyId], references: [id], onDelete: Cascade)
+  id                String          @id @default(uuid())
+  agenticPropertyId String          @map("agentic_property_id")
+  AgenticProperty   AgenticProperty @relation(fields: [agenticPropertyId], references: [id], onDelete: Cascade)
 
   roomId   String @map("room_id")
   roomType String @map("room_type")
@@ -1403,52 +1503,434 @@ model AgenticRoom {
   isDeleted Boolean  @default(false) @map("is_deleted")
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@unique([agenticPropertyId, roomId])
   @@index([agenticPropertyId])
   @@index([roomId])
   @@map("agentic_room")
 }
-model Agents {
-  id              String   @id @default(uuid())
-  agencyId       String   @map("agency_id")
-  agency         Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
-  agentName      String   @map("agent_name")
-  agentEmail     String   @map("agent_email")
-  agentPhone     String   @map("agent_phone")
-  agentPassword  String   @map("agent_password")
-  isDeleted      Boolean  @default(false) @map("is_deleted")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+model Agents {
+  id       String @id @default(uuid())
+  agencyId String @map("agency_id")
+  agency   Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  agentName     String   @map("agent_name")
+  agentEmail    String   @unique @map("agent_email")
+  agentPhone    String   @map("agent_phone")
+  agentPassword String   @map("agent_password")
+  isDeleted     Boolean  @default(false) @map("is_deleted")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@index([agencyId])
   @@map("agents")
 }
 
-
 model AgentApplications {
   id                       String                  @id @default(uuid())
   applicationNoForThisUser Int                     @map("application_no_for_this_user")
   status                   AgencyApplicationStatus @default(pending) @map("status")
+  rejectionReason          String?                 @map("rejection_reason")
 
-  applicantEmail     String   @unique           @map("applicant_email")
+  applicantEmail     String              @unique @map("applicant_email")
   applicantName      String              @map("applicant_name")
   applicantPhone     String              @map("applicant_phone")
   applicantPassword  String              @map("applicant_password")
   //agency application details
-  agencyName         String              @map("agency_name")
+  agencyName         String              @unique @map("agency_name")
   agencyType         AgencyType          @default(travel_agency) @map("agency_type")
-  agencyEmail        String              @map("agency_email")
+  agencyEmail        String              @unique @map("agency_email")
   contactNo          String              @map("contact_no")
-  taxNo              String              @map("tax_no")
+  taxNo              String              @unique @map("tax_no")
   commissionType     AgentCommissionType @default(percentage) @map("commission_type")
-  commissionValue    Int              @map("commission_value")
+  commissionValue    Int                 @map("commission_value")
   commissionCurrency CurrencyCode?       @default(INR) @map("commission_currency")
   iataCode           String              @map("iata_code")
   address            String              @map("address")
 
-
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("agent_applications")
+}
+
+model CreationLoyaltyConfig {
+  id         String   @id @default(uuid())
+  creationId String   @unique @map("creation_id")
+  Creation   Creation @relation(fields: [creationId], references: [id])
+
+  loyaltyDiscountType DiscountType  @default(percentage) @map("loyalty_discount_type")
+  discountValue       Int           @map("discount_value")
+  currencyCode        CurrencyCode? @default(INR) @map("currency_code")
+
+  BasicLoyaltyProgram      BasicLoyaltyProgram?
+  AdvanceLoyaltyProgram    AdvanceLoyaltyProgram?
+  loyaltyConditions        LoyaltyConditions[]
+  loyaltySpecialConditions LoyaltySpecialCondition[]
+
+  LoyaltyProgramFieldConfig LoyaltyProgramFieldConfig[]
+  PropertyLoyaltyConfig     PropertyLoyaltyConfig[]
+  LoyalityGuests            LoyalityGuest[]
+  createdAt                 DateTime                    @default(now())
+
+  @@map("loyalty_program_configs")
+}
+
+model PropertyLoyaltyConfig {
+  id                      String                @id @default(uuid())
+  creationLoyaltyConfigId String                @map("creation_loyalty_config_id")
+  CreationLoyaltyConfig   CreationLoyaltyConfig @relation(fields: [creationLoyaltyConfigId], references: [id], onDelete: Cascade)
+  propertyId              String                @unique @map("property_id")
+  propertyCode            String                @unique @map("property_code")
+  propertyName            String                @map("property_name")
+  Property                Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  discountPercentage      Int?                  @map("discount_percentage")
+  loyalityConfigLogo      String?               @map("loyality_config_logo")
+  isActive                Boolean               @default(true) @map("is_active")
+
+  // @@unique([creationLoyaltyConfigId, propertyId,isActive])
+  @@map("property_loyalty_configs")
+}
+
+model BasicLoyaltyProgram {
+  id               String                @id @default(uuid())
+  loyaltyProgramId String                @unique @map("loyalty_program_id")
+  LoyaltyProgram   CreationLoyaltyConfig @relation(fields: [loyaltyProgramId], references: [id], onDelete: Cascade)
+
+  isActive Boolean  @default(true) @map("is_active")
+  logo     String[]
+
+  createdAt DateTime @default(now())
+
+  @@map("basic_loyalty_programs")
+}
+
+model AdvanceLoyaltyProgram {
+  id               String                @id @default(uuid())
+  loyaltyProgramId String                @unique @map("loyalty_program_id")
+  LoyaltyProgram   CreationLoyaltyConfig @relation(fields: [loyaltyProgramId], references: [id], onDelete: Cascade)
+
+  activeInCorporateWeb    Boolean @default(true) @map("active_in_corporate_web")
+  defaultLoginMode        Boolean @default(false) @map("default_login_mode")
+  externalRegistrationUrl String? @map("external_registration_url")
+  roomLimitByBooking      Int     @default(1) @map("room_limit_by_booking")
+  blockUserFieldFromForm  Boolean @default(false) @map("block_user_field_from_form")
+
+  createdAt DateTime @default(now())
+
+  @@map("advance_loyalty_programs")
+}
+
+model LoyaltyConditions {
+  id               String                @id @default(uuid())
+  loyaltyProgramId String                @map("loyalty_program_id")
+  LoyaltyProgram   CreationLoyaltyConfig @relation(fields: [loyaltyProgramId], references: [id], onDelete: Cascade)
+
+  text      String
+  language  Languages @default(en)
+  isActive  Boolean   @default(true) @map("is_active")
+  isDeleted Boolean   @default(false) @map("is_deleted")
+
+  createdAt DateTime @default(now())
+
+  @@index([loyaltyProgramId])
+  @@map("loyalty_conditions")
+}
+
+model LoyaltySpecialCondition {
+  id               String                @id @default(uuid())
+  loyaltyProgramId String                @map("loyalty_program_id")
+  LoyaltyProgram   CreationLoyaltyConfig @relation(fields: [loyaltyProgramId], references: [id], onDelete: Cascade)
+
+  title     String
+  subTitle  String?   @map("sub_title")
+  language  Languages @default(en)
+  isActive  Boolean   @default(true) @map("is_active")
+  isDeleted Boolean   @default(false) @map("is_deleted")
+
+  createdAt DateTime @default(now())
+
+  @@index([loyaltyProgramId])
+  @@map("loyalty_special_conditions")
+}
+
+model LoyaltyProgramFieldConfig {
+  id String @id @default(uuid())
+
+  loyaltyProgramId String
+  loyaltyProgram   CreationLoyaltyConfig @relation(fields: [loyaltyProgramId], references: [id], onDelete: Cascade)
+
+  masterRegistrationFieldId String
+  MasterRegistrationField   MasterLoyaltyRegistrationFields @relation(fields: [masterRegistrationFieldId], references: [id], onDelete: Cascade)
+
+  fieldName String
+
+  visibleInRegistration Boolean @default(true)
+  visibleInCustomerForm Boolean @default(true)
+  required              Boolean @default(false)
+
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([loyaltyProgramId, fieldName])
+}
+
+model GeoRatePlan {
+  id         String   @id @default(uuid())
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  roomId       String?  @map("room_id")
+  roomType     String?  @map("room_type")
+  room         Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  ratePlanId   String   @map("rate_plan_id")
+  ratePlanCode String   @map("rate_plan_code")
+  ratePlan     RatePlan @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+
+  restrictionType       geoRestrictionType        @default(percentage) @map("restriction_type")
+  restrictionTypeAction geoRestrictionTypeAction? @default(increase) @map("restriction_type_action")
+  restrictionValue      Float?                    @map("restriction_value")
+  currencyCode          CurrencyCode?             @default(AED) @map("currency_code")
+  countryCode           String[]                  @map("country_code")
+  isActive              Boolean                   @default(true) @map("is_active")
+  createdAt             DateTime                  @default(now()) @map("created_at")
+
+  @@index([propertyId, roomId, ratePlanId])
+  @@map("geo_rate_plan")
+}
+
+enum PromotionType {
+  early_bird
+  offer_for_tonight
+  device_specific
+}
+
+model Promotion {
+  id                 String        @id @default(uuid())
+  promotionName      String        @map("promotion_name")
+  propertyId         String        @map("property_id")
+  validFrom          DateTime?     @map("valid_from")
+  validTo            DateTime?     @map("valid_to")
+  advanceBookingDays Int?          @default(0) @map("advance_booking_days")
+  promotionType      PromotionType @map("promotion_type")
+  roomId             String?       @map("room_id")
+  roomType           String?       @map("room_type")
+  deviceType         DeviceType[]  @default([]) @map("device_type")
+  ratePlanId         String        @map("rate_plan_id")
+  ratePlanCode       String        @map("rate_plan_code")
+  discountType       DiscountType  @default(percentage) @map("discount_type")
+  discountValue      Float?        @map("discount_value")
+  currencyCode       CurrencyCode? @default(AED) @map("currency_code")
+  monApplicable      Boolean       @default(true) @map("mon_applicable")
+  tueApplicable      Boolean       @default(true) @map("tue_applicable")
+  wedApplicable      Boolean       @default(true) @map("wed_applicable")
+  thuApplicable      Boolean       @default(true) @map("thu_applicable")
+  friApplicable      Boolean       @default(true) @map("fri_applicable")
+  satApplicable      Boolean       @default(true) @map("sat_applicable")
+  sunApplicable      Boolean       @default(true) @map("sun_applicable")
+  isActive           Boolean       @default(true) @map("is_active")
+
+  isAutoApplied         Boolean                @default(false) @map("is_auto_applied")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  property              Property               @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  room                  Room?                  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  ratePlan              RatePlan               @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+  reservationPromotions ReservationPromotion[]
+
+  @@index([propertyId, roomId, ratePlanId])
+  @@map("promotion_rule")
+}
+
+model LoyalityGuest {
+  id                      String                @id @default(uuid())
+  creationLoyaltyConfigId String                @map("creation_loyalty_config_id")
+  CreationLoyaltyConfig   CreationLoyaltyConfig @relation(fields: [creationLoyaltyConfigId], references: [id], onDelete: Cascade)
+
+  propertyId   String   @map("property_id")
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyCode String   @map("property_code")
+  guestEmail   String   @map("guest_email")
+  guestId      String?  @map("guest_id")
+  guest        Guests?  @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  metaData     Json     @map("meta_data")
+  createdAt    DateTime @default(now())
+
+  @@unique([propertyId, guestEmail])
+  @@map("loyality_guests")
+}
+
+model CustomizableDeal {
+  id String @id @default(uuid())
+
+  propertyId   String @map("property_id")
+  propertyCode String @map("property_code")
+
+  discountType  DiscountType  @default(percentage) @map("discount_type")
+  discountValue Float         @map("discount_value")
+  currencyCode  CurrencyCode? @default(AED) @map("currency_code")
+  startDate     DateTime      @map("start_date") @db.Date
+  endDate       DateTime      @map("end_date") @db.Date
+  isActive      Boolean       @default(true) @map("is_active")
+  isAutoApplied Boolean       @default(false) @map("is_auto_applied")
+  roomType      String        @map("room_type")
+  roomId        String        @map("room_id")
+  ratePlanId    String        @map("rate_plan_id")
+  ratePlanCode  String        @map("rate_plan_code")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  Property                          Property                            @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  Room                              Room                                @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  RatePlan                          RatePlan                            @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+  CustomizableDealsApplicableAddons CustomizableDealsApplicableAddons[]
+
+  @@map("customizable_deals")
+}
+
+model CustomizableDealsApplicableAddons {
+  id String @id @default(uuid())
+
+  customizableDealId String @map("customizable_deal_id")
+  addOnId            String @map("add_on_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  CustomizableDeal CustomizableDeal @relation(fields: [customizableDealId], references: [id], onDelete: Cascade)
+  AddOn            Addon            @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@unique([customizableDealId, addOnId])
+  @@map("customizable_deals_applicable_addons")
+}
+  
+model TouristTaxes {
+  id String @id @default(uuid())
+
+  name          String? @default("Tourist Tax")//remove this ? when there is a need for db push
+  ratePlanId    String  @unique @map("rate_plan_id")
+  ratePlanCode  String  @unique @map("rate_plan_code")
+  discountValue Float?  @map("discount_value")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  discountType DiscountType  @default(flat) @map("discount_type")
+  ratePlan     RatePlan      @relation(fields: [ratePlanId], references: [id], onDelete: Cascade)
+  currencyCode CurrencyCode? @default(AED) @map("currency_code")
+
+  @@map("tourist_taxes")
+}
+
+model MasterPaymentIntegration {
+  id                          String                       @id @default(uuid())
+  name                        String                       @unique
+  isActive                    Boolean                      @default(true) @map("is_active")
+  propertyPaymentIntegrations PropertyPaymentIntegration[]
+
+  @@map("master_payment_integrations")
+}
+
+model PropertyPaymentIntegration {
+  id                   String  @id @default(uuid())
+  propertyId           String  @map("property_id")
+  paymentIntegrationId String  @map("payment_integration_id")
+  isActive             Boolean @default(false) @map("is_active")
+  outletId             String  @map("outlet_id")
+
+  property           Property                 @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  paymentIntegration MasterPaymentIntegration @relation(fields: [paymentIntegrationId], references: [id])
+  payments           Payment[]
+
+  @@unique([id, outletId])
+  @@unique([propertyId, paymentIntegrationId])
+  @@map("property_payment_integrations")
+}
+
+model Payment {
+  id                           String        @id @default(uuid())
+  amount                       Float         @map("amount")
+  currency                     CurrencyCode  @default(AED) @map("currency")
+  status                       PaymentStatus @default(pending) @map("status")
+  paymentMethod                PaymentMethod @default(pay_at_hotel) @map("payment_method")
+  propertyPaymentIntegrationId String?
+  paymentIntentId              String?       @map("payment_intent_id")
+
+  propertyId    String  @map("property_id")
+  reservationId String? @map("reservation_id")
+
+  Property                   Property                    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  Reservation                Reservation?                @relation(fields: [reservationId], references: [id])
+  createdAt                  DateTime                    @default(now()) @map("created_at")
+  PropertyPaymentIntegration PropertyPaymentIntegration? @relation(fields: [propertyPaymentIntegrationId], references: [id])
+
+  @@map("payments")
+}
+
+model MasterIntegrations {
+  id       String           @id @default(uuid())
+  type     IntegrationTypes @default(channel_manager)
+  name     String
+  isActive Boolean          @default(true)
+
+  createdAt                          DateTime                          @default(now()) @map("created_at")
+  propertyIntegrations               PropertyIntegrations[]
+  requiredFieldsForMasterIntegration MasterIntegrationRequiredFields[]
+  masterIntegrationURLFields         MasterIntegrationURLFields[]
+
+  @@unique([name, type])
+  @@map("master_integrations")
+}
+
+model MasterIntegrationRequiredFields {
+  id                  String @id @default(uuid())
+  name                String
+  masterIntegrationId String @map("master_integration_id")
+
+  MasterIntegration          MasterIntegrations           @relation(fields: [masterIntegrationId], references: [id], onDelete: Cascade)
+  propertyInregrationSecrets PropertyInregrationSecrets[]
+
+  @@unique([masterIntegrationId, name])
+  @@index([masterIntegrationId])
+  @@map("required_fields_for_master_integration")
+}
+
+model MasterIntegrationURLFields {
+  id                  String @id @default(uuid())
+  name                String
+  url                 String
+  masterIntegrationId String @map("master_integration_id")
+
+  MasterIntegration MasterIntegrations @relation(fields: [masterIntegrationId], references: [id], onDelete: Cascade)
+
+  @@index([masterIntegrationId])
+  @@map("master_integration_url_fields")
+}
+
+model PropertyIntegrations {
+  id                         String                       @id @default(uuid())
+  propertyId                 String                       @map("property_id")
+  Property                   Property                     @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  masterIntegrationId        String                       @map("master_integration_id")
+  MasterIntegration          MasterIntegrations           @relation(fields: [masterIntegrationId], references: [id])
+  isActive                   Boolean                      @map("is_active")
+  propertyIntegrationSecrets PropertyInregrationSecrets[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([propertyId, masterIntegrationId])
+  @@index([propertyId])
+  @@index([masterIntegrationId])
+  @@map("property_integrations")
+}
+
+model PropertyInregrationSecrets {
+  id                    String                          @id @default(uuid())
+  propertyIntegrationId String                          @map("property_integration_id")
+  requiredFieldId       String                          @map("required_field_id")
+  value                 String
+  PropertyIntegration   PropertyIntegrations            @relation(fields: [propertyIntegrationId], references: [id], onDelete: Cascade)
+  RequiredField         MasterIntegrationRequiredFields @relation(fields: [requiredFieldId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([propertyIntegrationId, requiredFieldId])
+  @@index([propertyIntegrationId])
+  @@index([requiredFieldId])
+  @@map("property_integration_secrets")
 }

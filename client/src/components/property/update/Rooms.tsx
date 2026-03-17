@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Bed, Settings, Users, Camera, Upload, X } from "lucide-react";
 import type { IRoomDetails } from "./types/types";
 import ImageUploadModal from "../ImageUploadModal";
-
 import {
   Select,
   SelectContent,
@@ -17,30 +16,28 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import Loader from "@/components/Loader/Loader";
 import { Switch } from "@/components/ui/switch";
+import type { roomUnit, roomView, smokingPolicy } from "../create/types/types";
 
 const roomSchema = z.object({
-  roomName: z
-    .string()
-    .min(3, "Room name is required and must be at least 3 characters."),
+  roomName: z.string().min(3, "Room name is required and must be at least 3 characters."),
   roomType: z.string().min(1, "Please select a room type."),
   totalRoom: z.coerce.number().min(1, "Total rooms must be at least 1."),
-  description: z
-    .string()
-    .min(20, "Description must be at least 20 characters.")
-    .max(5000, "Description cannot exceed 500 characters."),
+  description: z.string().min(1, "Description must be at least 20 characters.").max(5000, "Description cannot exceed 500 characters."),
   maxOccupancy: z.coerce.number().min(1, "Max occupancy must be at least 1."),
   image: z.array(z.string()).min(1, "Please upload at least one room image."),
-  roomView: z.string().optional(),
-  floor: z.coerce.number().optional(),
-  roomSize: z.coerce.number().optional(),
-  roomUnit: z.string().optional(),
-  smokingPolicy: z.string().optional(),
-  maxNumberOfAdults: z.coerce.number().optional(),
-  maxNumberOfChildren: z.coerce.number().optional(),
+  roomView: z.enum(["sea", "garden", "city", "mountain", "others"]),
+  floor: z.coerce.number(),
+  roomSize: z.coerce.number().default(0),
+  roomUnit: z.enum(["sqm", "sqft"]).default("sqft"),
+  smokingPolicy: z.enum(["smoking", "non_smoking", "designated_area"]).default("designated_area"),
+  maxNumberOfAdults: z.coerce.number().default(0),
+  maxNumberOfChildren: z.coerce.number().default(0),
   numberOfBedrooms: z.coerce.number().optional(),
   numberOfLivingRoom: z.coerce.number().optional(),
   extraBed: z.coerce.number().optional(),
-  available: z.boolean().optional(),
+  available: z.boolean().default(true),
+  priority: z.coerce.number().min(0).default(0)
+
 });
 
 type FormErrors = z.inferFormattedError<typeof roomSchema>;
@@ -49,33 +46,24 @@ export default function Rooms({
   roomDetails,
   updateRoomDetails,
   isLoading,
-  onSave,
-  onCancel,
-  isCreateMode = false,
 }: {
   roomDetails: IRoomDetails;
   updateRoomDetails: Dispatch<SetStateAction<IRoomDetails>>;
   isLoading: boolean;
-  onSave?: () => void;
-  onCancel?: () => void;
-  isCreateMode?: boolean;
 }) {
-  const [errors, setErrors] = useState<FormErrors | null>(null);
+  const [errors, _setErrors] = useState<FormErrors | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const updateRoom = (updates: Partial<IRoomDetails>) => {
+  const updateRoom = (updates: IRoomDetails) => {
     updateRoomDetails((prev) => ({ ...prev, ...updates }));
-    if (errors) {
-      const updatedFields = Object.keys(updates);
-      const newErrors = { ...errors };
-      updatedFields.forEach((field) => delete (newErrors as any)[field]);
-      setErrors(newErrors);
-    }
+
   };
 
   const handleUploadSuccess = (newImageUrls: string[]) => {
     updateRoom({
-      image: [...(roomDetails.image || []), ...newImageUrls],
+      ...roomDetails,
+      image: [...roomDetails.image, ...newImageUrls],
+
     });
   };
 
@@ -83,7 +71,7 @@ export default function Rooms({
     const updatedImages = (roomDetails.image || []).filter(
       (_, index) => index !== indexToRemove
     );
-    updateRoom({ image: updatedImages });
+    updateRoom({ ...roomDetails, image: updatedImages });
   };
 
   if (isLoading) {
@@ -95,7 +83,7 @@ export default function Rooms({
   }
   return (
     <>
-      <div className="max-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
             <div className="p-8 sm:p-12 bg-white">
@@ -121,14 +109,8 @@ export default function Rooms({
                       id="roomName"
                       value={roomDetails.roomName || ""}
                       onChange={(e) =>
-                        updateRoom({ roomName: e.target.value })
+                        updateRoom({ ...roomDetails, roomName: e.target.value })
                       }
-                      onKeyDown={(e) => {
-                        // Explicitly allow space key
-                        if (e.key === ' ') {
-                          e.stopPropagation();
-                        }
-                      }}
                       placeholder="e.g., Deluxe King Suite"
                       className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
                     />
@@ -138,95 +120,87 @@ export default function Rooms({
                       </p>
                     )}
                   </div>
-                  {isCreateMode && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <Label
-                          htmlFor="roomType"
-                          className="text-gray-800 font-medium"
-                        >
-                          Room Type *
-                        </Label>
-                        <Input
-                          id="roomType"
-                          type="text"
-                          value={roomDetails.roomType || ""}
-                          onChange={(e) =>
-                            updateRoom({ roomType: e.target.value })
-                          }
-                          onKeyDown={(e) => {
-                            // Explicitly allow space key
-                            if (e.key === ' ') {
-                              e.stopPropagation();
-                            }
-                          }}
-                          placeholder="e.g., Deluxe, Suite, Standard"
-                          className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
-                        />
-                        {errors?.roomType?._errors[0] && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.roomType._errors[0]}
-                          </p>
-                        )}
-                      </div>
 
-                      <div>
-                        <Label
-                          htmlFor="totalRoom"
-                          className="text-gray-800 font-medium"
-                        >
-                          Total Rooms of This Type *
-                        </Label>
-                        <Input
-                          id="totalRoom"
-                          type="number"
-                          value={roomDetails.totalRoom || ""}
-                          onChange={(e) =>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label
+                        htmlFor="roomType"
+                        className="text-gray-800 font-medium"
+                      >
+                        Room Type *
+                      </Label>
+                      <Input
+                        id="roomType"
+                        value={roomDetails.roomType || ""}
+                        onChange={(e) =>
+                          updateRoom({ ...roomDetails, roomType: e.target.value })
+                        }
+                        placeholder="e.g., Deluxe King Suite"
+                        className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
+                      />
+                      {errors?.roomType?._errors[0] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roomType._errors[0]}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label
+                        htmlFor="totalRoom"
+                        className="text-gray-800 font-medium"
+                      >
+                        Total Rooms of This Type *
+                      </Label>
+                      <Input
+                        id="totalRoom"
+                        type="number"
+                        value={roomDetails.totalRoom || ""}
+                        onChange={(e) =>
+                          updateRoom({
+                            ...roomDetails,
+                            totalRoom: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="e.g., 10"
+                        className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
+                      />
+                      {errors?.totalRoom?._errors[0] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.totalRoom._errors[0]}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="isAvailable"
+                        className="text-gray-800 font-medium"
+                      >
+                        Room Availability
+                      </Label>
+                      <div className="flex items-center space-x-3 mt-3">
+                        <Switch
+                          id="isAvailable"
+                          checked={!!roomDetails.available} // Use !! to ensure it's a boolean
+                          onCheckedChange={(checked) =>
                             updateRoom({
-                              totalRoom: parseInt(e.target.value) || 0,
+                              ...roomDetails, available: checked
                             })
                           }
-                          placeholder="e.g., 10"
-                          min={0}
-                          className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
                         />
-                        {errors?.totalRoom?._errors[0] && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.totalRoom._errors[0]}
-                          </p>
-                        )}
+                        <span className="text-sm text-gray-600 transition-colors">
+                          {roomDetails.available
+                            ? "This room type is available for booking."
+                            : "This room type is currently unavailable."}
+                        </span>
                       </div>
-                      <div>
-                        <Label
-                          htmlFor="isAvailable"
-                          className="text-gray-800 font-medium"
-                        >
-                          Room Availability
-                        </Label>
-                        <div className="flex items-center space-x-3 mt-3">
-                          <Switch
-                            id="isAvailable"
-                            checked={!!roomDetails.available} // Use !! to ensure it's a boolean
-                            onCheckedChange={(checked) =>
-                              updateRoom({ available: checked })
-                            }
-                          />
-                          <span className="text-sm text-gray-600 transition-colors">
-                            {roomDetails.available
-                              ? "This room type is available for booking."
-                              : "This room type is currently unavailable."}
-                          </span>
-                        </div>
-                        {errors?.available?._errors[0] && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.available._errors[0]}
-                          </p>
-                        )}
-                      </div>
+                      {errors?.available?._errors[0] && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.available._errors[0]}
+                        </p>
+                      )}
                     </div>
-                  )
-
-                  }
+                  </div>
 
                   <div>
                     <Label
@@ -239,7 +213,7 @@ export default function Rooms({
                       id="description"
                       value={roomDetails.description || ""}
                       onChange={(e) =>
-                        updateRoom({ description: e.target.value })
+                        updateRoom({ ...roomDetails, description: e.target.value })
                       }
                       placeholder="Describe the room's features, view, and what makes it special."
                       className="mt-2 min-h-[100px] border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100 p-3"
@@ -272,7 +246,29 @@ export default function Rooms({
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label
+                        htmlFor="priority"
+                        className="text-gray-800 font-medium"
+                      >
+                        Priority
+                      </Label>
+                       <Input
+                        id="priority"
+                        type="number"
+                        value={roomDetails.priority || ""}
+                        min={0}
+                        onChange={(e) =>
+                          updateRoom({
+                            ...roomDetails,
+                            priority: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="e.g., 1,2,3"
+                        className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
+                      />
+                    </div>
                     <div>
                       <Label
                         htmlFor="roomView"
@@ -281,9 +277,9 @@ export default function Rooms({
                         Room View
                       </Label>
                       <Select
-                        value={roomDetails.roomView || ""}
+                        value={roomDetails.roomView}
                         onValueChange={(value) =>
-                          updateRoom({ roomView: value })
+                          updateRoom({ ...roomDetails, roomView: value as roomView })
                         }
                       >
                         <SelectTrigger className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100">
@@ -314,12 +310,6 @@ export default function Rooms({
                           >
                             Garden View
                           </SelectItem>
-                          <SelectItem
-                            value="others"
-                            className="hover:bg-gray-100"
-                          >
-                            Others
-                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -338,6 +328,7 @@ export default function Rooms({
                         min={0}
                         onChange={(e) =>
                           updateRoom({
+                            ...roomDetails,
                             floor: parseInt(e.target.value) || 0,
                           })
                         }
@@ -356,7 +347,7 @@ export default function Rooms({
                       <Select
                         value={roomDetails.smokingPolicy || ""}
                         onValueChange={(value) =>
-                          updateRoom({ smokingPolicy: value })
+                          updateRoom({ ...roomDetails, smokingPolicy: value as smokingPolicy })
                         }
                       >
                         <SelectTrigger className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100">
@@ -386,7 +377,7 @@ export default function Rooms({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <Label
                         htmlFor="roomSize"
@@ -401,6 +392,7 @@ export default function Rooms({
                         value={roomDetails.roomSize || ""}
                         onChange={(e) =>
                           updateRoom({
+                            ...roomDetails,
                             roomSize: parseInt(e.target.value) || 0,
                           })
                         }
@@ -418,7 +410,7 @@ export default function Rooms({
                       <Select
                         value={roomDetails.roomUnit}
                         onValueChange={(value) =>
-                          updateRoom({ roomUnit: value })
+                          updateRoom({ ...roomDetails, roomUnit: value as roomUnit })
                         }
                       >
                         <SelectTrigger className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100">
@@ -436,6 +428,28 @@ export default function Rooms({
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div>
+                      <Label
+                        htmlFor="numberOfBedrooms"
+                        className="text-gray-800 font-medium"
+                      >
+                        No.of Bedrooms
+                      </Label>
+                      <Input
+                        id="numberOfBedrooms"
+                        min={0}
+                        type="number"
+                        value={roomDetails.numberOfBedrooms || ""}
+                        onChange={(e) =>
+                          updateRoom({
+                            ...roomDetails,
+                            numberOfBedrooms: parseInt(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="e.g., 350"
+                        className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
+                      />
                     </div>
                   </div>
                 </div>
@@ -465,6 +479,8 @@ export default function Rooms({
                         value={roomDetails.maxOccupancy || ""}
                         onChange={(e) =>
                           updateRoom({
+                            ...roomDetails,
+
                             maxOccupancy: parseInt(e.target.value) || 0,
                           })
                         }
@@ -491,6 +507,8 @@ export default function Rooms({
                         value={roomDetails.maxNumberOfAdults || ""}
                         onChange={(e) =>
                           updateRoom({
+                            ...roomDetails,
+
                             maxNumberOfAdults: parseInt(e.target.value) || 0,
                           })
                         }
@@ -512,6 +530,8 @@ export default function Rooms({
                         value={roomDetails.maxNumberOfChildren || ""}
                         onChange={(e) =>
                           updateRoom({
+                            ...roomDetails,
+
                             maxNumberOfChildren: parseInt(e.target.value) || 0,
                           })
                         }
@@ -572,23 +592,6 @@ export default function Rooms({
                       {errors.image._errors[0]}
                     </p>
                   )}
-                  {(onSave || onCancel) && (
-                    <div className="mt-6 flex justify-end">
-                      <Button variant="outline" onClick={onCancel}>Cancel</Button>
-
-                      <Button onClick={onSave}
-                        className="ml-6">
-                        {isLoading
-                          ? isCreateMode
-                            ? "Creating..."
-                            : "Updating..."
-                          : isCreateMode
-                            ? "Create Room"
-                            : "Update Changes"}
-                      </Button>
-
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -599,10 +602,9 @@ export default function Rooms({
       <ImageUploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        // uploadImages={uploadImages}
         onUploadSuccess={handleUploadSuccess}
       />
-
-
     </>
   );
 }

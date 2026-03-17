@@ -25,12 +25,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useAppSelector } from "@/redux/hooks";
 
 export default function Inventory() {
   const { propertyId } = useParams<{ propertyId: string }>();
-  const { access } = useAppSelector((state) => state.access);
-
   const [allRooms, setAllRooms] = useState<RoomTypes[]>([]);
   const [selectedRooms, setSelectedRooms] = useState<SelectedRoom>({
     id: "",
@@ -53,7 +50,8 @@ export default function Inventory() {
     text: "",
   });
   const [isSaving, setIsSaving] = useState(false);
-
+  const [fromDateOpen, setFromDateOpen] = useState(false);
+  const [toDateOpen, setToDateOpen] = useState(false);
   useEffect(() => {
     fetchRoomTypes();
   }, []);
@@ -68,7 +66,7 @@ export default function Inventory() {
       const response = await fetchRoomTypesService(propertyId);
       if (response.success) {
         setAllRooms(response.data || []);
-        // toast.success(response?.message || "Room types fetched successfully");
+        toast.success(response?.message || "Room types fetched successfully");
       } else {
         toast.error(response?.message || "Failed to fetch room types");
       }
@@ -94,6 +92,12 @@ export default function Inventory() {
 
   const handleDateSelect = (range: { from: Date | undefined; to: Date | undefined }) => {
     setDateRange(range);
+    if (range.from) {
+      setFromDateOpen(false);
+    }
+    if (range.to) {
+      setToDateOpen(false);
+    }
     if (range.from && range.to) {
       setSelectedRooms({
         ...selectedRooms,
@@ -159,7 +163,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-6">
@@ -168,8 +172,8 @@ export default function Inventory() {
 
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
-              <Package className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Room Inventory</h1>
@@ -233,7 +237,8 @@ export default function Inventory() {
                     Date Range
                   </Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Popover >
+                    {/* Start Date */}
+                    <Popover onOpenChange={setFromDateOpen} open={fromDateOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -250,9 +255,8 @@ export default function Inventory() {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="" align="start">
+                            <PopoverContent className="p-0" align="start">
                         <CalendarComponent
-                          className="rounded-md border "
                           mode="single"
                           selected={dateRange.from}
                           onSelect={(date) =>
@@ -260,10 +264,14 @@ export default function Inventory() {
                           }
                           disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                           initialFocus
+                          className="rounded-md border w-full"
+
                         />
                       </PopoverContent>
                     </Popover>
-                    <Popover >
+
+                    {/* End Date */}
+                    <Popover onOpenChange={setToDateOpen} open={toDateOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
@@ -280,9 +288,8 @@ export default function Inventory() {
                           )}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="" align="start">
+                            <PopoverContent className=" p-0" align="start">
                         <CalendarComponent
-                          className="rounded-md border "
                           mode="single"
                           selected={dateRange.to}
                           onSelect={(date) =>
@@ -295,6 +302,7 @@ export default function Inventory() {
                             return false;
                           }}
                           initialFocus
+                          className="rounded-md border w-full"
                           classNames={{
                             day_disabled: "!text-gray-400 !opacity-30 line-through pointer-events-none"
                           }}
@@ -342,8 +350,8 @@ export default function Inventory() {
                 <Button
                   type="submit"
                   className="w-full h-12 text-base font-semibold"
-                  disabled={isSaving || !selectedRooms.id||access?.canAddInventory}
-                  onClick={() => { }}
+                  disabled={isSaving || !selectedRooms.id}
+                  onClick={()=>{}}
                 >
                   {isSaving ? (
                     <>
@@ -363,7 +371,7 @@ export default function Inventory() {
 
           {/* Info Card */}
           <Card className="shadow-lg h-fit rounded-xl ">
-            <CardHeader className="border-b bg-gradient-to-br from-black to-gray-800 text-white rounded-t-xl">
+            <CardHeader className="border-b bg-primary text-primary-foreground rounded-t-xl">
               <CardTitle className="text-lg">Selected Details</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">

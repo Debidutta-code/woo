@@ -1,7 +1,12 @@
+export interface ILoader {
+    isLoading: boolean;
+    message: string;
+}
+
 export interface IPropertyCodeAndIds {
     id: string;
     code: string;
-    name:string;
+    name: string;
 }
 
 // Reservation Analytics Interfaces
@@ -60,7 +65,6 @@ export interface IRoomTypeStats {
     roomType: string;
     roomName: string;
     totalRoom: number;
-    IndividualRooms: { roomStatus: string }[];
 }
 
 export interface IRoomTypeOccupancy {
@@ -108,30 +112,10 @@ export interface IGuestAnalytics {
     verificationRate: string;
 }
 
-// Housekeeping Analytics Interfaces
-export interface ITaskStatusBreakdown {
-    status: string;
-    count: number;
-}
-
-export interface IPriorityBreakdown {
-    priority: string;
-    count: number;
-}
-
-export interface IHousekeepingAnalytics {
-    totalTasks: number;
-    taskStatusBreakdown: ITaskStatusBreakdown[];
-    priorityBreakdown: IPriorityBreakdown[];
-    completedTasks: number;
-    completionRate: string;
-    averageCompletionTimeMinutes: number;
-    todayTasks: number;
-}
-
 // Addon Analytics Interfaces
 export interface IPopularAddon {
     addonId: string;
+    addonName:string,
     revenue: number;
     bookingCount: number;
 }
@@ -194,15 +178,43 @@ export interface ITopPerformingProperties {
     topByOccupancy: ITopPropertyByOccupancy[];
 }
 
-// Combined Analytics Response Interface
+// Combined Analytics Response Interface - REMOVED housekeeping
 export interface IAnalyticsData {
     reservation: IReservationAnalytics;
     revenue: IRevenueAnalytics;
     room: IRoomAnalytics;
     guest: IGuestAnalytics;
-    housekeeping: IHousekeepingAnalytics;
     addon: IAddonAnalytics;
     bookingSource: IBookingSourceAnalytics;
     paymentMethod: IPaymentMethodAnalytics;
     topPerformingProperties?: ITopPerformingProperties;
+}
+// Add these to your interface.ts file
+
+export interface IComparisonPeriod {
+  current: {
+    start: string;
+    end: string;
+    label: string;
+  };
+  previous: {
+    start: string;
+    end: string;
+    label: string;
+  };
+}
+
+export interface IStatisticMetric {
+  current: number;
+  previous: number;
+  percentageChange: number;
+}
+
+export interface IStatisticsComparison {
+  bookings: IStatisticMetric;
+  cancelledBookings: IStatisticMetric;
+  revenue: IStatisticMetric;
+  averageBookingValue: IStatisticMetric;
+  roomNights: IStatisticMetric;
+  period: IComparisonPeriod;
 }

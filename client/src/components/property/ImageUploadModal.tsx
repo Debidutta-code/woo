@@ -24,8 +24,8 @@ interface Props {
 
 // Direct Cloudinary upload function
 const uploadToCloudinary = async (file: File): Promise<string> => {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dv65zmain'
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default'
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ;
   
   const formData = new FormData()
   formData.append('file', file)

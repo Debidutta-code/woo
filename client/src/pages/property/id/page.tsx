@@ -1,40 +1,39 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ImageSlider from "@/components/shared/ImageSlider";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import type { IPropertyAddress, IPropertyDetails } from "../types/types";
-import { MapPin, } from "lucide-react";
+import { MapPin, Trash2, Video } from "lucide-react";
 import toast from "react-hot-toast";
 import PropertyAddress from "@/components/property/show/Address";
 import PropertyDetails from "@/components/property/show/PropertyDetails";
 import PropertyAmenities from "@/components/property/show/PropertyAmenities";
 import Rooms from "@/components/property/show/Rooms";
-import RatePlans from "@/components/property/show/RatePlans";
 import BankDetails from "@/components/property/show/BankDetails";
 import Loader from "@/components/Loader/Loader";
-import { useParams} from "react-router-dom";
-import { getPropertyDetails } from "@/components/property/api/show/propertyDetails";
+import { useParams, useSearchParams } from "react-router-dom";
+import {
+  getPropertyDetails,
+  addPropertyVideo,
+  deletePropertyVideo,
+} from "@/components/property/api/show/propertyDetails";
 import BackButton from "@/components/shared/BackButton";
+import { Button } from "@/components/ui/button";
+import VideoUploadModal from "@/components/property/VedioUpload.modal";
+import PropertyMediaGallery from "@/components/property/PropertyMediaGallery";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+
 
 export default function PropertyDetailsPage() {
-  // const router = useNavigate();
   const { propertyId } = useParams<{ propertyId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
+  const [isDeletingVideo, setIsDeletingVideo] = useState<boolean>(false);
   const [propertyDetails, setPropertyDetails] = useState<IPropertyDetails>({
     propertyName: "",
     propertyEmail: "",
     description: "",
-    destinationType: {
-      masterDestinationType: {
-
-        id: "",
-        description: "",
-        destinationTypeName: "",
-      }
-    },
     propertyCategory: {
       masterCategory: {
-
         id: "",
         categoryName: "",
         description: "",
@@ -44,7 +43,6 @@ export default function PropertyDetailsPage() {
     propertyRoom: [],
     propertyType: {
       masterPropertyType: {
-
         id: "",
         description: "",
         propertyTypeName: "",
@@ -52,6 +50,10 @@ export default function PropertyDetailsPage() {
     },
     starRating: "",
     propertyCode: "",
+    propertyVideos: {
+      url: "",
+      thumbnail: null
+    }
   });
 
   const [propertyAddress, setPropertyAddress] = useState<IPropertyAddress>({
@@ -68,13 +70,15 @@ export default function PropertyDetailsPage() {
     zipCode: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("property");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(() => {
+    return searchParams.get('tab') || "property";
+  });
 
   const fetchPropertyDetails = async (propertyId: string) => {
     try {
       setLoading(true);
       const response = await getPropertyDetails(propertyId);
-      // console.log(response)
       if (response.data) {
         const data = response.data;
         setPropertyDetails({
@@ -82,15 +86,13 @@ export default function PropertyDetailsPage() {
           propertyEmail: data.propertyEmail,
           propertyContact: data.propertyContact,
           starRating: data.starRating?.$numberDecimal || data.starRating,
-
           propertyCategory: data.propertyCategory,
-          destinationType: data.destinationType,
           propertyType: data.propertyType,
           propertyRoom: data.propertyRoom,
           description: data.description,
           propertyCode: data.propertyCode,
+          propertyVideos: data.propertyVideos,
         });
-        // console.log("Property images", data.image)
         setPropertyImages(data.image || []);
         if (data.propertyAddress) {
           setPropertyAddress(data.propertyAddress);
@@ -103,6 +105,14 @@ export default function PropertyDetailsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!propertyId) {
       toast.error("Go back and try again");
@@ -110,6 +120,56 @@ export default function PropertyDetailsPage() {
     }
     fetchPropertyDetails(propertyId);
   }, [propertyId]);
+
+  const handleVideoUploadSuccess = async (videoUrl: string, thumbnailUrl: string) => {
+    if (!propertyId) {
+      toast.error("Property ID is missing");
+      return;
+    }
+
+    try {
+      const response = await addPropertyVideo(propertyId, videoUrl, thumbnailUrl);
+
+      if (response.success) {
+        console.log('Video uploaded successfully:', { videoUrl, thumbnailUrl });
+        toast.success('Video uploaded and saved successfully!');
+        await fetchPropertyDetails(propertyId);
+      } else {
+        toast.error(response.message || 'Failed to save video');
+      }
+    } catch (error) {
+      console.error('Error saving video:', error);
+      toast.error('Failed to save video');
+    }
+  };
+
+  const handleDeleteVideo = async () => {
+    if (!propertyId) {
+      toast.error("Property ID is missing");
+      return;
+    }
+
+    // Close the dialog first
+    setIsDeleteDialogOpen(false);
+
+    try {
+      setIsDeletingVideo(true);
+      const response = await deletePropertyVideo(propertyId);
+
+      if (response.success) {
+        toast.success('Video deleted successfully!');
+        await fetchPropertyDetails(propertyId);
+      } else {
+        toast.error(response.message || 'Failed to delete video');
+      }
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      toast.error('Failed to delete video');
+    } finally {
+      setIsDeletingVideo(false);
+    }
+  };
+
   const getFullAddress = () => {
     const parts = [
       propertyAddress.city,
@@ -120,6 +180,7 @@ export default function PropertyDetailsPage() {
 
     return parts.join(", ");
   };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -131,40 +192,68 @@ export default function PropertyDetailsPage() {
   return (
     <>
       <div className="space-y-6">
-        <BackButton/>
-        <Card>
-          <CardContent className="p-6">
-            {propertyImages.length > 0 ? (
-              <ImageSlider images={propertyImages} height="h-80" />
-            ) : (
-              <div className="h-80 bg-gray-200 flex items-center justify-center">
-                <p className="text-gray-500">No images available</p>
+        <BackButton />
+
+        {/* Property Header */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between px-6">
+          <div className="w-full">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {propertyDetails.propertyName}
+                </h1>
+                <p className="text-base text-gray-600 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
+                  {getFullAddress()}
+                </p>
               </div>
-            )}
-          </CardContent>
-        </Card>
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              {propertyDetails.propertyName}
-            </h1>
-            <p className="text-sm text-gray-600 flex items-center mt-2">
-              <MapPin className="h-5 w-5 mr-2" />
-              {getFullAddress()}
-            </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 ml-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <Video className="h-4 w-4" />
+                  {propertyDetails.propertyVideos?.url ? 'Update Video' : 'Add Video'}
+                </Button>
+                {propertyDetails.propertyVideos?.url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsDeleteDialogOpen(true)} // Changed this line
+                    disabled={isDeletingVideo}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 shadow-sm"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {isDeletingVideo ? 'Deleting...' : 'Delete'}
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 h-fit">
-            <TabsTrigger value="property">Property Details</TabsTrigger>
-            <TabsTrigger value="address">Address</TabsTrigger>
-            <TabsTrigger value="amenities">Amenities</TabsTrigger>
-            <TabsTrigger value="rooms">Rooms</TabsTrigger>
-            <TabsTrigger value="rate-plans">Rate Plans</TabsTrigger>
+        {/* Media Gallery */}
+        <PropertyMediaGallery
+          propertyVideo={propertyDetails.propertyVideos?.url ? propertyDetails.propertyVideos : undefined}
+          propertyImages={propertyImages}
+          type="property"
+        />
 
-            <TabsTrigger value="bank-details">Bank Details</TabsTrigger>
-          </TabsList>
+        {/* Tabs Section */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value);
+            setSearchParams(prev => {
+              const newParams = new URLSearchParams(prev);
+              newParams.set('tab', value);
+              return newParams;
+            });
+          }}
+        >
           <TabsContent value="property" className="space-y-6">
             <PropertyDetails propertyId={propertyId!} />
           </TabsContent>
@@ -177,14 +266,41 @@ export default function PropertyDetailsPage() {
           <TabsContent value="rooms" className="space-y-6">
             <Rooms propertyId={propertyId!} />
           </TabsContent>
-          <TabsContent value="rate-plans">
-            <RatePlans />
-          </TabsContent>
           <TabsContent value="bank-details">
             <BankDetails propertyId={propertyId!} />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Video Upload Modal */}
+      {/* Video Upload Modal */}
+      <VideoUploadModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        onUploadSuccess={handleVideoUploadSuccess}
+        title="Upload Property Video"
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this video?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the property video from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteVideo}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete Video
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

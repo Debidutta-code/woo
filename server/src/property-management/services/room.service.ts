@@ -1,237 +1,231 @@
 import { successResponse, errorResponse } from '../../utils/return';
 import { IApiResponse } from '../../utils/return.types';
 import { RoomDao, RoomAmenityDao } from '../repository';
-
+import { RatePlanRepository } from "../../ari/repository/ratePlan.repository"
+import { ICRoom } from '../types';
 export class RoomService {
-    public static async create(roomData: any) {
-        try {
-            const room = await RoomDao.findByRoomType(
-                roomData.propertyId,
-                roomData.roomType
-            );
-            if (room) {
-                return errorResponse(
-                    `Room with Type ${roomData.roomType}  already exits for this property`
-                );
-            }
-            const createdRoom = await RoomDao.create(roomData);
-            if (createdRoom) {
-                return successResponse(
-                    'Room created successfully',
-                    createdRoom
-                );
-            } else {
-                return errorResponse('Failed to create room');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  private roomDao: RoomDao;
+
+  constructor() {
+    this.roomDao = new RoomDao();
+  }
+
+  public  async create(roomData: ICRoom):Promise<IApiResponse> {
+    try {
+      const [roomByName,roomByCode] = await Promise.all([
+        this.roomDao.findByRoomName(
+          roomData.propertyId,
+          roomData.roomName
+        ),
+        this.roomDao.findByRoomType(
+          roomData.propertyId,
+          roomData.roomType
+        )
+      ]);
+      if (roomByName || roomByCode) {
+        
+        return errorResponse(
+          `Room with Name ${roomData.roomName} or Type ${roomData.roomType} already exists for this property`
+        );
+      }
+      const createdRoom = await this.roomDao.create(roomData);
+      if (createdRoom) {
+        return successResponse('Room created successfully', createdRoom);
+      } else {
+        return errorResponse('Failed to create room');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to create room", error.message);
+      }
+      return errorResponse("Failed to create room");
     }
-    public static async findById(id: string): Promise<any> {
-        try {
-            const room = await RoomDao.findById(id);
-            if (room) {
-                return successResponse('Room fetched successfully', room);
-            } else {
-                return errorResponse('Room not found');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async findById(id: string): Promise<IApiResponse> {
+    try {
+      const room = await this.roomDao.findByRoomId(id);
+      if (room) {
+        return successResponse('Room fetched successfully', room);
+      } else {
+        return errorResponse('Room not found');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to fetch room", error.message);
+      }
+      return errorResponse("Failed to fetch room");
     }
-    public static async findAll(
-        isDeleted: boolean,
-        available: boolean
-    ): Promise<any> {
-        try {
-            const rooms = await RoomDao.findAll(isDeleted, available);
-            if (rooms) {
-                return successResponse('Rooms fetched successfully', rooms);
-            } else {
-                return successResponse('No rooms found', []);
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+
+  public  async update(
+    id: string,
+    roomData: ICRoom
+  ): Promise<IApiResponse> {
+    try {
+      const isExists = await this.roomDao.findByRoomId(id);
+      if (!isExists) {
+        return errorResponse('Room Does not exists');
+      }
+      const updatedRoom = await this.roomDao.updateRoom(id, roomData);
+      if (updatedRoom) {
+        return successResponse('Room updated successfully', updatedRoom);
+      } else {
+        return errorResponse('Room not found or failed to update');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to update room", error.message);
+      }
+      return errorResponse("Failed to update room");
     }
-    public static async update(
-        id: string,
-        roomData: Partial<any>
-    ): Promise<any> {
-        try {
-            const isExists = await RoomDao.findById(id);
-            if (!isExists) {
-                return errorResponse('Room Does not exists');
-            }
-            const updatedRoom = await RoomDao.update(id, roomData);
-            if (updatedRoom) {
-                return successResponse(
-                    'Room updated successfully',
-                    updatedRoom
-                );
-            } else {
-                return errorResponse('Room not found or failed to update');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async delete(id: string): Promise<any> {
+    try {
+      
+      const room = await this.roomDao.findByRoomId(id)
+      const propertyCode = room?.property.propertyCode;
+      if (!propertyCode) {
+        return errorResponse('Property code not found');
+      }
+      await RatePlanRepository.deleteCharges(room?.roomType, propertyCode);
+      const deletedRoom = await this.roomDao.delete(id);
+      if (deletedRoom) {
+        return successResponse('Room successfully', deletedRoom);
+      } else {
+        return errorResponse('Room not found or already deleted');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to delete room", error.message);
+      }
+      return errorResponse("Failed to delete room");
     }
-    public static async delete(id: string): Promise<any> {
-        try {
-            const room = await RoomDao.findById(id);
-            if (!room) {
-                return errorResponse('Room does not exists');
-            }
-            const deletedRoom = await RoomDao.delete(id);
-            if (deletedRoom) {
-                return successResponse('Room successfully', deletedRoom);
-            } else {
-                return errorResponse('Room not found or already deleted');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async findByPropertyId(propertyId: string, isDeleted: boolean = true): Promise<IApiResponse> {
+    try {
+      const rooms = await this.roomDao.getRoomsByPropertyId(propertyId, isDeleted)
+      if (rooms) {
+        return successResponse('Rooms fetched successfully', rooms);
+      } else {
+        return successResponse('No rooms found for this property');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to fetch rooms for property", error.message);
+      }
+      return errorResponse("failed to fetch rooms for property");
     }
-    public static async findByPropertyId(
-        propertyId: string,
-        isDeleted: boolean = true
-    ): Promise<any> {
-        try {
-            const rooms = await RoomDao.getRoomsByPropertyId(
-                propertyId,
-                isDeleted
-            );
-            if (rooms) {
-                return successResponse('Rooms fetched successfully', rooms);
-            } else {
-                return successResponse('No rooms found for this property', []);
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async findAvailableRoomsForInv(propertyId: string): Promise<IApiResponse>{
+    try {
+      const rooms = await this.roomDao.getAllPropertyRoomsForInvSetup(propertyId)
+      if (rooms) {
+        return successResponse('Available Rooms fetched successfully', rooms);
+      } else {
+        return successResponse('No available rooms found for this property', []);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to fetch rooms for property", error.message);
+      }
+      return errorResponse("failed to fetch rooms for property");
     }
-    public static async findAvailableRoomsForInv(
-        propertyId: string
-    ): Promise<any> {
-        try {
-            const rooms =
-                await RoomDao.getAllPropertyRoomsForInvSetup(propertyId);
-            if (rooms) {
-                return successResponse(
-                    'Available Rooms fetched successfully',
-                    rooms
-                );
-            } else {
-                return successResponse(
-                    'No available rooms found for this property',
-                    []
-                );
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async view360ImageToRoom(roomId: string, link: string): Promise<IApiResponse> {
+    try {
+      const updatedRoom = await this.roomDao.add360ViewLinkToRoom(roomId, link);
+      if (updatedRoom) {
+        return successResponse('360 view link added successfully', updatedRoom);
+      } else {
+        return errorResponse('Failed to add 360 view link');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to add 360 view link to room", error.message);
+      }
+      return errorResponse("failed to add 360 view link to room");
     }
-    public static async view360ImageToRoom(
-        roomId: string,
-        link: string
-    ): Promise<IApiResponse> {
-        try {
-            const updatedRoom = await RoomDao.add360ViewLinkToRoom(
-                roomId,
-                link
-            );
-            if (updatedRoom) {
-                return successResponse(
-                    '360 view link added successfully',
-                    updatedRoom
-                );
-            } else {
-                return errorResponse('Failed to add 360 view link');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
-    }
+  }
 }
 export class RoomAminityService {
-    public static async createAminityService(
-        roomId: string,
-        amenities: Record<string, boolean>
-    ) {
-        try {
-            console.log('roomId', roomId, 'amenities', amenities);
-            const isExists = await RoomAmenityDao.existsByRoomId(roomId);
-            if (isExists) {
-                return errorResponse('Amenity already exists for this room');
-            }
-            const daoRes = await RoomAmenityDao.createAmenities(
-                roomId,
-                amenities
-            );
-            if (daoRes) {
-                return successResponse(
-                    'Room aminity created successfully',
-                    daoRes
-                );
-            } else {
-                return errorResponse('Failed to add room aminity');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  private roomAmenityDao: RoomAmenityDao;
+
+  constructor() {
+    this.roomAmenityDao = new RoomAmenityDao();
+  }
+
+  public  async createAminityService(
+    roomId: string,
+    amenities: Record<string, boolean>
+  ) {
+    try {
+      //console.log("roomId", roomId, "amenities", amenities);
+      const isExists = await this.roomAmenityDao.existsByRoomId(roomId);
+      if (isExists) {
+        return errorResponse('Amenity already exists for this room');
+      }
+      const daoRes = await this.roomAmenityDao.createAmenities(roomId, amenities);
+      if (daoRes) {
+        return successResponse('Room aminity created successfully', daoRes);
+      } else {
+        return errorResponse('Failed to add room aminity');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to add amenity to room", error.message);
+      }
+      return errorResponse("failed to add amenity to room");
     }
-    public static async findAminityByRoomId(roomId: string) {
-        try {
-            const daoRes = await RoomAmenityDao.getActiveAmenities(roomId);
-            if (daoRes) {
-                if (daoRes.length == 0) {
-                    return errorResponse('No Aminity available FOr this room');
-                }
-                return successResponse(
-                    'Room Aminity fetched successfully',
-                    daoRes
-                );
-            } else {
-                return errorResponse('Failed to fetch room aminity');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
+  }
+  public  async findAminityByRoomId(roomId: string) {
+    try {
+      const daoRes = await this.roomAmenityDao.getActiveAmenities(roomId);
+      if (daoRes) {
+        if (daoRes.length == 0) {
+          return errorResponse("No Aminity available FOr this room")
         }
+        return successResponse('Room Aminity fetched successfully', daoRes);
+      } else {
+        return errorResponse('Failed to fetch room aminity');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to fetch amenity for room", error.message);
+      }
+      return errorResponse("failed to fetch amenity for room");
     }
-    public static async updateAminityByRoomId(
-        roomId: string,
-        amenities: Record<string, boolean>
-    ) {
-        try {
-            const daoRes = await RoomAmenityDao.updateByRoomId(
-                roomId,
-                amenities
-            );
-            if (daoRes) {
-                return successResponse(
-                    'Room Aminity Updated successfully',
-                    daoRes
-                );
-            } else {
-                return errorResponse('Failed to update room aminity');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async updateAminityByRoomId(
+    roomId: string,
+    amenities: Record<string, boolean>
+  ) {
+    try {
+      const daoRes = await this.roomAmenityDao.updateByRoomId(roomId, amenities);
+      if (daoRes) {
+        return successResponse('Room Aminity Updated successfully', daoRes);
+      } else {
+        return errorResponse('Failed to update room aminity');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to update amenity for room", error.message);
+      }
+      return errorResponse("failed to update amenity for room");
     }
-    public static async deleteAminityByRoomId(roomId: string) {
-        try {
-            const daoRes = await RoomAmenityDao.deleteByRoomId(roomId);
-            if (daoRes) {
-                return successResponse(
-                    'Room Aminity deleted successfully',
-                    daoRes
-                );
-            } else {
-                return errorResponse('Failed to fetch room aminity');
-            }
-        } catch (error: any) {
-            return errorResponse(error?.message);
-        }
+  }
+  public  async deleteAminityByRoomId(roomId: string) {
+    try {
+      const daoRes = await this.roomAmenityDao.deleteByRoomId(roomId);
+      if (daoRes) {
+        return successResponse('Room Aminity deleted successfully', daoRes);
+      } else {
+        return errorResponse('Failed to fetch room aminity');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorResponse("failed to delete amenity for room", error.message);
+      }
+      return errorResponse("failed to delete amenity for room");
     }
+  }
 }

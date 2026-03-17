@@ -2,7 +2,6 @@ import { useState } from "react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useAppSelector } from '@/redux/hooks';
 
 // 1. Define schema
 const ratePlanSchema = z.object({
@@ -19,7 +18,6 @@ export default function RatePlan() {
     propertyCode: "",
     ratePlanName: "",
   })
-  const { access } = useAppSelector((state) => state.access);
 
   const [errors, setErrors] = useState<Partial<Record<keyof RatePlanType, string>>>({})
 
@@ -35,7 +33,7 @@ export default function RatePlan() {
       setErrors(newErrors)
     } else {
       setErrors({})
-      console.log("✅ Valid data:", result.data)
+      // console.log("✅ Valid data:", result.data)
     }
   }
 
@@ -69,14 +67,10 @@ export default function RatePlan() {
         />
         {errors.ratePlanName && <p className="text-red-500 text-sm">{errors.ratePlanName}</p>}
       </div>
-      {
-        access?.canCreateRatePlan && (
 
-          <Button onClick={handleSubmit} className="w-full">
-            Create Rate Plan
-          </Button>
-        )
-      }
+      <Button onClick={handleSubmit} className="w-full">
+        Create Rate Plan
+      </Button>
     </div>
   )
 }

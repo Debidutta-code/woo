@@ -18,16 +18,15 @@ export interface IPropertyDetails {
   propertyEmail: string;
   propertyContact: string;
   propertyCategory: {
-    masterCategory:{
+    masterCategory: {
 
       id: string;
       categoryName: string;
       categoryDescription: string
     }
   };
-  
   propertyType: {
-    masterPropertyType:{
+    masterPropertyType: {
 
       id: string;
       propertyTypeName: string
@@ -54,39 +53,43 @@ export interface IPropertyAddress {
 export interface PropertyAddressProps {
   isUpdating: boolean;
   propertyId: string;
-  setPropertyId:(propertyId:string)=>void;
-  setIsUpdating:(val:boolean)=>void;
+  setPropertyId: (propertyId: string) => void;
+  setIsUpdating: (val: boolean) => void;
   onNext?: () => void;
   onPrevious?: () => void;
 }
+export type roomView = "sea" | "garden" | "city" | "mountain" | "others";
+export type roomUnit = "sqm" | "sqft";
+export type smokingPolicy = "smoking" | "non_smoking" | "designated_area";
 
 export interface IRoomDetails {
-  roomName?: string;
-  roomType?: string;
-  totalRoom?: number;
-  roomView?: string;
-  floor?: number;
-  roomSize?: number;
-  roomUnit?: string;
-  smokingPolicy?: string;
-  maxOccupancy?: number;
-  maxNumberOfAdults?: number;
-  maxNumberOfChildren?: number;
+  roomName: string;
+  roomType: string;
+  totalRoom: number;
+  floor: number;
+  roomView: roomView;
+  roomSize: number;
+  roomUnit: roomUnit;
+  smokingPolicy: smokingPolicy;
+  maxOccupancy: number;
+  maxNumberOfAdults: number;
+  maxNumberOfChildren: number;
+  image: string[];
   numberOfBedrooms?: number;
   numberOfLivingRoom?: number;
   extraBed?: number;
-  description?: string;
-  image?: string[];
-  available?: boolean;
+  description: string | null;
+  available: boolean;
+  priority: number;
 }
-export interface IAmenityTypes{
-  amenityName:string;
-  description:string|null;
-  icon:string|null;
-  id:string
+export interface IAmenityTypes {
+  amenityName: string;
+  description: string | null;
+  icon: string | null;
+  id: string
 }
-export interface IRatePlan{
-    propertyCode:string;
-    propertyName:string;
-    ratePlanName:string;
+export interface IRatePlan {
+  propertyCode: string;
+  propertyName: string;
+  ratePlanName: string;
 }

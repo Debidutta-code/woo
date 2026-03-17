@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, Lock, ArrowLeft, Shield, Eye, EyeOff } from 'lucide-react';
-import { sendPasswordResetOTP, verifyPasswordResetOTP, resetPassword } from '@/components/api/forgetEmail.api';
+import { sendPasswordResetOTP, verifyPasswordResetOTP, resetPassword } from '../api/forgetEmail.api';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 

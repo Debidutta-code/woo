@@ -1,7 +1,16 @@
+import type { roomView,roomUnit,smokingPolicy } from "../create/types/types";
+
+export interface IPropertyEmail {
+  id: string;
+  email: string;
+  propertyId: string;
+}
+
 export interface IPropertyDetails {
   propertyName: string;
   propertyEmail: string;
   propertyContact: string;
+  propertyCode: string;
   propertyCategory: {
     masterCategory: {
 
@@ -28,7 +37,8 @@ export interface IPropertyDetails {
 
   };
   description: string;
-  image: string[]
+  image: string[],
+  propertyEmails: IPropertyEmail[];
 }
 export interface IPropertyAddress {
   addressLine1: string;
@@ -66,10 +76,10 @@ export interface IRoom {
   totalRoom: number;
   availableRooms: number;
   floor: number;
-  roomView: string;
+  roomView: roomView;
   roomSize: number;
-  roomUnit: string;
-  smokingPolicy: string;
+  roomUnit: roomUnit;
+  smokingPolicy: smokingPolicy;
   maxOccupancy: number;
   maxNumberOfAdults: number;
   maxNumberOfChildren: number;
@@ -77,11 +87,16 @@ export interface IRoom {
   numberOfLivingRoom: number;
   extraBed: number;
   description: string;
+  priority: number;
   image: string[];
   available: boolean;
   isDeleted: boolean;
   __v: number;
   view360Link?: string;
+  roomVideos?: {
+    url: string;
+    thumbnail: string;
+  };
   // New relational structure for amenities
   roomAmenities?: IRoomAmenitySelection[];
 }
@@ -91,11 +106,22 @@ export interface IRatePlans {
   ratePlanCode: string
   ratePlanName: string
 }
+
+export interface PaymentIntegrationDetail {
+  id: string;
+  isActive: boolean;
+  outletId: string;
+  paymentIntegration: {
+    id: string;
+    name: string;
+    isActive: boolean;
+  };
+}
+
 export interface PaymentMethods {
-  payAtHotel?: boolean;
-  bankTransfer?: boolean;
-  upi?: boolean;
-  gateway?: boolean;
+  payAtHotel: boolean;
+  paymentGateway: boolean;
+  selectedPaymentIntegration: PaymentIntegrationDetail | null;
 }
 
 export interface IBankDetails {

@@ -1,4 +1,6 @@
-export type DiscountType = 'percentage' | 'flat';
+import { CurrencyCode } from "../../tax-system/interfaces/tourist-tax.type";
+
+export type DiscountType = "percentage" | "flat";
 
 export interface ICreatePromoCode {
     name: string;
@@ -7,21 +9,18 @@ export interface ICreatePromoCode {
     propertyId: string;
     discountType: DiscountType;
     discountValue: number;
+    currencyCode:CurrencyCode;
     validFrom: Date;
     validTo: Date;
-    minBookingAmount: number | null;
+    minBookingAmount: number |null;
     maxDiscountAmount: number | null;
 
     isApplicableForMobileApp?: boolean;
     isApplicableForDesktop?: boolean;
     isApplicableForTablet?: boolean;
 
-    isApplicableForWalkIn?: boolean;
-    isApplicableForOTA?: boolean;
-    isApplicableForCorporate?: boolean;
-
     usageLimit?: number | null;
-    usageLimitPerUser?: number | null;
+    // usageLimitPerUser?: number | null;
     applicableRoomTypes?: any[];
     applicableRatePlans?: any[];
 }
@@ -43,12 +42,12 @@ export interface IRPromoCode {
     isApplicableForDesktop: boolean;
     isApplicableForTablet: boolean;
 
-    isApplicableForWalkIn: boolean;
-    isApplicableForOTA: boolean;
-    isApplicableForCorporate: boolean;
+    // isApplicableForWalkIn: boolean;
+    // isApplicableForOTA: boolean;
+    // isApplicableForCorporate: boolean;
 
     usageLimit: number | null;
-    usageLimitPerUser: number | null;
+    // usageLimitPerUser: number | null;
     applicableRoomTypes: any[];
     applicableRatePlans: any[];
     isActive: boolean;

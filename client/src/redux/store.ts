@@ -3,11 +3,10 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
-import accessReducer from "./access-slice";
+
 export const store = configureStore({
   reducer: {
     user: userReducer,
-    access: accessReducer,
   },
 });
 

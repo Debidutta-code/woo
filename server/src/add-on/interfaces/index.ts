@@ -1,19 +1,13 @@
-import { IAddon, ICAddon, IUpdateAddon, PostingRhythm } from './addon.type';
-import { ICCategory, IAddOnCategory } from './category.types';
-import { ICSubCategory, IAddonSubCategory } from './subCategory.type';
-import { ICVariant, IAddonVariant } from './variant.types';
-import {
-    IBookingAddon,
-    ICreateBookingAddonInput,
-    IUpdateBookingAddonInput,
-} from './booking.type';
-import {
-    IAddonAvailability,
-    ICreateAddonAvailability,
-    IUpdateAddonAvailability,
-} from './availability.type';
+import {IAddon,ICAddon,IUpdateAddon,PostingRhythm} from "./addon.type";
+import {ICCategory,IAddOnCategory} from "./category.types";
+import {ICSubCategory,IAddonSubCategory} from "./subCategory.type";
+import {ICVariant,IAddonVariant} from "./variant.types";
+import {IBookingAddon,ICreateBookingAddonInput,IUpdateBookingAddonInput} from "./booking.type";
+import {IAddonAvailability,ICreateAddonAvailability,IUpdateAddonAvailability} from "./availability.type";
+export * from "./childAddon.repository";
 
-export {
+
+export{
     IAddon,
     ICAddon,
     IUpdateAddon,
@@ -29,5 +23,7 @@ export {
     IUpdateAddonAvailability,
     IAddOnCategory,
     IAddonSubCategory,
-    IAddonVariant,
-};
+    IAddonVariant
+}
+
+

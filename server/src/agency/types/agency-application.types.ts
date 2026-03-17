@@ -1,15 +1,18 @@
-import { CurrencyCode } from "../../ari/types/roomRent.types";
+import { CurrencyCode } from "../../tax-system/interfaces/tourist-tax.type";
 
 export type AgencyApplicationStatus = "pending" | "approved" | "rejected";
+export type fAgencyApplicationStatus = "all" | AgencyApplicationStatus;
 export type AgencyType = "travel_agency" | "corporate";
 export type AgentCommissionType = "percentage" | "fixed";
 export interface ICAgencyApplication {
     applicationNoForThisUser: number;
     status: AgencyApplicationStatus;
+    
     applicantEmail: string;
     applicantName: string;
     applicantPhone: string;
     applicantPassword: string;
+
     agencyName: string;
     agencyType: AgencyType;
     agencyEmail: string;

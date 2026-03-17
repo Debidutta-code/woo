@@ -1,6 +1,6 @@
 import {fetchRoomTypesService} from "../../inventory/services";
 import {fetchRatePlansService} from "../../rate-plan/services";
-import {createMappingService, getMappedRatePlansService, updateMappedPriceService,getMultiRoomRentPriceService, deleteMappingService} from "./mapRatePlan.service";
+import {createMappingService, getMappedRatePlansService, updateMappedPriceService,getRoomRentPriceService} from "./mapRatePlan.service";
 import {useStartStopSellService} from "./start-stop-sell.service";
 export{
     fetchRatePlansService,
@@ -9,6 +9,5 @@ export{
     getMappedRatePlansService,
     updateMappedPriceService,
     useStartStopSellService,
-    getMultiRoomRentPriceService,
-    deleteMappingService
+    getRoomRentPriceService
 }
