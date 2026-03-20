@@ -48,7 +48,18 @@ interface RatePlanSectionProps {
   onDataUpdate?: () => void;
   renderMode: "labels" | "data";
 }
+function getGuestTierLabel(numberOfGuests: number, ageQualifyingCode: string): string {
+  const ageLabel = AGE_LABELS[ageQualifyingCode] || "Guest";
 
+  if (numberOfGuests > 1) {
+    if (ageLabel === "Adult") return `${numberOfGuests} Adults`;
+    if (ageLabel === "Child") return `${numberOfGuests} Children`;
+    if (ageLabel === "Infant") return `${numberOfGuests} Infants`;
+    return `${numberOfGuests} Guests`;
+  }
+
+  return `${numberOfGuests} ${ageLabel}`;
+}
 export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
   roomType,
   ratePlanType,
@@ -76,7 +87,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
   const allBaseGuests = [...existingTiers];
   customData.baseGuests.forEach((numGuests: number) => {
     if (!allBaseGuests.find((g: any) => g.numberOfGuests === numGuests)) {
-      allBaseGuests.push({ numberOfGuests: numGuests, amountBeforeTax: 0 });
+      allBaseGuests.push({ numberOfGuests: numGuests, amountBeforeTax: 0, ageQualifyingCode: "10" });
     }
   });
   allBaseGuests.sort((a: any, b: any) => a.numberOfGuests - b.numberOfGuests);
@@ -420,11 +431,13 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                         const hasOccupancy = (dayRatePlan?.baseByGuestAmts?.length ?? 0) > 0;
                         let key;
                         if (hasOccupancy) {
+                          const firstTierAgeCode = dayRatePlan?.baseByGuestAmts?.[0]?.ageQualifyingCode || "10";
                           key = generateKey.price(
                             roomType,
                             ratePlanType,
                             idx,
                             1,
+                            firstTierAgeCode,
                           );
                           newEdits.set(key, {
                             roomType,
@@ -432,6 +445,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                             dayIndex: idx,
                             value: e.target.value,
                             numberOfGuests: 1,
+                            ageQualifyingCode: firstTierAgeCode,
                           });
                         } else {
                           key = generateKey.price(roomType, ratePlanType, idx);
@@ -446,7 +460,6 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                       });
                       state.setPriceEdits(newEdits);
                       state.setPendingChanges(newPending);
-                      // toast.success("Bulk price applied to all dates");
                     }
                   }}
                 />
@@ -529,8 +542,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                 <div className="w-40 flex items-center justify-between px-2 border-r border-gray-300 bg-purple-50">
                   <div className="flex items-center gap-1">
                     <span className="font-semibold text-purple-700 text-xs">
-                      {guestTier.numberOfGuests}{" "}
-                      {guestTier.numberOfGuests === 1 ? "Guest" : "Guests"}
+                      {getGuestTierLabel(guestTier.numberOfGuests, guestTier.ageQualifyingCode)}
                     </span>
                     <span className="text-xs text-gray-600">
                       {ratePlanDetails?.currencyCode || "USD"}
@@ -571,6 +583,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                             ratePlanType,
                             idx,
                             guestTier.numberOfGuests,
+                            guestTier.ageQualifyingCode,
                           );
                           newEdits.set(key, {
                             roomType,
@@ -578,12 +591,12 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                             dayIndex: idx,
                             value: e.target.value,
                             numberOfGuests: guestTier.numberOfGuests,
+                            ageQualifyingCode: guestTier.ageQualifyingCode,
                           });
                           newPending.add(key);
                         });
                         state.setPriceEdits(newEdits);
                         state.setPendingChanges(newPending);
-                        // toast.success(`Bulk ${guestTier.numberOfGuests} Guest price applied`);
                       }
                     }}
                   />
@@ -1334,9 +1347,9 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                     return (
                       <span
                         className={`text-xs font-medium ${ratePlanDetails?.ratePlan?.prices?.[0]?.sellStatus ===
-                            "open"
-                            ? "text-green-600"
-                            : "text-red-600"
+                          "open"
+                          ? "text-green-600"
+                          : "text-red-600"
                           }`}
                       >
                         {ratePlanDetails?.ratePlan?.prices?.[0]?.sellStatus ===
@@ -1364,6 +1377,11 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                             ? baseByGuest[0].numberOfGuests
                             : undefined
                         }
+                        ageQualifyingCode={
+                          hasBaseByGuest
+                            ? baseByGuest[0].ageQualifyingCode || "10"
+                            : "10"
+                        }
                         priceEdits={state.priceEdits}
                         commissionAmount={
                           hasBaseByGuest
@@ -1377,7 +1395,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                         }
                         pendingChanges={state.pendingChanges}
                         generateKey={generateKey.price}
-                        onPriceChange={(rt, rp, di, val, ng) =>
+                        onPriceChange={(rt, rp, di, val, ng, aqc) =>
                           handlePriceInputChange(
                             rt,
                             rp,
@@ -1388,9 +1406,10 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                             state.pendingChanges,
                             state.setPriceEdits,
                             state.setPendingChanges,
+                            aqc,
                           )
                         }
-                        onApplyToRow={(rt, rp, di, ng) =>
+                        onApplyToRow={(rt, rp, di, ng, aqc) =>
                           applyPriceToRow(
                             rt,
                             rp,
@@ -1401,6 +1420,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                             state.pendingChanges,
                             state.setPriceEdits,
                             state.setPendingChanges,
+                            aqc,
                           )
                         }
                       />
@@ -1429,7 +1449,9 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                   ratePlanType,
                 );
                 const tierData = ratePlanDetails?.baseByGuestAmts?.find(
-                  (t: any) => t.numberOfGuests === guestTier.numberOfGuests,
+                  (t: any) =>
+                    t.numberOfGuests === guestTier.numberOfGuests &&
+                    t.ageQualifyingCode === guestTier.ageQualifyingCode,
                 );
 
                 return (
@@ -1444,6 +1466,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                       currentPrice={tierData?.amountBeforeTax || 0}
                       currencyCode={ratePlanDetails?.currencyCode || "USD"}
                       numberOfGuests={guestTier.numberOfGuests}
+                      ageQualifyingCode={guestTier.ageQualifyingCode || "10"}
                       showOnlyInput={true}
                       priceEdits={state.priceEdits}
                       commissionAmount={tierData?.commissionAmount || 0}
@@ -1452,7 +1475,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                       }
                       pendingChanges={state.pendingChanges}
                       generateKey={generateKey.price}
-                      onPriceChange={(rt, rp, di, val, ng) =>
+                      onPriceChange={(rt, rp, di, val, ng, aqc) =>
                         handlePriceInputChange(
                           rt,
                           rp,
@@ -1463,9 +1486,10 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                           state.pendingChanges,
                           state.setPriceEdits,
                           state.setPendingChanges,
+                          aqc,
                         )
                       }
-                      onApplyToRow={(rt, rp, di, ng) =>
+                      onApplyToRow={(rt, rp, di, ng, aqc) =>
                         applyPriceToRow(
                           rt,
                           rp,
@@ -1476,6 +1500,7 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                           state.pendingChanges,
                           state.setPriceEdits,
                           state.setPendingChanges,
+                          aqc,
                         )
                       }
                     />
@@ -1624,8 +1649,8 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                       )
                     }
                     className={`${effectiveValue
-                        ? "data-[state=checked]:bg-red-500"
-                        : "data-[state=unchecked]:bg-gray-300"
+                      ? "data-[state=checked]:bg-red-500"
+                      : "data-[state=unchecked]:bg-gray-300"
                       } scale-50`}
                   />
                 </div>
@@ -1672,8 +1697,8 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                       )
                     }
                     className={`${effectiveValue
-                        ? "data-[state=checked]:bg-red-500"
-                        : "data-[state=unchecked]:bg-gray-300"
+                      ? "data-[state=checked]:bg-red-500"
+                      : "data-[state=unchecked]:bg-gray-300"
                       } scale-50`}
                   />
                 </div>
@@ -1723,8 +1748,8 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                         state.setPendingChanges(newPending);
                       }}
                       className={`w-14 h-7 text-center text-xs font-bold rounded border ${hasChanges
-                          ? "border-orange-400 bg-orange-50"
-                          : "border-gray-300"
+                        ? "border-orange-400 bg-orange-50"
+                        : "border-gray-300"
                         } focus:outline-none focus:ring-2 focus:ring-purple-400`}
                     />
                     {edit && (
@@ -1807,8 +1832,8 @@ export const RatePlanSection: React.FC<RatePlanSectionProps> = ({
                         state.setPendingChanges(newPending);
                       }}
                       className={`w-14 h-7 text-center text-xs font-bold rounded border ${hasChanges
-                          ? "border-orange-400 bg-orange-50"
-                          : "border-gray-300"
+                        ? "border-orange-400 bg-orange-50"
+                        : "border-gray-300"
                         } focus:outline-none focus:ring-2 focus:ring-purple-400`}
                     />
                     {edit && (

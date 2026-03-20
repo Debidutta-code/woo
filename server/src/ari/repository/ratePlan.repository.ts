@@ -1,10 +1,10 @@
 import { UpdatePlanData } from '../types/utills';
 import { formatDateToYYYYMMDD } from '../utils/date';
 import { IPaginatedResponse } from '../../utils/return';
-import prisma from '../../config/prisma.client';
 // import { MappedRate } from "../types/mapedRate.type"
 import { IRatePlanUpdate } from '../types/rateplan.type';
 import { nowUTC, toUTC } from '../../utils';
+import { prisma } from '../../config';
 export class RatePlanRepository {
   public static async createRatePlan(
     ratePlanName: string,
@@ -250,7 +250,8 @@ export class RatePlanRepository {
           baseGuestAmounts: {
             create: baseGuestAmounts.map((guest) => ({
               numberOfGuests: guest.numberOfGuests,
-              amountBeforeTax: guest.amountBeforeTax,
+              amountBeforeTax: Number(guest.amountBeforeTax),
+              ageQualifyingCode: guest.ageQualifyingCode,
             })),
           },
           additionalGuestAmounts: {
@@ -344,7 +345,8 @@ export class RatePlanRepository {
     startDate: Date,
     endDate: Date,
     baseGuestAmounts: any[],
-    additionalGuestAmounts: any[]
+    additionalGuestAmounts: any[],
+    currencyCode?: any
   ): Promise<{ updated: number; created: number; dates: string[] }> {
     try {
       // First, fetch the rate plan and room type names
@@ -431,10 +433,12 @@ export class RatePlanRepository {
           await prisma.charge.update({
             where: { id: existingChargeId },
             data: {
+              ...(currencyCode && { currencyCode }),
               baseGuestAmounts: {
                 create: baseGuestAmounts.map((guest) => ({
                   numberOfGuests: guest.numberOfGuests,
                   amountBeforeTax: guest.amountBeforeTax,
+                  ageQualifyingCode: guest.ageQualifyingCode,
                 })),
               },
               additionalGuestAmounts: {
@@ -457,11 +461,13 @@ export class RatePlanRepository {
               ratePlanCode,
               ratePlanName, // ✅ Added
               roomTypeName, // ✅ Added
+              ...(currencyCode && { currencyCode }),
               date: new Date(date),
               baseGuestAmounts: {
                 create: baseGuestAmounts.map((guest) => ({
                   numberOfGuests: guest.numberOfGuests,
                   amountBeforeTax: guest.amountBeforeTax,
+                  ageQualifyingCode: guest.ageQualifyingCode,
                 })),
               },
               additionalGuestAmounts: {

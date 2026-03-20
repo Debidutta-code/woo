@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {  getCustomCreationId, getUsersForMapping, updateCreationService } from "../service/creation-filter.service"
+import { getCustomCreationId, getUsersForMapping, updateCreationService } from "../service/creation-filter.service"
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import type { IBrandDetails, ICreation, ICustomManagersMapping, IUpdateCreation } from '../types/types';
+import type { IBrandDetails, ICcreations, ICreation, ICustomManagersMapping, IUpdateCreation } from '../types/types';
 import Loader from '@/components/Loader/Loader';
 import CreateEntityDialog from '@/components/creation/creationDialog';
 import BackButton from '@/components/shared/BackButton';
@@ -16,9 +16,10 @@ import { handleDialogOpenChange } from '../utills/handleDialogOpenChange';
 import { User2Icon, MoreVertical, CloudCog, Upload, Trash2, Settings } from 'lucide-react';
 import { assignUserToProperty } from '../api/api';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import ImageSlider from '@/components/shared/ImageSlider';
 import ImageUploadModal from '@/components/property/ImageUploadModal';
 import DeleteCreationDialog from "@/components/creation/Delete-Creation.dialog";
+import type { ILoader } from '@/pages/dashboard/interface';
+import { capitalizeFirstLetter } from '@/lib/utils';
 
 
 export default function Custom() {
@@ -26,11 +27,17 @@ export default function Custom() {
     const [customAdmins, setCustomAdmins] = useState<ICustomManagersMapping>({
         customAdmins: []
     })
-    const [isAssigningUser, setIsAssigningUser] = useState<boolean>(false)
     const [selectedUser, setSelectedUser] = useState<string>("")
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(true)
-    const [creations, setCreations] = useState<ICreation[]>([])
+    const [loader, setLoader] = useState<ILoader>({
+        isLoading: true,
+        message: "Loading your Groups/Brands/Properties ..."
+    })
+    const [creations, setCreations] = useState<ICcreations>({
+        brands: [],
+        groups: [],
+        properties: [],
+    })
     const [customDetails, setCustomDetails] = useState<IBrandDetails>({
         createdAt: "",
         id: "",
@@ -40,15 +47,16 @@ export default function Custom() {
         users: [],
         images: []
     })
-    const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
-    const [isImageUploadModalOpen, setIsImageUploadModalOpen] = useState(false);
+    const [currentTab, setCurrentTab] = useState<"group" | "brand" | "property" | "regional">("property")
+
+    const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState<boolean>(false);
+    const [isImageUploadModalOpen, setIsImageUploadModalOpen] = useState<boolean>(false);
     const [updateCustomDetails, setUpdateCustomDetails] = useState<IUpdateCreation>({
         id: "",
         name: "",
         images: [],
         isActive: true
     });
-    const currentTab = "property"
     const getTabDisplayName = (tab: string): string => {
         const pluralMap: { [key: string]: string } = {
             property: "properties"
@@ -56,27 +64,32 @@ export default function Custom() {
         return pluralMap[tab] || tab;
     };
     const fetchGroup = async () => {
+        setLoader({
+            isLoading: true,
+            message: "Loading your Groups/Brands/Properties ..."
+        });
         try {
 
             if (!creationId) return;
             const response = await getCustomCreationId(creationId);
             if (response.success) {
-                setCreations(response.data.properties)
+                setCreations(response.data)
                 setCustomDetails(response.data.customDetails)
-                // toast.success("Brand/Property fetched successfully")
             } else {
                 toast.error(response.message || "Failed to fetch")
             }
         } catch (error) {
-            // console.log(error)
         } finally {
-            setIsLoading(false)
+            setLoader({
+                isLoading: false,
+                message: ""
+            });
         }
     };
     useEffect(() => {
         fetchGroup();
     }, [creationId])
-    if (isLoading) {
+    if (loader.isLoading) {
         return (
             <div className='min-h-screen w-full flex justify-center items-center'>
                 <Loader text={`Loading your Brands/Properties ...`} />
@@ -106,7 +119,10 @@ export default function Custom() {
             toast.error("Invalid Creation");
             return;
         }
-        setIsAssigningUser(true);
+        setLoader({
+            isLoading: true,
+            message: "Assigning user..."
+        });
         try {
             const response = await assignUserToProperty({
                 creationId: creationId,
@@ -124,7 +140,10 @@ export default function Custom() {
             console.error("Error assigning user:", error);
             toast.error("Failed to assign user");
         } finally {
-            setIsAssigningUser(false);
+            setLoader({
+                isLoading: false,
+                message: ""
+            });
         }
     }
 
@@ -152,16 +171,27 @@ export default function Custom() {
             images: prev.images.filter((_, i) => i !== index)
         }));
     };
-
-    const handleUpdateBrand = async () => {
+    const getCurrentData = (): ICreation[] => {
+        switch (currentTab) {
+            case "group":
+                return creations.groups;
+            case "brand":
+                return creations.brands;
+            case "property":
+                return creations.properties;
+            default:
+                return [];
+        }
+    };
+    const handleUpdateCustom = async () => {
         if (!creationId) {
-            toast.error('Invalid Brand ID');
+            toast.error('Invalid Custom Details');
             return;
         }
         try {
             const response = await updateCreationService(creationId, updateCustomDetails.name, updateCustomDetails.images, updateCustomDetails.isActive);
             if (!response.success) {
-                toast.error(response.message || 'Failed to update custom');
+                toast.error(response.message || 'Failed to update regionalal');
                 return;
             }
             toast.success('Custom updated successfully');
@@ -171,102 +201,39 @@ export default function Custom() {
             toast.error('Failed to update brand');
         }
     };
+    const currentData = getCurrentData();
+
     return (
         <div className="space-y-6 p-4">
             <BackButton />
-
-            {/* Brand Details Section */}
-            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg overflow-hidden">
-                {/* Hero Image Slider Section */}
-                {customDetails.images?.length > 0 && (
-                    <div className="w-full">
-                        <ImageSlider
-                            images={customDetails.images}
-                            alt={customDetails.name}
-                            height="h-80"
-                        />
-                    </div>
-                )}
-
-                <div className="p-6">
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{customDetails.name}</h1>
-                            <div className="flex items-center space-x-3">
-                                <p className="text-sm text-gray-600">
-                                    Parent: <span className="font-semibold text-gray-800">{customDetails.under}</span>
-                                </p>
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${customDetails.isActive
-                                    ? 'bg-green-100 text-green-700 ring-1 ring-green-200'
-                                    : 'bg-red-100 text-red-700 ring-1 ring-red-200'
-                                    }`}>
-                                    {customDetails.isActive ? '● Active' : '● Inactive'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Statistics Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Total Properties</h3>
-                                    <p className="text-3xl font-bold text-gray-900 mt-2">{creations?.length}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Custom Managers</h3>
-                                    <p className="text-3xl font-bold text-gray-900 mt-2">{customDetails.users?.length}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                    <User2Icon className="w-6 h-6 text-purple-600" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Custom Managers List */}
-                    {customDetails.users?.length > 0 && (
-                        <div className="border-t border-gray-200 pt-5">
-                            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                                <User2Icon className="h-4 w-4 mr-2 text-gray-500" />
-                                Assigned Managers
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                                {customDetails.users.map((user) => (
-                                    <div key={user.id} className="flex items-center space-x-2 bg-gradient-to-r from-gray-100 to-gray-50 rounded-full px-4 py-2 border border-gray-200 hover:shadow-sm transition-shadow">
-                                        <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                                            <span className="text-xs font-semibold text-gray-600">
-                                                {user.firstName.charAt(0)}{user.lastName.charAt(0)}
-                                            </span>
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-700">
-                                            {user.firstName} {user.lastName}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Hotels & Properties</h1>
+                <p className="text-sm text-gray-600 mt-1">
+                    Manage all your hotel properties and their performance
+                </p>
             </div>
 
             {/* Actions Bar with Dropdown */}
             <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900">Manage Properties</h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        View and manage all properties under this brand
-                    </p>
+                <div className="flex space-x-2 border-b">
+                    {(["group", "brand", "property"] as const).map((tab) => (
+
+                        <Button
+                            key={tab}
+                            variant={currentTab === tab ? "secondary" : "ghost"}
+                            onClick={() => setCurrentTab(tab)}
+                            className={`px-4 py-2 rounded-t-lg border-b-2 ${currentTab === tab
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-transparent hover:border-gray-300"
+                                }`}
+                        >
+                            {capitalizeFirstLetter(getTabDisplayName(tab))} ({
+                                tab === "group" ? creations.groups?.length :
+                                    tab === "brand" ? creations.brands?.length :
+                                        creations.properties?.length
+                            })
+                        </Button>
+                    ))}
                 </div>
 
                 <DropdownMenu>
@@ -325,9 +292,9 @@ export default function Custom() {
                                 <DialogFooter>
                                     <Button
                                         onClick={handleAddMember}
-                                        disabled={!selectedUser || isAssigningUser}
+                                        disabled={!selectedUser || loader.isLoading}
                                     >
-                                        {isAssigningUser ? 'Assigning...' : 'Assign User'}
+                                        {loader.isLoading ? 'Assigning...' : 'Assign User'}
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
@@ -356,8 +323,8 @@ export default function Custom() {
                         <div>
                             <Label className="text-sm font-medium">Name</Label>
                             <Input
-                                value={customDetails.name}
-                                onChange={(e) => setCustomDetails({ ...customDetails, name: e.target.value })}
+                                value={updateCustomDetails.name}
+                                onChange={(e) => setUpdateCustomDetails({ ...updateCustomDetails, name: e.target.value })}
                                 className="mt-1"
                             />
                         </div>
@@ -376,9 +343,9 @@ export default function Custom() {
                             </Button>
 
                             {/* Image Preview Grid */}
-                            {customDetails.images.length > 0 && (
+                            {updateCustomDetails.images.length > 0 && (
                                 <div className="grid grid-cols-3 gap-2 mt-2">
-                                    {customDetails.images.map((url, index) => (
+                                    {updateCustomDetails.images.map((url, index) => (
                                         <div key={index} className="relative group">
                                             <img
                                                 src={url}
@@ -402,8 +369,8 @@ export default function Custom() {
                             <input
                                 id="active"
                                 type="checkbox"
-                                checked={customDetails.isActive}
-                                onChange={(e) => setCustomDetails({ ...customDetails, isActive: e.target.checked })}
+                                checked={updateCustomDetails.isActive}
+                                onChange={(e) => setUpdateCustomDetails({ ...updateCustomDetails, isActive: e.target.checked })}
                             />
                             <Label htmlFor="active" className="text-sm cursor-pointer">Active</Label>
                         </div>
@@ -413,22 +380,20 @@ export default function Custom() {
                     <ImageUploadModal
                         isOpen={isImageUploadModalOpen}
                         onClose={() => setIsImageUploadModalOpen(false)}
-                        // uploadImages={uploadImages}
                         onUploadSuccess={handleUploadSuccess}
                     />
 
                     <div className="flex justify-end gap-2 mt-4">
                         <Button variant="outline" onClick={() => setIsUpdateDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleUpdateBrand}>Save</Button>
+                        <Button onClick={handleUpdateCustom}>Save</Button>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Content Display */}
             <div className="bg-white p-6 rounded-lg shadow">
 
                 {/* Data Grid */}
-                {creations?.length === 0 ? (
+                {currentData?.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="mx-auto h-24 w-24 text-gray-300">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,7 +414,7 @@ export default function Custom() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {creations?.map((item: ICreation) => (
+                        {currentData?.map((item: ICreation) => (
                             <div
                                 key={item.id}
                                 className="border rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
@@ -466,7 +431,7 @@ export default function Custom() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className={`${item.type === "property" ? item.property?.isDraft && "flex-1" : "flex-1"}`}
+                                        className={`${item.type === "property" ? item.property?.isDraft ? "flex-1" : "hidden" : "flex-1"}`}
                                         onClick={() => {
                                             item.type != "property" ?
                                                 navigate(`/app/property/${currentTab}/${item.id}`) :
@@ -485,6 +450,11 @@ export default function Custom() {
                                                 onClick={() => navigate(`/app/property/${currentTab}/${item.id}`)}
                                             >
                                                 <Settings className="h-4 w-4" />
+                                                {!item.property?.isDraft &&
+
+                                                    <span className="ml-2">{!item.property?.isDraft && "Complete Setup"}</span>
+                                                }
+
                                             </Button>
                                         )
                                     }

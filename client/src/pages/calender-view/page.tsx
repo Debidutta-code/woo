@@ -486,7 +486,8 @@ export default function InventoryPage() {
       roomTypes: apiDay.roomTypes.map((rt) => ({
         invTypeCode: rt.invTypeCode,
         roomTypeCode: rt.invTypeCode,
-        roomTypeName: rt.invTypeCode,
+        roomName: rt.roomName,
+        roomTypeName: rt.roomName || rt.invTypeCode,
         total: rt.available + rt.sold,
         sold: rt.sold,
         available: rt.available,
@@ -517,13 +518,14 @@ export default function InventoryPage() {
           baseByGuestAmts: price.baseByGuestAmts.map((guest) => ({
             amountBeforeTax: guest.amountBeforeTax,
             numberOfGuests: guest.numberOfGuests,
-            _id: guest._id,
+            ageQualifyingCode: guest.ageQualifyingCode,
+            id: guest.id,
           })),
           additionalGuestAmounts: price.additionalGuestAmounts.map(
             (additional) => ({
               ageQualifyingCode: additional.ageQualifyingCode,
               amount: additional.amount,
-              _id: additional._id,
+              id: additional.id,
             }),
           ),
         })),

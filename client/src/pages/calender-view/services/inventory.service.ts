@@ -67,12 +67,14 @@ export async function updateRatePlanChargesService(payload: {
   endDate: string;
   baseGuestAmounts: Array<{
     numberOfGuests: number;
+    ageQualifyingCode: string;
     amountBeforeTax: number;
   }>;
   additionalGuestAmounts?: Array<{
     ageQualifyingCode: string;
     amount: number;
   }>;
+  currencyCode?: string;
 }) {
   // Validation
   if (!payload.propertyCode) {
@@ -125,6 +127,12 @@ export async function updateRatePlanChargesService(payload: {
       return {
         success: false,
         message: "Number of guests must be at least 1",
+      };
+    }
+     if (!guest.ageQualifyingCode) {
+      return {
+        success: false,
+        message: "Age qualifying code is required",
       };
     }
     if (guest.amountBeforeTax < 0) {

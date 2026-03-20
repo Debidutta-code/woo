@@ -1,16 +1,16 @@
 // interfaces/inventory.interfaces.ts
 
 export interface InventoryAnalysisFilters {
-  startDate: string; // YYYY-MM-DD
-  endDate: string;   // YYYY-MM-DD
-  roomTypeCodes?: string[]; // Optional - specific room type
-  ratePlanCodes?: string[]; // Optional - specific rate plan
+  startDate: string; 
+  endDate: string;   
+  roomTypeCodes?: string[]; 
+  ratePlanCodes?: string[]; 
 }
 
 export interface RoomTypeResponse {
   id: string;
   roomName: string;
-  roomType: string;  // ← This is what the API returns
+  roomType: string;  
   totalRoom: number;
 }
 
@@ -25,7 +25,6 @@ export interface RatePlan {
   code: string;
 }
 
-// API Response structure
 export interface InventoryAnalysisResponse {
   success: boolean;
   message: string;
@@ -63,6 +62,7 @@ export interface DayData {
 
 export interface RoomTypeData {
   invTypeCode: string;
+  roomName?: string;
   available: number;
   sold: number;
   occupancy: number;
@@ -82,7 +82,7 @@ export interface RatePlanData {
 export interface PriceData {
   invTypeCode: string;
   currencyCode: string;
-  sellStatus: 'open' | 'close'; // ✅ Strict type to match your existing types
+  sellStatus: 'open' | 'close';
   cta: boolean;
   ctd: boolean;
   baseByGuestAmts: GuestAmount[];
@@ -92,11 +92,12 @@ export interface PriceData {
 export interface GuestAmount {
   amountBeforeTax: number;
   numberOfGuests: number;
-  _id: string;
+  ageQualifyingCode: string;
+  id: string;
 }
 
 export interface AdditionalGuestAmount {
   ageQualifyingCode: string;
   amount: number;
-  _id: string;
+  id: string;
 }

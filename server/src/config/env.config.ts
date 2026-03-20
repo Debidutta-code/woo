@@ -44,7 +44,7 @@ const config = {
     ngenius: {
         baseUrl: process.env.NGENIUS_BASE_URL,
         apiKey: process.env.NGENIUS_API_KEY,
-        outletId: process.env.NGENIUS_OUTLET_ID,
+        outletId: process.env.NGENIUS_OUTLET_ID,            
     },
 
     rateTigerUsername: process.env.RATETIGER_USERNAME,
@@ -65,6 +65,11 @@ const config = {
     redisHost: process.env.REDIS_HOST || 'localhost',
     redisPort: process.env.REDIS_PORT || '6379',
     redisPassword: process.env.REDIS_PASSWORD || '',
+
+
+    emailQueue: process.env.EMAIL_QUEUE || 'email-send-queue',
+    deadLetterQueue: process.env.DEAD_LETTER_QUEUE || 'email-dead-queue',
+    currencyExchangeQueue: process.env.CURRENCY_EXCHANGE_QUEUE || 'currency-exchange-queue',
 
 }
 export default config;
