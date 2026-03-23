@@ -1,0 +1,1 @@
+export * from './rategain.service';

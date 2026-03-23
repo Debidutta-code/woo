@@ -1,0 +1,1 @@
+export { default as rateGainRouter } from './rategain.route';

@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Property {
+  id               String   @id @default(uuid())
+  propertyId       String   @unique @map("property_id")
+  propertyCode     String   @map("property_code")
+  brandCode        String?  @map("brand_code")
+  propertyName     String   @map("property_name")
+  description      String?
+  accomodationType String?  @map("accomodation_type")
+  accMultiDesc     String?  @map("acc_multi_desc")
+  accTypeDesc      String?  @map("acc_type_desc")
+  phone            String?
+  ranking          Int?
+  currency         String?
+  startingPrice    Decimal? @map("starting_price") @db.Decimal(10, 2)
+
+  categoryCode      String? @map("category_code")
+  categoryName      String? @map("category_name")
+  categoryGroupCode String? @map("category_group_code")
+  categoryGroupDesc String? @map("category_group_desc")
+  chainCode         String? @map("chain_code")
+  chainName         String? @map("chain_name")
+  s2c               String? @map("s2c")
+
+  latitude  Decimal? @db.Decimal(22, 20)
+  longitude Decimal? @db.Decimal(22, 20)
+
+  hotelAmenities String[] @map("hotel_amenities")
+
+  address    PropertyAddress?
+  images     PropertyImage[]
+  facilities PropertyFacility[]
+  boards     PropertyBoard[]
+  roomTypes  RoomType[]
+  segments   PropertySegment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([propertyCode])
+  @@map("properties")
+}
+
+model PropertySegment {
+  id         String @id @default(uuid())
+  propertyId String @map("property_id")
+  code       String
+  name       String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_segments")
+}
+
+model PropertyAddress {
+  id         String @id @default(uuid())
+  propertyId String @unique @map("property_id")
+
+  address    String?
+  street     String?
+  city       String?
+  postalCode String? @map("postal_code")
+  countryCode     String? @map("country_code")
+  countryName     String? @map("country_name")
+  stateCode       String? @map("state_code")
+  stateName       String? @map("state_name")
+  zoneCode        String? @map("zone_code")
+  zoneName        String? @map("zone_name")
+  destinationCode String? @map("destination_code")
+  destinationName String? @map("destination_name")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("property_addresses")
+}
+
+model PropertyImage {
+  id         String @id @default(uuid())
+  propertyId String @map("property_id")
+  url        String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+model PropertyBoard {
+  id         String @id @default(uuid())
+  propertyId String @map("property_id")
+  code       String
+  name       String
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_boards")
+}
+
+model PropertyFacility {
+  id                String  @id @default(uuid())
+  propertyId        String  @map("property_id")
+  facilityGroupName String  @map("facility_group_name")
+  facilityName      String  @map("facility_name")
+  facilityDesc      String? @map("facility_description")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@map("property_facilities")
+}
+
+model RoomType {
+  id             String  @id @default(uuid())
+  propertyId     String  @map("property_id")
+  roomCode       String  @map("room_code")
+  name           String
+  nativeCurrency String? @map("native_currency")
+
+  images   RoomImage[]
+  rates    RoomRate[]
+  property Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([propertyId, roomCode])
+  @@index([propertyId])
+  @@index([roomCode])
+  @@map("room_types")
+}
+
+model RoomImage {
+  id         String @id @default(uuid())
+  roomTypeId String @map("room_type_id")
+  url        String
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@index([roomTypeId])
+  @@map("room_images")
+}
+
+model RoomRate {
+  id                String   @id @default(uuid())
+  roomTypeId        String   @map("room_type_id")
+  rateKey           String   @map("rate_key")
+  rateCode          String?  @map("rate_code")
+  rateType          String?  @map("rate_type")
+  rateName          String?  @map("rate_name")
+  totalPrice        Decimal  @map("total_price") @db.Decimal(10, 2)
+  msp               Decimal? @map("msp") @db.Decimal(10, 2)
+  commissionAmt     Decimal? @map("commission_amt") @db.Decimal(10, 2)
+  commissionPct     Decimal? @map("commission_pct") @db.Decimal(6, 2)
+  isMandatory       Boolean? @map("is_mandatory")
+  allotment         Int?
+  boardCode         String?  @map("board_code")
+  boardName         String?  @map("board_name")
+  paymentType       String?  @map("payment_type")
+  packaging         Boolean  @default(false)
+  rateCommentsId    String?  @map("rate_comments_id")
+  rateComments      String?  @map("rate_comments")
+  allocationDetails String?  @map("allocation_details")
+  status            String?
+  rooms             Int?
+  adults            Int?
+  children          Int?
+  childrenAges      String?  @map("children_ages")
+
+  roomType             RoomType             @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  cancellationPolicies CancellationPolicy[]
+  taxes                RateTax[]
+  fees                 RateFee[]
+  offers               RateOffer[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([roomTypeId])
+  @@index([rateKey])
+  @@map("room_rates")
+}
+
+model CancellationPolicy {
+  id               String    @id @default(uuid())
+  roomRateId       String    @map("room_rate_id")
+  amount           Decimal   @db.Decimal(10, 2)
+  fromDate         DateTime  @map("from_date")
+  toDate           DateTime? @map("to_date")
+  amendCharge      Decimal?  @map("amend_charge") @db.Decimal(10, 2)
+  amendRestricted  Boolean?  @map("amend_restricted")
+  cancelRestricted Boolean?  @map("cancel_restricted")
+  noShowPolicy     Boolean?  @map("no_show_policy")
+
+  roomRate RoomRate @relation(fields: [roomRateId], references: [id], onDelete: Cascade)
+
+  @@index([roomRateId])
+  @@map("cancellation_policies")
+}
+
+model RateTax {
+  id             String  @id @default(uuid())
+  roomRateId     String  @map("room_rate_id")
+  included       Boolean
+  amount         Decimal @db.Decimal(10, 2)
+  currency       String
+  clientAmount   Decimal @map("client_amount") @db.Decimal(10, 2)
+  clientCurrency String  @map("client_currency")
+
+  roomRate RoomRate @relation(fields: [roomRateId], references: [id], onDelete: Cascade)
+
+  @@index([roomRateId])
+  @@map("rate_taxes")
+}
+
+model RateFee {
+  id          String  @id @default(uuid())
+  roomRateId  String  @map("room_rate_id")
+  name        String
+  description String?
+  included    Boolean
+  amount      Decimal @db.Decimal(10, 2)
+  currency    String
+
+  roomRate RoomRate @relation(fields: [roomRateId], references: [id], onDelete: Cascade)
+
+  @@index([roomRateId])
+  @@map("rate_fees")
+}
+
+enum OfferType {
+  Percentage
+  Amount
+
+  @@map("offer_type")
+}
+
+model RateOffer {
+  id         String     @id @default(uuid())
+  roomRateId String     @map("room_rate_id")
+  name       String
+  type       OfferType?
+  value      String?
+  remark     String?
+
+  roomRate RoomRate @relation(fields: [roomRateId], references: [id], onDelete: Cascade)
+
+  @@index([roomRateId])
+  @@map("rate_offers")
+}
