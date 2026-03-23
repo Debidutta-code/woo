@@ -15,14 +15,14 @@ export const syncPropertiesController = async (
     res.status(200).json({
       success: true,
       message: 'Property sync completed successfully',
-      data:    stats,
+      data: stats,
     });
   } catch (error: any) {
     console.error('Sync failed:', error?.response?.data || error.message);
     res.status(500).json({
       success: false,
       message: 'Property sync failed',
-      error:   error?.response?.data || error.message,
+      error: error?.response?.data || error.message,
     });
   }
 };
