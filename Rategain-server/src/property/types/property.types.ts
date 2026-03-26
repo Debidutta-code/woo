@@ -1,104 +1,126 @@
-// ─── Request Types ───────────────────────────────────────────────
 
 export interface PropertySearchQuery {
-  q: string;
-  city?: string;
-  countryCode?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  categoryCode?: string;
-  chainCode?: string;
+  propertyName: string;
   page?: number;
   limit?: number;
 }
 
-// ─── Response Types ───────────────────────────────────────────────
-
-export interface PropertyThumbnail {
+export interface PropertySearchItem {
   id: string;
   propertyId: string;
   propertyName: string;
-  city: string | null;
-  country: string | null;
-  category: string | null;
-  chain: string | null;
-  startingPrice: number | null;
-  currency: string | null;
-  ranking: number | null;
-  thumbnail: string | null;
-}
-
-export interface PropertyAddress {
-  address: string | null;
-  street: string | null;
-  city: string | null;
-  postalCode: string | null;
-  countryCode: string | null;
-  countryName: string | null;
-  stateName: string | null;
-  zoneName: string | null;
-  destinationName: string | null;
-}
-
-export interface PropertyFacility {
-  facilityGroupName: string;
-  facilityName: string;
-  facilityDesc: string | null;
-}
-
-export interface RoomRate {
-  rateKey: string;
-  rateName: string | null;
-  totalPrice: number;
-  boardName: string | null;
-  paymentType: string | null;
-  cancellationPolicies: {
-    amount: number;
-    fromDate: Date;
-    toDate: Date | null;
-  }[];
-}
-
-export interface RoomType {
-  roomCode: string;
-  name: string;
-  images: { url: string }[];
-  rates: RoomRate[];
-}
-
-export interface PropertyDetail {
-  id: string;
-  propertyId: string;
-  propertyName: string;
-  description: string | null;
-  phone: string | null;
-  email: string | null;
+  propertyCode: string;
+  phone: string | null;           
   ranking: number | null;
   startingPrice: number | null;
   currency: string | null;
   categoryName: string | null;
   chainName: string | null;
-  hotelAmenities: string[];
-  address: PropertyAddress | null;
-  images: { url: string }[];
-  facilities: PropertyFacility[];
-  roomTypes: RoomType[];
+  city: string | null;
+  countryName: string | null;
+  thumbnail: string | null;
 }
 
-// ─── API Response Wrappers ────────────────────────────────────────
-
-export interface ApiResponse<T> {
+export interface PropertySearchResponse {
   success: boolean;
   message: string;
-  data: T;
-}
-
-export interface PropertySearchResponse extends ApiResponse<PropertyThumbnail[]> {
   count: number;
   requiresDisambiguation: boolean;
   page: number;
   limit: number;
   totalPages: number;
+  data: PropertySearchItem[];
 }
 
-export interface PropertyDetailResponse extends ApiResponse<PropertyDetail | null> {}
+
+export interface PropertyDetailData {
+  id: string;
+  propertyId: string;
+  propertyName: string;          
+  propertyCode: string;
+  brandCode: string | null;
+  description: string | null;    
+  phone: string | null;          
+  ranking: number | null;
+  startingPrice: number | null;
+  currency: string | null;
+  accomodationType: string | null;
+  accTypeDesc: string | null;
+  categoryCode: string | null;
+  categoryName: string | null;   
+  categoryGroupCode: string | null;
+  categoryGroupDesc: string | null;
+  chainCode: string | null;
+  chainName: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  hotelAmenities: string[];
+  images: { id: string; url: string }[];  
+  facilities: {
+    id: string;
+    facilityGroupName: string;
+    facilityName: string;
+    facilityDesc: string | null;
+  }[];
+  boards: { id: string; code: string; name: string }[];
+  segments: { id: string; code: string; name: string }[];
+
+}
+
+export interface PropertyDetailResponse {
+  success: boolean;
+  message: string;
+  data: PropertyDetailData | null;
+}
+
+
+export interface PropertyAddressData {
+  id: string;
+  address: string | null;        
+  street: string | null;         
+  city: string | null;           
+  postalCode: string | null;     
+  countryCode: string | null;
+  countryName: string | null;    
+  stateCode: string | null;
+  stateName: string | null;      
+  zoneCode: string | null;
+  zoneName: string | null;
+  destinationCode: string | null;
+  destinationName: string | null;
+ }
+
+export interface PropertyAddressResponse {
+  success: boolean;
+  message: string;
+  data: PropertyAddressData | null;
+}
+
+
+export interface RoomData {
+  id: string;
+  roomCode: string;              
+  name: string;                  
+  nativeCurrency: string | null;
+  images: { id: string; url: string }[];  
+  rates: {
+    id: string;
+    rateKey: string;
+    rateName: string | null;
+    totalPrice: number;
+    boardCode: string | null;
+    boardName: string | null;
+    paymentType: string | null;
+    adults: number | null;
+    children: number | null;
+    rooms: number | null;        
+  }[];
+  
+}
+
+export interface PropertyRoomsResponse {
+  success: boolean;
+  message: string;
+  count: number;
+  data: RoomData[];
+}
