@@ -31,6 +31,7 @@ import platformRouter from '../platforms/routes/platform.routes';
 import { currencyRoutes } from "../currency-maping/routes"
 import { fikafiPaymentRoutes } from '../payment/routes/fikafi.routes';
 import { managementRoute } from '../utils-management/routes';
+import {dynamicPricingRouter} from "../dynamic-pricing/routes"
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
     app.head('/status', (_, res: Response) => res.status(200).end());
@@ -60,6 +61,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/agent-platform', agentPlatformRouter);
     apiV1Router.use('/property-management', PropertyManagement);
     apiV1Router.use('/ari', AriRouter);
+    apiV1Router.use('/dynamic-pricing',dynamicPricingRouter)
     apiV1Router.use('/activities', ActivityRouter);
     apiV1Router.use('/promo-codes', promoCodeRoutes);
     apiV1Router.use('/tax-system', TaxSystemRouter);

@@ -13,7 +13,7 @@ export class OccupancyBasedDynamicPricingService {
         this.occupancyRepo = new OccupancyBasedDynamicPricingRepository();
         this.dynamicPricingRepo = new DynamicPricing();
     }
-    public async createDynamicPricing(propertyId: string, data: ICOccupancyBasedDynamicPricingS): Promise<IApiResponse> {
+    public async createOccupancyBasedDynamicPricing(propertyId: string, data: ICOccupancyBasedDynamicPricingS): Promise<IApiResponse> {
         try {
             const [dynamicPricing, isExistsInRange, { convert, baseCurrency }] = await Promise.all([
                 this.dynamicPricingRepo.getDynamicPricingByPropertyIdCo(propertyId),
