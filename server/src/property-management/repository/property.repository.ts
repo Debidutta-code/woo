@@ -76,7 +76,13 @@ export class PropertyDao {
             images: property.image
           }
         })
-      ])
+      ],
+      )
+      await prisma.dynamicPricing.create({
+        data: {
+          propertyId: property.id,
+        }
+      })
       return property;
     } catch (error: any) {
       throw new Error(`Failed to create property: ${error.message}`);
@@ -97,7 +103,7 @@ export class PropertyDao {
           propertyRooms: {
             orderBy: [{
               priority: "asc"
-            },{createdAt: "asc"}],
+            }, { createdAt: "asc" }],
             where: {
 
               isDeleted: false,

@@ -361,34 +361,29 @@ enum IntegrationTypes {
   channel_manager
   pms
 }
-
 enum ReservationPromotionType {
-  early_bird
-  mlos
-  device_specific
-  offer_for_tonight
-  normal
+    early_bird
+    mlos
+    device_specific
+    offer_for_tonight
+    normal
 }
-
 enum CommissionOrDiscount {
-  commission
-  tax
+    commission
+    tax
 }
-
 enum PromotionType {
-  early_bird
-  offer_for_tonight
-  device_specific
+    early_bird
+    offer_for_tonight
+    device_specific
 }
-
 enum SeasonalDynamicPricingEnumType {
-  season
-  holiday
-  special_weekend
+    season
+    holiday
+    weekend
 }
-
 enum WeekEndDays {
-  friday
-  saturday
-  sunday
+    friday
+    saturday
+    sunday
 }

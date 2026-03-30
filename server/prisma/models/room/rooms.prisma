@@ -4,7 +4,7 @@ model Room {
   roomType            String        @map("room_type")
   totalRoom           Int           @map("total_room")
   floor               Int
-  roomView            RoomView      @default(others) @map("room_view")
+  roomView            RoomView      @default(others) @map("room_view") //this is not being used RoomViews this is being used from now onwads
   roomSize            Float         @map("room_size")
   roomUnit            RoomUnit      @default(sqft) @map("room_unit")
   smokingPolicy       SmokingPolicy @default(non_smoking) @map("smoking_policy")
@@ -25,19 +25,19 @@ model Room {
   property            Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId          String        @map("property_id")
 
-  roomAmenities                RoomAmenitySelection[]
-  roomVideos                   RoomVideo?
-  agenticRooms                 AgenticRoom[]
-  geoRatePlans                 GeoRatePlan[]
-  promotions                   Promotion[]
-  OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
-  SeasonalDynamicPricing       SeasonalDynamicPricing[]
-  WeekendDynamicPricing        WeekendDynamicPricing[]
+  roomAmenities RoomAmenitySelection[]
+  roomVideos    RoomVideo?
+  agenticRooms  AgenticRoom[]
+  geoRatePlans  GeoRatePlan[]
+  promotions    Promotion[]
 
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   customizableDeals CustomizableDeal[]
-
+  TouristTaxs       TouristTaxes[]
+  OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
+  SeasonalDynamicPricings      SeasonalDynamicPricing[]
+  WeekendDynamicPricing        WeekendDynamicPricing[]
   @@unique([propertyId, roomType])
   @@unique([propertyId, roomName])
   @@index([propertyId])

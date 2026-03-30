@@ -1,6 +1,6 @@
 model DynamicPricing {
   id         String @id @default(cuid())
-  propertyId String 
+  propertyId  String  @unique
   Property                     Property                       @relation(fields: [propertyId], references: [id])
   OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
   SeasonalDynamicPricings      SeasonalDynamicPricing[]
