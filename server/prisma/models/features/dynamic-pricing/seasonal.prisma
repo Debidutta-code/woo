@@ -1,0 +1,17 @@
+model SeasonalDynamicPricing {
+  id              String                         @id @default(cuid())
+  dynamicId       String                         @map("dynamic_id")
+  roomId          String                         @map("room_id")
+  ruleName        String                         @map("rule_name")
+  periodType      SeasonalDynamicPricingEnumType @map("period_type")
+  startDate       DateTime                       @map("start_date")
+  endDate         DateTime                       @map("end_date")
+  adjustmentType  DiscountType                   @map("adjustment_type")
+  adjustmentValue Float                          @map("adjustment_value")
+  currencyCode    CurrencyCode?                  @map("currency_code")
+
+  Room    Room           @relation(fields: [roomId], references: [id])
+  Dynamic DynamicPricing @relation(fields: [dynamicId], references: [id])
+
+  @@map("seasonal_dynamic_pricing")
+}
