@@ -11,4 +11,5 @@ model AddonAvailability {
     addon        Addon    @relation(fields: [addonId], references: [id], onDelete: Cascade)
 
     @@unique([addonId, date])
+    @@map("addon_availability")
 }

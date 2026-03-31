@@ -1,4 +1,4 @@
-import { IOccupancyBasedDynamicPricing, ISeasonalDynamicPricing,IWeekendDynamicPricing } from ".";
+import type { IOccupancyBasedDynamicPricing, ISeasonalDynamicPricing, IWeekendDynamicPricing } from ".";
 
 export interface IDynamicPricing{
     id: string;

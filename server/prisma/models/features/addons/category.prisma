@@ -7,4 +7,5 @@ model AddonCategory {
 
     subcategories AddonSubCategory[]
     addons        Addon[]
+    @@map("category")
 }

@@ -146,7 +146,7 @@ class InventoryRepository {
                 payload.map((chargeData) => {
                     const {
                         propertyCode, ratePlanCode, ratePlanName,
-                        roomTypeCode, roomTypeName, currencyCode, date,
+                        roomTypeCode, roomTypeName, currencyCode, date, roomId
                     } = chargeData;
 
                     return prisma.charge.upsert({
@@ -161,6 +161,7 @@ class InventoryRepository {
                         create: {
                             propertyCode, ratePlanCode, ratePlanName,
                             roomTypeCode, roomTypeName,
+                            roomId,
                             currencyCode: currencyCode.toUpperCase() as any,
                             date: new Date(date.toString()),
                         },

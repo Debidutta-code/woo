@@ -119,6 +119,8 @@ const scrollPosition = useRef(0);
     { name: 'Rate Allotment', href: `/property/rate-plan/map/${propertyId}` },
     { name: 'Calender-View', href: `/property/calender-view/${propertyId}` },
     { name: 'Inventory', href: `/property/inventory/${propertyId}`, icon: Building, userLevels: [1, 0, 2, 3, 4] },
+    { name: 'Dynamic Pricing', href: `/property/dynamic-pricing/${propertyId}` },
+    
 
   ];
 

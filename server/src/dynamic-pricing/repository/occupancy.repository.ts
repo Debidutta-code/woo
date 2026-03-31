@@ -10,9 +10,9 @@ export class OccupancyBasedDynamicPricingRepository {
             throw new Error("Error creating occupancy-based dynamic pricing");
         }
     }
-    public async getOccupancyBasedDynamicPricing(id: string): Promise<IOccupancyBasedDynamicPricing | null> {
+    public async getOccupancyBasedDynamicPricing(id: string): Promise<IOccupancyBasedDynamicPricing[] | null> {
         try {
-            return await prisma.occupancyBasedDynamicPricing.findUnique({
+            return await prisma.occupancyBasedDynamicPricing.findMany({
                 where: { id }
             });
         } catch (error) {

@@ -38,6 +38,7 @@ model Room {
   OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
   SeasonalDynamicPricings      SeasonalDynamicPricing[]
   WeekendDynamicPricing        WeekendDynamicPricing[]
+  Charges                      Charge[]
   @@unique([propertyId, roomType])
   @@unique([propertyId, roomName])
   @@index([propertyId])

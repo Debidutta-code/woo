@@ -18,6 +18,7 @@ export interface ICharges {
   propertyCode: string;
   ratePlanCode: string;
   roomTypeCode: string;
+  roomId: string;
   ratePlanName:string;
   roomTypeName:string;
   baseGuestAmounts: IBaseGuestAmounts[];

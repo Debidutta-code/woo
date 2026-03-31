@@ -200,6 +200,7 @@ class InventoryServices {
                         additionalGuestAmounts: convertedAdditionalGuestAmounts,
                         currencyCode: baseCurrency,
                         date: dateStr,
+                        roomId: room.id 
                     });
                 }
                 const daoRes = await InventoryDao.mapRatePlans(mappedRI);
@@ -260,6 +261,7 @@ class InventoryServices {
                     additionalGuestAmounts: convertedAdditionalGuestAmounts,
                     currencyCode: baseCurrency,
                     date: toUTC(yyyyMmDd),
+                    roomId:room.id
                 });
             }
             const daoRes = await InventoryDao.mapRatePlans(mappedRI);

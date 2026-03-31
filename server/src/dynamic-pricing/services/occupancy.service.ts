@@ -46,11 +46,8 @@ export class OccupancyBasedDynamicPricingService {
     }
     public async getDynamicPricingByRoomId(roomId: string): Promise<IApiResponse> {
         try {
-            const dynamicPricing = await this.occupancyRepo.getOccupancyBasedDynamicPricing(roomId);
-            if (!dynamicPricing) {
-                return errorResponse("Dynamic pricing not found for this room", "Dynamic pricing not found");
-            }
-            return successResponse("Dynamic pricing retrieved successfully ", dynamicPricing);
+            const dynamicPricing = await this.occupancyRepo.getOccupancyBasedDynamicPricingByRoomId(roomId);
+            return successResponse("Occupancy-based dynamic pricing retrieved successfully ", dynamicPricing);
         } catch (error) {
             if (error instanceof Error) {
                 return errorResponse("Error retrieving dynamic pricing", error.message);

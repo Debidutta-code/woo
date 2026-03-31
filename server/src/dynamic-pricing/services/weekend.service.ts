@@ -44,9 +44,6 @@ export class WeekendDynamicPricingService {
     public async getByRoomId(roomId: string): Promise<IApiResponse> {
         try {
             const weekendDynamicPricing = await this.weekendRepo.getByRoomId(roomId);
-            if (!weekendDynamicPricing) {
-                return errorResponse("Weekend dynamic pricing not found", "Weekend dynamic pricing not found");
-            }
             return successResponse("Weekend dynamic pricing fetched successfully", weekendDynamicPricing);
         } catch (error) {
             if (error instanceof Error) {
@@ -77,7 +74,7 @@ export class WeekendDynamicPricingService {
                 adjustmentValue: data.adjustmentType === "percentage" ? data.adjustmentValue : convert(data.adjustmentValue),
                 currencyCode: data.adjustmentType === "percentage" ? null : baseCurrency
             });
-            return successResponse("Weekend dynamic pricing updated successfully", updatedWeekendDynamicPricing);
+            return successResponse("Weekend dynamic pricing updated successfully");
         } catch (error) {
             if (error instanceof Error) {
                 return errorResponse("Error updating weekend dynamic pricing", error.message);
