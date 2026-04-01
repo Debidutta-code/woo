@@ -1,8 +1,8 @@
-import { Response } from "express";
-import { errorResponse, successResponse } from "../../../utils/return";
-import { AgentRequest } from "../../utils";
-import { AgentDashboardService } from "../services";
-import { IAgentDashboardFilters } from "../types";
+import { Response } from 'express';
+import { errorResponse, successResponse } from '../../../utils/return';
+import { AgentRequest } from '../../utils';
+import { AgentDashboardService } from '../services';
+import { IAgentDashboardFilters } from '../types';
 
 export class AgentDashboardController {
     private dashboardService: AgentDashboardService;
@@ -11,14 +11,22 @@ export class AgentDashboardController {
         this.dashboardService = new AgentDashboardService();
     }
 
-    public async getAnalytics(req: AgentRequest, res: Response): Promise<Response> {
+    public async getAnalytics(
+        req: AgentRequest,
+        res: Response
+    ): Promise<Response> {
         try {
             const agencyId = req.agent?.agencyId;
 
             if (!agencyId) {
-                return res.status(401).json(
-                    errorResponse("Unauthorized user", "Agent not authenticated or agency not found")
-                );
+                return res
+                    .status(401)
+                    .json(
+                        errorResponse(
+                            'Unauthorized user',
+                            'Agent not authenticated or agency not found'
+                        )
+                    );
             }
 
             const filters: IAgentDashboardFilters = {};
@@ -39,39 +47,61 @@ export class AgentDashboardController {
                 filters.endDate = new Date(req.query.endDate as string);
             }
 
-            const result = await this.dashboardService.getAgencyAnalytics(agencyId, filters);
+            const result = await this.dashboardService.getAgencyAnalytics(
+                agencyId,
+                filters
+            );
 
             return res.status(result.success ? 200 : 400).json(result);
         } catch (error) {
             if (error instanceof Error) {
-                return res.status(500).json(
-                    errorResponse("Failed to fetch analytics", error.message)
-                );
+                return res
+                    .status(500)
+                    .json(
+                        errorResponse(
+                            'Failed to fetch analytics',
+                            error.message
+                        )
+                    );
             }
-            return res.status(500).json(errorResponse("Internal Server Error"));
+            return res.status(500).json(errorResponse('Internal Server Error'));
         }
     }
 
-    public async getProperties(req: AgentRequest, res: Response): Promise<Response> {
+    public async getProperties(
+        req: AgentRequest,
+        res: Response
+    ): Promise<Response> {
         try {
             const agencyId = req.agent?.agencyId;
 
             if (!agencyId) {
-                return res.status(401).json(
-                    errorResponse("Unauthorized", "Agent not authenticated or agency not found")
-                );
+                return res
+                    .status(401)
+                    .json(
+                        errorResponse(
+                            'Unauthorized',
+                            'Agent not authenticated or agency not found'
+                        )
+                    );
             }
 
-            const result = await this.dashboardService.getAgencyProperties(agencyId);
+            const result =
+                await this.dashboardService.getAgencyProperties(agencyId);
 
             return res.status(result.success ? 200 : 400).json(result);
         } catch (error) {
             if (error instanceof Error) {
-                return res.status(500).json(
-                    errorResponse("Failed to fetch properties", error.message)
-                );
+                return res
+                    .status(500)
+                    .json(
+                        errorResponse(
+                            'Failed to fetch properties',
+                            error.message
+                        )
+                    );
             }
-            return res.status(500).json(errorResponse("Internal Server Error"));
+            return res.status(500).json(errorResponse('Internal Server Error'));
         }
     }
 }

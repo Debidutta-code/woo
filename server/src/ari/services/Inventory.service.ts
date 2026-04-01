@@ -139,7 +139,7 @@ class InventoryServices {
         try {
             const [room, { convert, baseCurrency }] = await Promise.all([
                 InventoryDao.getRoom(propertyId, roomTypeCode),
-                getCurrencyConverter(propertyId, currencyCode)
+                getCurrencyConverter(propertyId, currencyCode),
             ]);
 
             if (!room) {
@@ -200,7 +200,7 @@ class InventoryServices {
                         additionalGuestAmounts: convertedAdditionalGuestAmounts,
                         currencyCode: baseCurrency,
                         date: dateStr,
-                        roomId: room.id 
+                        roomId: room.id,
                     });
                 }
                 const daoRes = await InventoryDao.mapRatePlans(mappedRI);
@@ -210,7 +210,7 @@ class InventoryServices {
                     const firstMissing = inventoryCheck.missingDates[0];
                     const lastMissing =
                         inventoryCheck.missingDates[
-                        inventoryCheck.missingDates.length - 1
+                            inventoryCheck.missingDates.length - 1
                         ];
 
                     return successResponse(
@@ -261,7 +261,7 @@ class InventoryServices {
                     additionalGuestAmounts: convertedAdditionalGuestAmounts,
                     currencyCode: baseCurrency,
                     date: toUTC(yyyyMmDd),
-                    roomId:room.id
+                    roomId: room.id,
                 });
             }
             const daoRes = await InventoryDao.mapRatePlans(mappedRI);

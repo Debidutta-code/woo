@@ -1,8 +1,4 @@
-import {ReportsService} from "./reports.service";
-import {ExcelExportService} from "./xl.service";
+import { ReportsService } from './reports.service';
+import { ExcelExportService } from './xl.service';
 
-
-export {
-    ReportsService,
-    ExcelExportService
-}
+export { ReportsService, ExcelExportService };

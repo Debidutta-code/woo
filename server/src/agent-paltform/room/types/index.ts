@@ -3,12 +3,12 @@ import {
     IAgentPricingResponse,
     IDailyBreakdown,
     IIncludedAddon,
-    ITaxDetail
+    ITaxDetail,
 } from './roomrent.type';
 export {
     IAgentPricingRequest,
     IAgentPricingResponse,
     IDailyBreakdown,
     IIncludedAddon,
-    ITaxDetail
+    ITaxDetail,
 };

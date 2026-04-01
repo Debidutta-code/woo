@@ -1,11 +1,17 @@
 import { DateTime } from 'luxon';
-import { successResponse, errorResponse, IApiResponse, calculateNights, toUTCDate } from "../../../utils";
+import {
+    successResponse,
+    errorResponse,
+    IApiResponse,
+    calculateNights,
+    toUTCDate,
+} from '../../../utils';
 import {
     AgenticRoomRepository,
     AgenticRatePlanRepository,
-    AgenticPropertyRepository
-} from "../repository";
-import { IRatePlan, IPolicy } from "../types";
+    AgenticPropertyRepository,
+} from '../repository';
+import { IRatePlan, IPolicy } from '../types';
 import {
     IRoomCharge,
     IRoomChargeBaseByGuest,
@@ -20,7 +26,10 @@ import {
     ITouristTax,
     IBaseByGuestAmount,
 } from '../../../booking-engine/types';
-import { DiscountType, CurrencyCode } from '../../../tax-system/interfaces/tourist-tax.type';
+import {
+    DiscountType,
+    CurrencyCode,
+} from '../../../tax-system/interfaces/tourist-tax.type';
 
 export interface IAgentSearchPayload {
     startDate: string;
@@ -29,7 +38,11 @@ export interface IAgentSearchPayload {
         adults: number;
         children: number;
         rooms: number;
-        roomsArray?: { adults: number; children: number; childAges: number[] }[];
+        roomsArray?: {
+            adults: number;
+            children: number;
+            childAges: number[];
+        }[];
     };
 }
 
@@ -53,16 +66,23 @@ export class AgenticRoomService {
         countryCode: string
     ): Promise<IApiResponse> {
         try {
-            const agenticProperty = await this.agenticPropertyRepository.getAgenticPropertyById(agencyId, propertyId);
+            const agenticProperty =
+                await this.agenticPropertyRepository.getAgenticPropertyById(
+                    agencyId,
+                    propertyId
+                );
             if (!agenticProperty) {
-                return errorResponse("Agentic Property not found", "Property does not exist or deleted");
+                return errorResponse(
+                    'Agentic Property not found',
+                    'Property does not exist or deleted'
+                );
             }
 
             const property = agenticProperty.Property;
 
             const [roomDetails, ratePlans] = await Promise.all([
                 this.agenticRoomRepository.agenticRooms(agenticProperty.id),
-                this.agenticRatePlanRepository.getRatePlans(propertyId)
+                this.agenticRatePlanRepository.getRatePlans(propertyId),
             ]);
 
             // Build date array
@@ -71,7 +91,9 @@ export class AgenticRoomService {
             const last = toUTCDate(endDate);
             while (current < last) {
                 dates.push(current);
-                current = toUTCDate(new Date(new Date(current).setDate(current.getDate() + 1)));
+                current = toUTCDate(
+                    new Date(new Date(current).setDate(current.getDate() + 1))
+                );
             }
 
             const totalGuests = guests.adults + guests.children;
@@ -97,9 +119,11 @@ export class AgenticRoomService {
                 )
             );
 
-            const rooms: IRoom[] = roomResults.filter((r): r is IRoom => r !== null);
+            const rooms: IRoom[] = roomResults.filter(
+                (r): r is IRoom => r !== null
+            );
 
-            return successResponse("Rooms fetched successfully", {
+            return successResponse('Rooms fetched successfully', {
                 propertyDetails: {
                     id: property.id,
                     propertyName: property.propertyName,
@@ -114,9 +138,12 @@ export class AgenticRoomService {
             });
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to retrieve room details", error.message);
+                return errorResponse(
+                    'Failed to retrieve room details',
+                    error.message
+                );
             }
-            return errorResponse("Failed to retrieve room details");
+            return errorResponse('Failed to retrieve room details');
         }
     }
 
@@ -136,11 +163,12 @@ export class AgenticRoomService {
         const room = agenticRoom.room;
 
         // Check inventory availability
-        const inventory = await this.agenticRoomRepository.getInventoryByProperty(
-            property.propertyCode,
-            room.roomType,
-            dates
-        );
+        const inventory =
+            await this.agenticRoomRepository.getInventoryByProperty(
+                property.propertyCode,
+                room.roomType,
+                dates
+            );
         if (inventory.length !== dates.length) return null;
 
         // Process each rate plan
@@ -218,20 +246,39 @@ export class AgenticRoomService {
                 ratePlan.id,
                 countryCode || 'US'
             ) as Promise<IRoomGeoRatePlan | null>,
-            this.agenticRoomRepository.getRatePlanRule(ratePlan.id) as Promise<IRoomRatePlanRule | null>,
-            this.agenticRoomRepository.getTouristTax(ratePlan.id) as Promise<IRoomTouristTaxData | null>,
-            this.agenticRoomRepository.getBookingOffset(ratePlan.id, toUTCDate(checkInDate)) as Promise<IRoomBookingOffset | null>,
+            this.agenticRoomRepository.getRatePlanRule(
+                ratePlan.id
+            ) as Promise<IRoomRatePlanRule | null>,
+            this.agenticRoomRepository.getTouristTax(
+                ratePlan.id
+            ) as Promise<IRoomTouristTaxData | null>,
+            this.agenticRoomRepository.getBookingOffset(
+                ratePlan.id,
+                toUTCDate(checkInDate)
+            ) as Promise<IRoomBookingOffset | null>,
         ]);
 
         // Validate charges
         if (!this.validateCharges(charges, dates)) return null;
 
         // Validate restrictions
-        if (!this.validateRestrictions(geoRatePlan, bookingOffset, ratePlanRule, checkInDate, today, numberOfNights, startDate, endDate)) return null;
+        if (
+            !this.validateRestrictions(
+                geoRatePlan,
+                bookingOffset,
+                ratePlanRule,
+                checkInDate,
+                today,
+                numberOfNights,
+                startDate,
+                endDate
+            )
+        )
+            return null;
 
         // Check room capacity
         const anyRoomExceedsCapacity = roomsArray.some(
-            r => (r.adults + r.children) > room.maxOccupancy
+            r => r.adults + r.children > room.maxOccupancy
         );
         if (anyRoomExceedsCapacity) return null;
 
@@ -252,16 +299,20 @@ export class AgenticRoomService {
         }
 
         // Apply geo discount silently
-        const { totalGeoDiscount } = this.calculateGeoDiscount(baseAmount, geoRatePlan);
+        const { totalGeoDiscount } = this.calculateGeoDiscount(
+            baseAmount,
+            geoRatePlan
+        );
 
         // Apply rate plan rule discount
-        const { ruleDiscount, appliedDiscounts } = this.calculateRatePlanRuleDiscount(
-            baseAmount,
-            ratePlanRule,
-            numberOfNights,
-            startDate,
-            endDate
-        );
+        const { ruleDiscount, appliedDiscounts } =
+            this.calculateRatePlanRuleDiscount(
+                baseAmount,
+                ratePlanRule,
+                numberOfNights,
+                startDate,
+                endDate
+            );
 
         const totalDiscount = totalGeoDiscount + ruleDiscount;
 
@@ -347,9 +398,9 @@ export class AgenticRoomService {
 
         // Booking offset
         if (bookingOffset) {
-            const hoursUntilCheckIn = DateTime.fromJSDate(toUTCDate(checkInDate))
-                .diff(DateTime.fromJSDate(toUTCDate(today)), 'hours')
-                .hours;
+            const hoursUntilCheckIn = DateTime.fromJSDate(
+                toUTCDate(checkInDate)
+            ).diff(DateTime.fromJSDate(toUTCDate(today)), 'hours').hours;
 
             if (
                 bookingOffset.minimumAdvanceBookingOffset !== null &&
@@ -378,8 +429,10 @@ export class AgenticRoomService {
             );
 
             if (withinPeriod) {
-                if (ratePlanRule.minLos && numberOfNights < ratePlanRule.minLos) return false;
-                if (ratePlanRule.maxLos && numberOfNights > ratePlanRule.maxLos) return false;
+                if (ratePlanRule.minLos && numberOfNights < ratePlanRule.minLos)
+                    return false;
+                if (ratePlanRule.maxLos && numberOfNights > ratePlanRule.maxLos)
+                    return false;
             }
         }
 
@@ -391,37 +444,60 @@ export class AgenticRoomService {
     private calculateBasePrice(
         charge: IRoomCharge,
         guests: { adults: number; children: number }
-    ): { baseAmount: number; sortedBaseAmounts: IRoomChargeBaseByGuest[] } | null {
+    ): {
+        baseAmount: number;
+        sortedBaseAmounts: IRoomChargeBaseByGuest[];
+    } | null {
         const adultBaseAmounts = charge.baseGuestAmounts
             .filter((b: IRoomChargeBaseByGuest) => b.ageQualifyingCode === '10')
-            .sort((a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) => a.numberOfGuests - b.numberOfGuests);
+            .sort(
+                (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) =>
+                    a.numberOfGuests - b.numberOfGuests
+            );
 
         const childBaseAmounts = charge.baseGuestAmounts
             .filter((b: IRoomChargeBaseByGuest) => b.ageQualifyingCode === '8')
-            .sort((a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) => a.numberOfGuests - b.numberOfGuests);
+            .sort(
+                (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) =>
+                    a.numberOfGuests - b.numberOfGuests
+            );
 
-        const additionalAdultCharge = charge.additionalGuestAmounts
-            .find((a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '10');
+        const additionalAdultCharge = charge.additionalGuestAmounts.find(
+            (a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '10'
+        );
 
-        const additionalChildCharge = charge.additionalGuestAmounts
-            .find((a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '8');
+        const additionalChildCharge = charge.additionalGuestAmounts.find(
+            (a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '8'
+        );
 
         // Adult price
-        const adultResult = this.calculateGuestTypePrice(guests.adults, adultBaseAmounts, additionalAdultCharge);
+        const adultResult = this.calculateGuestTypePrice(
+            guests.adults,
+            adultBaseAmounts,
+            additionalAdultCharge
+        );
         if (adultResult === null) return null;
 
         // Child price
-        const childResult = guests.children > 0
-            ? this.calculateGuestTypePrice(guests.children, childBaseAmounts, additionalChildCharge)
-            : { basePrice: 0, additionalCharges: 0 };
+        const childResult =
+            guests.children > 0
+                ? this.calculateGuestTypePrice(
+                      guests.children,
+                      childBaseAmounts,
+                      additionalChildCharge
+                  )
+                : { basePrice: 0, additionalCharges: 0 };
         if (childResult === null) return null;
 
         const baseAmount =
-            adultResult.basePrice + childResult.basePrice +
-            adultResult.additionalCharges + childResult.additionalCharges;
+            adultResult.basePrice +
+            childResult.basePrice +
+            adultResult.additionalCharges +
+            childResult.additionalCharges;
 
         const sortedBaseAmounts = [...charge.baseGuestAmounts].sort(
-            (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) => a.numberOfGuests - b.numberOfGuests
+            (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) =>
+                a.numberOfGuests - b.numberOfGuests
         );
 
         return { baseAmount, sortedBaseAmounts };
@@ -435,7 +511,9 @@ export class AgenticRoomService {
         let basePrice = 0;
         let additionalCharges = 0;
 
-        const exactBase = baseAmounts.find(b => b.numberOfGuests === guestCount);
+        const exactBase = baseAmounts.find(
+            b => b.numberOfGuests === guestCount
+        );
         if (exactBase) {
             basePrice = Number(exactBase.amountBeforeTax);
         } else if (baseAmounts.length > 0) {
@@ -444,11 +522,13 @@ export class AgenticRoomService {
             const extraGuests = guestCount - maxBase.numberOfGuests;
             if (extraGuests > 0) {
                 if (!additionalCharge) return null;
-                additionalCharges = extraGuests * Number(additionalCharge.amount);
+                additionalCharges =
+                    extraGuests * Number(additionalCharge.amount);
             }
         } else {
             if (additionalCharge) {
-                additionalCharges = guestCount * Number(additionalCharge.amount);
+                additionalCharges =
+                    guestCount * Number(additionalCharge.amount);
             } else {
                 return null;
             }
@@ -472,11 +552,15 @@ export class AgenticRoomService {
         let geoDiscount = 0;
         if (geoRatePlan.restrictionType === 'percentage') {
             const delta = baseAmount * (restrictionValue / 100);
-            geoDiscount = geoRatePlan.restrictionTypeAction === 'increase' ? -delta : delta;
+            geoDiscount =
+                geoRatePlan.restrictionTypeAction === 'increase'
+                    ? -delta
+                    : delta;
         } else if (geoRatePlan.restrictionType === 'fixed') {
-            geoDiscount = geoRatePlan.restrictionTypeAction === 'increase'
-                ? -restrictionValue
-                : restrictionValue;
+            geoDiscount =
+                geoRatePlan.restrictionTypeAction === 'increase'
+                    ? -restrictionValue
+                    : restrictionValue;
         }
 
         return { totalGeoDiscount: geoDiscount };
@@ -498,7 +582,12 @@ export class AgenticRoomService {
             !ratePlanRule.isActive ||
             !ratePlanRule.minLos ||
             numberOfNights < ratePlanRule.minLos ||
-            !this.isDateRangeWithinPeriod(startDate, endDate, ratePlanRule.startDate, ratePlanRule.endDate) ||
+            !this.isDateRangeWithinPeriod(
+                startDate,
+                endDate,
+                ratePlanRule.startDate,
+                ratePlanRule.endDate
+            ) ||
             !ratePlanRule.discountType ||
             !ratePlanRule.discountValue
         ) {
@@ -544,7 +633,8 @@ export class AgenticRoomService {
             name: touristTaxData.name || '',
             discountType: touristTaxData.discountType as DiscountType,
             discountValue: touristTaxData.discountValue,
-            currencyCode: (touristTaxData.currencyCode || 'USD') as CurrencyCode,
+            currencyCode: (touristTaxData.currencyCode ||
+                'USD') as CurrencyCode,
             calculatedTaxAmount,
         };
     }

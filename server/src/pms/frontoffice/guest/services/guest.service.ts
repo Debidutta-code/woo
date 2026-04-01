@@ -2,7 +2,7 @@
 // import { successResponse, errorResponse} from "../../../../utils/return";
 // import { IApiResponse } from "../../../../utils/return.types";
 // import {
-    
+
 //     IAddGuestDocument,
 //     ICGuest
 
@@ -62,7 +62,7 @@
 //     public async getGuestDetailsById(id:string):Promise<IApiResponse>{
 //         try {
 //             const repoRes=await this.guestRepository.findGuestById(id)
-            
+
 //             if(!repoRes){
 //                 return errorResponse("Guest Not found");
 //             }

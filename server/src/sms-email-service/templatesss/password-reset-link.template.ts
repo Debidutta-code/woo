@@ -1,11 +1,13 @@
-export const generatePasswordResetLinkTemplate = (resetLink: string): string => {
+export const generatePasswordResetLinkTemplate = (
+    resetLink: string
+): string => {
     return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Password Reset - RevChill</title>
+            <title>Password Reset - Woohoo Trip</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -87,7 +89,7 @@ export const generatePasswordResetLinkTemplate = (resetLink: string): string => 
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="logo">RevChill</div>
+                    <div class="logo">Woohoo Trip</div>
                     <h2>Password Reset Request</h2>
                 </div>
                 
@@ -117,11 +119,11 @@ export const generatePasswordResetLinkTemplate = (resetLink: string): string => 
                 </div>
                 
                 <div class="warning">
-                    <strong>Security Notice:</strong> Never share this link with anyone. RevChill staff will never ask for your password reset link.
+                    <strong>Security Notice:</strong> Never share this link with anyone. Woohoo Trip staff will never ask for your password reset link.
                 </div>
                 
                 <div class="footer">
-                    <p>© ${new Date().getFullYear()} RevChill. All rights reserved.</p>
+                    <p>© ${new Date().getFullYear()} Woohoo Trip. All rights reserved.</p>
                     <p>This is an automated email, please do not reply.</p>
                 </div>
             </div>

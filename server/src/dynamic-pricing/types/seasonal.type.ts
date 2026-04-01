@@ -1,6 +1,6 @@
-import { CurrencyCode, DiscountType } from "../../tax-system/interfaces";
+import { CurrencyCode, DiscountType } from '../../tax-system/interfaces';
 
-export type SeasonalDynamicPricingEnumType = "season" | "holiday" | "weekend";
+export type SeasonalDynamicPricingEnumType = 'season' | 'holiday' | 'weekend';
 export interface ICSeasonalDynamicPricing {
     dynamicId: string;
     roomId: string;
@@ -12,8 +12,10 @@ export interface ICSeasonalDynamicPricing {
     adjustmentValue: number;
     currencyCode: CurrencyCode | null;
 }
-export interface ISeasonalDynamicPricingS extends Omit<ICSeasonalDynamicPricing, "dynamicId"> {
-}
+export interface ISeasonalDynamicPricingS extends Omit<
+    ICSeasonalDynamicPricing,
+    'dynamicId'
+> {}
 export interface ISeasonalDynamicPricing extends ICSeasonalDynamicPricing {
     id: string;
 }

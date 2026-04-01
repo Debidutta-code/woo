@@ -10,6 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -17,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, TrendingUp } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp, MoreVertical } from "lucide-react";
 import toast from "react-hot-toast";
 import Loader from "@/components/Loader/Loader";
 import type { RoomTypes } from "@/pages/inventory/types";
@@ -230,31 +236,37 @@ export default function OccupancyTab({
                     <TableCell className="capitalize">{rule.adjustmentType}</TableCell>
                     <TableCell className="font-medium">{formatAdjustment(rule)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() =>
-                            setDialog({ open: true, mode: "edit", item: rule })
-                          }
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() =>
-                            setDeleteDialog({
-                              open: true,
-                              id: rule.id,
-                              label: `${rule.minInventoryPercentage}%–${rule.maxInventoryPercentage}% rule`,
-                            })
-                          }
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              setDialog({ open: true, mode: "edit", item: rule })
+                            }
+                          >
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() =>
+                              setDeleteDialog({
+                                open: true,
+                                id: rule.id,
+                                label: `${rule.minInventoryPercentage}%–${rule.maxInventoryPercentage}% rule`,
+                              })
+                            }
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

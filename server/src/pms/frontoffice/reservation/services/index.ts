@@ -1,5 +1,3 @@
-import {ReservationService} from "./reservation.service";
+import { ReservationService } from './reservation.service';
 
-export {
-    ReservationService
-}
+export { ReservationService };

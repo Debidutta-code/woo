@@ -105,7 +105,7 @@ export default function LoginForm() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left Side - Hero Section */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden" style={{ backgroundImage: "url('/swiftrooms-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'hsl(var(--primary))' }}>
+      <div className="hidden lg:flex lg:w-1/2 relative bg-primary overflow-hidden" style={{ backgroundImage: "url('/login.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'hsl(var(--primary))' }}>
         {/* Animated Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full filter blur-3xl animate-blob"></div>
@@ -180,16 +180,16 @@ export default function LoginForm() {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center mb-8">
             <img 
-              src="/revchill.png" 
+              src="/woohotrip.png" 
               alt="Revchill Logo" 
               className="h-16 w-auto object-contain"
             />
           </div>
 
           <Card className="border shadow-xl">
-            <CardHeader className="space-y-2 text-center pb-8">
+            <CardHeader className="space-y-2 text-center pb-8 md:flex">
                <img 
-                src="/revchill.png" 
+                src="/woohotrip.png" 
                 alt="Revchill Logo" 
                 className="h-12 w-auto hidden lg:block object-contain"
               />

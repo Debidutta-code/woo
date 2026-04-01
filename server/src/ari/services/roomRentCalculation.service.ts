@@ -3,11 +3,9 @@
 import { differenceInDays } from 'date-fns';
 import { errorResponse, successResponse } from '../../utils/return';
 
-import { prisma } from "../../config"
+import { prisma } from '../../config';
 import { IApiResponse, nowUTC, toUTC, toUTCDate } from '../../utils';
-import {
-    RoomRentCalculationRepository
-} from "../repository/room-rent.repository";
+import { RoomRentCalculationRepository } from '../repository/room-rent.repository';
 import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
 interface PriceCalculationData {
     totalAmount: number;
@@ -59,16 +57,16 @@ interface UserAddonResult {
 interface PromotionResult {
     promotionType: string;
     promotionCode?: string;
-    discountType: "percentage" | "flat";
+    discountType: 'percentage' | 'flat';
     discountValue: number;
     discountAmount: number;
-    appliedOn: "base_amount" | "adjusted_base";
+    appliedOn: 'base_amount' | 'adjusted_base';
 }
 interface LoyaltyDiscountResult {
-    type: "percentage" | "flat";
+    type: 'percentage' | 'flat';
     value: number;
     discountAmount: number;
-    appliedTo: "base_amount";
+    appliedTo: 'base_amount';
     guestEmail: string;
     loyaltyMemberId: string;
 }
@@ -80,7 +78,6 @@ interface UserAddonResult {
     quantity: number;
     totalAmount: number;
 }
-
 
 interface DailyBreakdown {
     date: string;
@@ -118,14 +115,14 @@ export interface Promotion {
     validFrom: Date | null;
     validTo: Date | null;
     advanceBookingDays: number | null;
-    promotionType: "early_bird" | "offer_for_tonight" | "device_specific";
+    promotionType: 'early_bird' | 'offer_for_tonight' | 'device_specific';
     roomId: string | null;
     roomType: string | null;
-    deviceType: ("mobile" | "tablet" | "desktop")[];
+    deviceType: ('mobile' | 'tablet' | 'desktop')[];
     ratePlanId: string;
     ratePlanCode: string;
-    discountType: "percentage" | "flat";
-    discountValue: number | null
+    discountType: 'percentage' | 'flat';
+    discountValue: number | null;
     currencyCode: CurrencyCode | null;
     monApplicable: boolean;
     tueApplicable: boolean;
@@ -135,7 +132,6 @@ export interface Promotion {
     satApplicable: boolean;
     sunApplicable: boolean;
     isActive: boolean;
-
 }
 export class RoomRentCalculationService {
     public static async getRoomRentService(
@@ -149,8 +145,8 @@ export class RoomRentCalculationService {
         noOfRooms: number,
         guestEmail?: string,
         userCountryCode?: string,
-        deviceType?: "mobile" | "tablet" | "desktop",
-        selectedPromotions?: { id: string, promotionType: any }[],
+        deviceType?: 'mobile' | 'tablet' | 'desktop',
+        selectedPromotions?: { id: string; promotionType: any }[],
         userAddons?: any[]
     ): Promise<IApiResponse<PriceCalculationData>> {
         try {
@@ -166,7 +162,9 @@ export class RoomRentCalculationService {
                 ratePlanCode
             );
             if (!validationResult.isValid) {
-                return errorResponse(validationResult.message || 'Invalid input');
+                return errorResponse(
+                    validationResult.message || 'Invalid input'
+                );
             }
 
             const numberOfNights = differenceInDays(endDate, startDate);
@@ -224,8 +222,10 @@ export class RoomRentCalculationService {
             }
 
             const originalBasePrice = rateCalculation.data!.totalAmount;
-            const totalBaseAmount = rateCalculation.data!.breakdown.totalBaseAmount;
-            const totalAdditionalCharges = rateCalculation.data!.breakdown.totalAdditionalCharges;
+            const totalBaseAmount =
+                rateCalculation.data!.breakdown.totalBaseAmount;
+            const totalAdditionalCharges =
+                rateCalculation.data!.breakdown.totalAdditionalCharges;
 
             //console.log(`\n=== PRICING CALCULATION ===`);
             //console.log(`Original Base Price: ${originalBasePrice}`);
@@ -237,8 +237,12 @@ export class RoomRentCalculationService {
 
             if (selectedPromotions && selectedPromotions.length > 0) {
                 // Separate MLOS from other promotions
-                const regularPromotions = selectedPromotions.filter(p => p.promotionType !== "mlos");
-                const mlosPromotions = selectedPromotions.filter(p => p.promotionType === "mlos");
+                const regularPromotions = selectedPromotions.filter(
+                    p => p.promotionType !== 'mlos'
+                );
+                const mlosPromotions = selectedPromotions.filter(
+                    p => p.promotionType === 'mlos'
+                );
 
                 // Handle regular promotions (early_bird, offer_for_tonight, device_specific)
                 if (regularPromotions.length > 0) {
@@ -248,8 +252,8 @@ export class RoomRentCalculationService {
                         startDate,
                         endDate,
                         originalBasePrice,
-                        deviceType || "desktop",
-                        regularPromotions  // ✅ Only non-MLOS promotions
+                        deviceType || 'desktop',
+                        regularPromotions // ✅ Only non-MLOS promotions
                     );
 
                     if (promotionResults.success && promotionResults.data) {
@@ -257,13 +261,14 @@ export class RoomRentCalculationService {
                             .filter((promo: any) => promo.success)
                             .map((promo: any) => ({
                                 ...promo.data,
-                                calculatedOn: "originalBase",
-                                calculatedFrom: originalBasePrice
+                                calculatedOn: 'originalBase',
+                                calculatedFrom: originalBasePrice,
                             }));
 
                         promotionDiscounts.push(...validPromotions);
                         totalPromotionDiscount += validPromotions.reduce(
-                            (sum: number, p: any) => sum + (p.discountAmount || 0),
+                            (sum: number, p: any) =>
+                                sum + (p.discountAmount || 0),
                             0
                         );
                     }
@@ -281,10 +286,10 @@ export class RoomRentCalculationService {
                     if (mlosResult.success) {
                         const mlosData = {
                             ...mlosResult.data,
-                            promotionType: "mlos",
+                            promotionType: 'mlos',
                             eligible: true,
-                            calculatedOn: "originalBase",
-                            calculatedFrom: originalBasePrice
+                            calculatedOn: 'originalBase',
+                            calculatedFrom: originalBasePrice,
                         };
                         promotionDiscounts.push(mlosData);
                         totalPromotionDiscount += mlosData.discountAmount || 0;
@@ -295,7 +300,9 @@ export class RoomRentCalculationService {
             //console.log(`Total Promotion Discount: -${totalPromotionDiscount}`);
 
             // Check for MLOS (if not already in selected promotions)
-            const hasMLOS = selectedPromotions?.some(p => p.promotionType === "mlos");
+            const hasMLOS = selectedPromotions?.some(
+                p => p.promotionType === 'mlos'
+            );
             if (!hasMLOS) {
                 const mlosResult = await this.calculatemlosService(
                     ratePlanCode,
@@ -307,10 +314,10 @@ export class RoomRentCalculationService {
                 if (mlosResult.success) {
                     const mlosData = {
                         ...mlosResult.data,
-                        promotionType: "mlos",
+                        promotionType: 'mlos',
                         eligible: true,
-                        calculatedOn: "originalBase",
-                        calculatedFrom: originalBasePrice
+                        calculatedOn: 'originalBase',
+                        calculatedFrom: originalBasePrice,
                     };
                     // Show as available but not applied
                     // Don't add to totalPromotionDiscount yet
@@ -332,9 +339,9 @@ export class RoomRentCalculationService {
             if (deviceType) {
                 const deviceResult = await this.deviceSpecificService(
                     {
-                        promotionType: "device_specific",
+                        promotionType: 'device_specific',
                         deviceType: [deviceType],
-                        discountType: "percentage",
+                        discountType: 'percentage',
                         discountValue: 0,
                         // This will fetch from database
                     } as any,
@@ -354,7 +361,7 @@ export class RoomRentCalculationService {
             if (userCountryCode) {
                 const property = await prisma.property.findUnique({
                     where: { propertyCode },
-                    select: { id: true }
+                    select: { id: true },
                 });
 
                 if (property) {
@@ -368,7 +375,7 @@ export class RoomRentCalculationService {
 
                     if (geoResult.success) {
                         const geoData = geoResult.data;
-                        if (geoData.restrictionAction === "increase") {
+                        if (geoData.restrictionAction === 'increase') {
                             geoAdjustment = geoData.adjustmentAmount;
                             currentPrice += geoAdjustment;
                         } else {
@@ -410,7 +417,8 @@ export class RoomRentCalculationService {
 
             if (ratePlanWithAddons.success) {
                 includedAddons = ratePlanWithAddons.data.addons || [];
-                includedAddonsTotal = ratePlanWithAddons.data.totalAddonAmount || 0;
+                includedAddonsTotal =
+                    ratePlanWithAddons.data.totalAddonAmount || 0;
                 currentPrice += includedAddonsTotal;
                 //console.log(`Included Addons: +${includedAddonsTotal} → ${currentPrice}`);
             }
@@ -429,7 +437,7 @@ export class RoomRentCalculationService {
                     userAddonsTotal += addonPrice;
                     userAddonsDetails.push({
                         ...addon,
-                        totalPrice: addonPrice
+                        totalPrice: addonPrice,
                     });
                 }
                 currentPrice += userAddonsTotal;
@@ -441,7 +449,7 @@ export class RoomRentCalculationService {
             // === STEP 7: CALCULATE TAX (on ORIGINAL BASE) ===
             const taxCalculation = await this.calculateTax(
                 ratePlan,
-                originalBasePrice  // ✅ Tax on original base
+                originalBasePrice // ✅ Tax on original base
             );
 
             const totalTax = taxCalculation.totalTax;
@@ -451,7 +459,7 @@ export class RoomRentCalculationService {
             //console.log(`=========================\n`);
 
             // === RETURN COMPREHENSIVE BREAKDOWN ===
-            return successResponse("Price calculated successfully", {
+            return successResponse('Price calculated successfully', {
                 totalAmount: finalPrice,
                 numberOfNights,
                 baseRatePerNight: totalBaseAmount / numberOfNights / noOfRooms,
@@ -465,7 +473,7 @@ export class RoomRentCalculationService {
                     totalAdditionalCharges,
                     totalTax,
                     totalAmount: finalPrice,
-                    averagePerNight: finalPrice / numberOfNights
+                    averagePerNight: finalPrice / numberOfNights,
                 },
 
                 dailyBreakdown: rateCalculation.data!.dailyBreakdown,
@@ -475,12 +483,12 @@ export class RoomRentCalculationService {
 
                 promotions: {
                     applied: promotionDiscounts,
-                    totalDiscount: totalPromotionDiscount
+                    totalDiscount: totalPromotionDiscount,
                 },
 
                 userAddons: {
                     selected: userAddonsDetails,
-                    totalAmount: userAddonsTotal
+                    totalAmount: userAddonsTotal,
                 },
 
                 loyaltyDiscount: loyaltyDiscountInfo,
@@ -488,7 +496,7 @@ export class RoomRentCalculationService {
                 tax: taxCalculation.taxDetails,
                 totalTax,
 
-                priceAfterTax: finalPrice
+                priceAfterTax: finalPrice,
             });
         } catch (error) {
             console.error('Error in getRoomRentService:', error);
@@ -517,7 +525,9 @@ export class RoomRentCalculationService {
                 ratePlanCode
             );
             if (!validationResult.isValid) {
-                return errorResponse(validationResult.message || 'Invalid input');
+                return errorResponse(
+                    validationResult.message || 'Invalid input'
+                );
             }
 
             // Use dates directly from controller (already in UTC midnight format)
@@ -620,7 +630,9 @@ export class RoomRentCalculationService {
                 breakdown: {
                     ...rateCalculation.data!.breakdown,
                     totalAmount: Number(finalAmount.toFixed(2)),
-                    averagePerNight: Number((finalAmount / numberOfNights).toFixed(2)),
+                    averagePerNight: Number(
+                        (finalAmount / numberOfNights).toFixed(2)
+                    ),
                 },
             });
         } catch (error) {
@@ -639,13 +651,23 @@ export class RoomRentCalculationService {
         noOfRooms: number,
         ratePlanCode: string
     ): { isValid: boolean; message?: string } {
-        if (!propertyCode || !invTypeCode) return { isValid: false, message: 'Hotel and room type required' };
-        if (!ratePlanCode) return { isValid: false, message: 'Rate plan required' };
-        if (!startDate || !endDate) return { isValid: false, message: 'Dates required' };
-        if (noOfAdults < 1) return { isValid: false, message: 'At least 1 adult required' };
-        if (noOfChildren < 0) return { isValid: false, message: 'Children cannot be negative' };
-        if (noOfRooms < 1) return { isValid: false, message: 'At least 1 room required' };
-        if (startDate >= endDate) return { isValid: false, message: 'End date must be after start date' };
+        if (!propertyCode || !invTypeCode)
+            return { isValid: false, message: 'Hotel and room type required' };
+        if (!ratePlanCode)
+            return { isValid: false, message: 'Rate plan required' };
+        if (!startDate || !endDate)
+            return { isValid: false, message: 'Dates required' };
+        if (noOfAdults < 1)
+            return { isValid: false, message: 'At least 1 adult required' };
+        if (noOfChildren < 0)
+            return { isValid: false, message: 'Children cannot be negative' };
+        if (noOfRooms < 1)
+            return { isValid: false, message: 'At least 1 room required' };
+        if (startDate >= endDate)
+            return {
+                isValid: false,
+                message: 'End date must be after start date',
+            };
         return { isValid: true };
     }
 
@@ -746,7 +768,9 @@ export class RoomRentCalculationService {
 
                 // Get charge for this date
                 const startOfDateUTC = toUTCDate(dateStr);
-                const endOfDateUTC = new Date(startOfDateUTC.getTime() + 24 * 60 * 60 * 1000);
+                const endOfDateUTC = new Date(
+                    startOfDateUTC.getTime() + 24 * 60 * 60 * 1000
+                );
 
                 const charge = await prisma.charge.findFirst({
                     where: {
@@ -757,7 +781,7 @@ export class RoomRentCalculationService {
                             gte: startOfDateUTC,
                             lt: endOfDateUTC,
                         },
-                        isSaleStopped: false
+                        isSaleStopped: false,
                     },
                     include: {
                         baseGuestAmounts: true,
@@ -799,17 +823,20 @@ export class RoomRentCalculationService {
                     additionalCharges: rateCalculation.additionalGuestCharges,
                     totalPerRoom: rateCalculation.totalPerRoom,
                     totalForAllRooms: rateCalculation.totalAmountForDay,
-                    currencyCode: "USD",
+                    currencyCode: 'USD',
                     breakdown: rateCalculation.breakdown,
                 });
 
                 totalAmount += rateCalculation.totalAmountForDay;
                 totalBaseAmount += rateCalculation.baseRatePerRoom * noOfRooms;
-                totalAdditionalCharges += rateCalculation.additionalGuestCharges * noOfRooms;
+                totalAdditionalCharges +=
+                    rateCalculation.additionalGuestCharges * noOfRooms;
             }
 
             const averageBaseRate =
-                numberOfNights > 0 ? totalBaseAmount / numberOfNights / noOfRooms : 0;
+                numberOfNights > 0
+                    ? totalBaseAmount / numberOfNights / noOfRooms
+                    : 0;
 
             return {
                 success: true,
@@ -818,14 +845,18 @@ export class RoomRentCalculationService {
                     numberOfNights,
                     baseRatePerNight: averageBaseRate,
                     additionalGuestCharges:
-                        numberOfNights > 0 ? totalAdditionalCharges / numberOfNights : 0,
+                        numberOfNights > 0
+                            ? totalAdditionalCharges / numberOfNights
+                            : 0,
                     breakdown: {
                         totalBaseAmount,
                         totalAdditionalCharges,
                         totalAmount,
                         numberOfNights,
                         averagePerNight:
-                            numberOfNights > 0 ? totalAmount / numberOfNights : 0,
+                            numberOfNights > 0
+                                ? totalAmount / numberOfNights
+                                : 0,
                     },
                     dailyBreakdown,
                     availableRooms: 0,
@@ -868,7 +899,9 @@ export class RoomRentCalculationService {
             const baseGuestAmounts = charge.baseGuestAmounts || [];
 
             if (baseGuestAmounts.length === 0) {
-                return errorResponse('No base guest amounts found for this rate');
+                return errorResponse(
+                    'No base guest amounts found for this rate'
+                );
             }
 
             // Sort by numberOfGuests ascending
@@ -892,8 +925,12 @@ export class RoomRentCalculationService {
             const totalGuestsCoveredByBase = baseGuestsIncluded * noOfRooms;
 
             // Step 2: Distribute guests - Adults first priority
-            const adultsInBaseRate = Math.min(noOfAdults, totalGuestsCoveredByBase);
-            const remainingBaseCapacity = totalGuestsCoveredByBase - adultsInBaseRate;
+            const adultsInBaseRate = Math.min(
+                noOfAdults,
+                totalGuestsCoveredByBase
+            );
+            const remainingBaseCapacity =
+                totalGuestsCoveredByBase - adultsInBaseRate;
             const childrenInBaseRate = Math.min(
                 noOfChildren,
                 remainingBaseCapacity
@@ -936,7 +973,8 @@ export class RoomRentCalculationService {
 
             if (childrenNotInBaseRate > 0 && childRate) {
                 const chargeAmount = Number(childRate.amount);
-                additionalChildrenCharges = childrenNotInBaseRate * chargeAmount;
+                additionalChildrenCharges =
+                    childrenNotInBaseRate * chargeAmount;
 
                 for (let i = 0; i < childrenNotInBaseRate; i++) {
                     childrenChargesBreakdown.push({
@@ -960,8 +998,10 @@ export class RoomRentCalculationService {
 
             // Step 6: Calculate totals
             const totalAdditionalChargesPerRoom =
-                (additionalAdultCharges + additionalChildrenCharges) / noOfRooms;
-            const totalPerRoom = baseRatePerRoom + totalAdditionalChargesPerRoom;
+                (additionalAdultCharges + additionalChildrenCharges) /
+                noOfRooms;
+            const totalPerRoom =
+                baseRatePerRoom + totalAdditionalChargesPerRoom;
             const totalAmountForDay = totalPerRoom * noOfRooms;
 
             return {
@@ -1054,46 +1094,79 @@ export class RoomRentCalculationService {
         }
     }
 
-
     private static async promotionsService(
         propertyId: string,
         ratePlanCode: string,
         startDate: Date,
         endDate: Date,
         baseAmount: number,
-        deviceType: "mobile" | "tablet" | "desktop",
-        promotions: { id: string, promotionType: "early_bird" | "offer_for_tonight" | "device_specific" }[]
+        deviceType: 'mobile' | 'tablet' | 'desktop',
+        promotions: {
+            id: string;
+            promotionType:
+                | 'early_bird'
+                | 'offer_for_tonight'
+                | 'device_specific';
+        }[]
     ): Promise<IApiResponse> {
         try {
-            const allPromotions = await RoomRentCalculationRepository.getPromotionDetails(promotions);
-            const res = await Promise.all(allPromotions.map(async (promotion) => {
-                switch (promotion.promotionType) {
-                    case "early_bird":
-                        return await this.checkForEarlyBirdService(promotion, startDate, baseAmount);
-                    case "offer_for_tonight":
-                        return await this.offerForTonightService(promotion, startDate, baseAmount);
-                    case "device_specific":
-                        return await this.deviceSpecificService(promotion, baseAmount, deviceType);
-                    default:
-                        return errorResponse("Invalid promotion type");
-                }
-            }));
-            return successResponse("Promotions calculated successfully", res);
+            const allPromotions =
+                await RoomRentCalculationRepository.getPromotionDetails(
+                    promotions
+                );
+            const res = await Promise.all(
+                allPromotions.map(async promotion => {
+                    switch (promotion.promotionType) {
+                        case 'early_bird':
+                            return await this.checkForEarlyBirdService(
+                                promotion,
+                                startDate,
+                                baseAmount
+                            );
+                        case 'offer_for_tonight':
+                            return await this.offerForTonightService(
+                                promotion,
+                                startDate,
+                                baseAmount
+                            );
+                        case 'device_specific':
+                            return await this.deviceSpecificService(
+                                promotion,
+                                baseAmount,
+                                deviceType
+                            );
+                        default:
+                            return errorResponse('Invalid promotion type');
+                    }
+                })
+            );
+            return successResponse('Promotions calculated successfully', res);
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate promotions", error.message);
+                return errorResponse(
+                    'Failed to calculate promotions',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate promotions");
+            return errorResponse('Failed to calculate promotions');
         }
     }
-    private static async checkForEarlyBirdService(promotion: Promotion, startDate: Date, baseAmount: number): Promise<IApiResponse> {
+    private static async checkForEarlyBirdService(
+        promotion: Promotion,
+        startDate: Date,
+        baseAmount: number
+    ): Promise<IApiResponse> {
         try {
             if (!promotion.advanceBookingDays) {
-                return errorResponse("Advance booking days not configured for this promotion");
+                return errorResponse(
+                    'Advance booking days not configured for this promotion'
+                );
             }
 
             if (!promotion.discountValue) {
-                return errorResponse("Discount value not configured for this promotion");
+                return errorResponse(
+                    'Discount value not configured for this promotion'
+                );
             }
 
             const currentDate = nowUTC();
@@ -1102,7 +1175,7 @@ export class RoomRentCalculationService {
 
             if (daysInAdvance < promotion.advanceBookingDays) {
                 return errorResponse(
-                    `Early bird promotion requires booking at least ${promotion.advanceBookingDays} days in advance. Current advance: ${daysInAdvance} days`,
+                    `Early bird promotion requires booking at least ${promotion.advanceBookingDays} days in advance. Current advance: ${daysInAdvance} days`
                 );
             }
 
@@ -1111,47 +1184,73 @@ export class RoomRentCalculationService {
             const baseAmountNumber = Number(baseAmount);
             const discountValue = Number(promotion.discountValue);
 
-            if (promotion.discountType === "percentage") {
+            if (promotion.discountType === 'percentage') {
                 // Percentage discount
                 discountAmount = (baseAmountNumber * discountValue) / 100;
-            } else if (promotion.discountType === "flat") {
+            } else if (promotion.discountType === 'flat') {
                 // Flat/fixed discount
                 discountAmount = discountValue;
             }
-            return successResponse("Early bird promotion applied successfully", {
-                id: promotion.id,
-                promotionName: promotion.promotionName,
-                daysInAdvance,
-                requiredDays: promotion.advanceBookingDays,
-                discountType: promotion.discountType,
-                discountValue: discountValue,
-                discountAmount: Number(discountAmount.toFixed(2)),
-                currencyCode: promotion.currencyCode
-            });
+            return successResponse(
+                'Early bird promotion applied successfully',
+                {
+                    id: promotion.id,
+                    promotionName: promotion.promotionName,
+                    daysInAdvance,
+                    requiredDays: promotion.advanceBookingDays,
+                    discountType: promotion.discountType,
+                    discountValue: discountValue,
+                    discountAmount: Number(discountAmount.toFixed(2)),
+                    currencyCode: promotion.currencyCode,
+                }
+            );
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate early bird", error.message);
+                return errorResponse(
+                    'Failed to calculate early bird',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate early bird");
+            return errorResponse('Failed to calculate early bird');
         }
     }
-    private static async offerForTonightService(promotion: Promotion, startDate: Date, baseAmount: number): Promise<IApiResponse> {
+    private static async offerForTonightService(
+        promotion: Promotion,
+        startDate: Date,
+        baseAmount: number
+    ): Promise<IApiResponse> {
         try {
-            if (promotion.discountValue === null || promotion.discountValue === undefined) {
-                return errorResponse("Discount value not configured for this promotion");
+            if (
+                promotion.discountValue === null ||
+                promotion.discountValue === undefined
+            ) {
+                return errorResponse(
+                    'Discount value not configured for this promotion'
+                );
             }
 
             const currentDate = nowUTC();
             const checkInDate = toUTC(startDate);
 
-            const currentDateOnly = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-            const checkInDateOnly = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
+            const currentDateOnly = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate()
+            );
+            const checkInDateOnly = new Date(
+                checkInDate.getFullYear(),
+                checkInDate.getMonth(),
+                checkInDate.getDate()
+            );
 
-            const daysDifference = differenceInDays(checkInDateOnly, currentDateOnly);
+            const daysDifference = differenceInDays(
+                checkInDateOnly,
+                currentDateOnly
+            );
 
             if (daysDifference > 1) {
                 return errorResponse(
-                    `Offer for tonight is only valid for today or tomorrow. Check-in is ${daysDifference} days away`,
+                    `Offer for tonight is only valid for today or tomorrow. Check-in is ${daysDifference} days away`
                 );
             }
 
@@ -1159,7 +1258,7 @@ export class RoomRentCalculationService {
             const checkInDayOfWeek = this.getDayOfWeek(checkInDate);
             if (!this.isDayApplicable(promotion, checkInDayOfWeek)) {
                 return errorResponse(
-                    `Promotion is not applicable for ${checkInDayOfWeek}`,
+                    `Promotion is not applicable for ${checkInDayOfWeek}`
                 );
             }
 
@@ -1174,15 +1273,19 @@ export class RoomRentCalculationService {
 
                 const validFromHour = validFromTime.getHours();
                 const validFromMinute = validFromTime.getMinutes();
-                const validFromTimeInMinutes = validFromHour * 60 + validFromMinute;
+                const validFromTimeInMinutes =
+                    validFromHour * 60 + validFromMinute;
 
                 const validToHour = validToTime.getHours();
                 const validToMinute = validToTime.getMinutes();
                 const validToTimeInMinutes = validToHour * 60 + validToMinute;
 
-                if (currentTimeInMinutes < validFromTimeInMinutes || currentTimeInMinutes > validToTimeInMinutes) {
+                if (
+                    currentTimeInMinutes < validFromTimeInMinutes ||
+                    currentTimeInMinutes > validToTimeInMinutes
+                ) {
                     return errorResponse(
-                        `Promotion is only valid between ${validFromHour}:${validFromMinute.toString().padStart(2, '0')} and ${validToHour}:${validToMinute.toString().padStart(2, '0')}`,
+                        `Promotion is only valid between ${validFromHour}:${validFromMinute.toString().padStart(2, '0')} and ${validToHour}:${validToMinute.toString().padStart(2, '0')}`
                     );
                 }
             }
@@ -1191,14 +1294,13 @@ export class RoomRentCalculationService {
             const baseAmountNumber = Number(baseAmount);
             const discountValue = Number(promotion.discountValue);
 
-            if (promotion.discountType === "percentage") {
+            if (promotion.discountType === 'percentage') {
                 discountAmount = (baseAmountNumber * discountValue) / 100;
-            } else if (promotion.discountType === "flat") {
+            } else if (promotion.discountType === 'flat') {
                 discountAmount = discountValue;
             }
 
-
-            return successResponse("Offer for tonight applied successfully", {
+            return successResponse('Offer for tonight applied successfully', {
                 id: promotion.id,
                 promotionName: promotion.promotionName,
                 checkInDate: checkInDateOnly.toISOString(),
@@ -1207,30 +1309,34 @@ export class RoomRentCalculationService {
                 discountType: promotion.discountType,
                 discountValue: discountValue,
                 discountAmount: Number(discountAmount.toFixed(2)),
-                currencyCode: promotion.currencyCode
+                currencyCode: promotion.currencyCode,
             });
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate offer for tonight", error.message);
+                return errorResponse(
+                    'Failed to calculate offer for tonight',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate offer for tonight");
+            return errorResponse('Failed to calculate offer for tonight');
         }
     }
     private static async deviceSpecificService(
         promotion: Promotion,
         baseAmount: number,
-        userDeviceType: "mobile" | "tablet" | "desktop"
+        userDeviceType: 'mobile' | 'tablet' | 'desktop'
     ): Promise<IApiResponse> {
         try {
             // Fetch actual device-specific promotion from database
-            const devicePromo = await RoomRentCalculationRepository.getDeviceSpecificPromotion(
-                promotion.propertyId,
-                promotion.ratePlanCode,
-                userDeviceType
-            );
+            const devicePromo =
+                await RoomRentCalculationRepository.getDeviceSpecificPromotion(
+                    promotion.propertyId,
+                    promotion.ratePlanCode,
+                    userDeviceType
+                );
 
             if (!devicePromo) {
-                return errorResponse("No device-specific promotion found");
+                return errorResponse('No device-specific promotion found');
             }
 
             // Rest of your existing logic...
@@ -1238,68 +1344,83 @@ export class RoomRentCalculationService {
             const baseAmountNumber = Number(baseAmount);
             let discountAmount = 0;
 
-            if (devicePromo.discountType === "percentage") {
+            if (devicePromo.discountType === 'percentage') {
                 discountAmount = (baseAmountNumber * discountValue) / 100;
-            } else if (devicePromo.discountType === "flat") {
+            } else if (devicePromo.discountType === 'flat') {
                 discountAmount = discountValue;
             }
 
-            return successResponse("Device specific promotion applied successfully", {
-                id: devicePromo.id,
-                promotionName: devicePromo.promotionName,
-                userDevice: userDeviceType,
-                allowedDevices: devicePromo.deviceType,
-                discountType: devicePromo.discountType,
-                discountValue: discountValue,
-                discountAmount: Number(discountAmount.toFixed(2)),
-                currencyCode: devicePromo.currencyCode
-            });
+            return successResponse(
+                'Device specific promotion applied successfully',
+                {
+                    id: devicePromo.id,
+                    promotionName: devicePromo.promotionName,
+                    userDevice: userDeviceType,
+                    allowedDevices: devicePromo.deviceType,
+                    discountType: devicePromo.discountType,
+                    discountValue: discountValue,
+                    discountAmount: Number(discountAmount.toFixed(2)),
+                    currencyCode: devicePromo.currencyCode,
+                }
+            );
         } catch (error) {
-            return errorResponse("No device promotion available");
+            return errorResponse('No device promotion available');
         }
     }
 
-    private static async calculatemlosService(ratePlanCode: string, checkInDate: Date, checkoutDate: Date, baseAmount: number): Promise<IApiResponse> {
+    private static async calculatemlosService(
+        ratePlanCode: string,
+        checkInDate: Date,
+        checkoutDate: Date,
+        baseAmount: number
+    ): Promise<IApiResponse> {
         try {
-            const RatePlan = await RoomRentCalculationRepository.getRatePlanDetails(ratePlanCode);
+            const RatePlan =
+                await RoomRentCalculationRepository.getRatePlanDetails(
+                    ratePlanCode
+                );
             if (!RatePlan) {
-                return errorResponse("Rate plan not found");
+                return errorResponse('Rate plan not found');
             }
 
             if (!RatePlan.ratePlanRules) {
-                return errorResponse("No rate plan rules found for this rate plan");
+                return errorResponse(
+                    'No rate plan rules found for this rate plan'
+                );
             }
 
             const ratePlanRule = RatePlan.ratePlanRules;
 
             // Check if rule is active
             if (!ratePlanRule.isActive) {
-                return errorResponse("Rate plan rule is not active");
+                return errorResponse('Rate plan rule is not active');
             }
 
             // Validate discount configuration
             if (!ratePlanRule.discountValue || !ratePlanRule.discountType) {
-                return errorResponse("Discount not configured for this rate plan rule");
+                return errorResponse(
+                    'Discount not configured for this rate plan rule'
+                );
             }
 
             // Calculate number of nights
             const numberOfNights = differenceInDays(checkoutDate, checkInDate);
 
             if (numberOfNights <= 0) {
-                return errorResponse("Invalid stay duration");
+                return errorResponse('Invalid stay duration');
             }
 
             // Check if stay duration meets minimum LOS requirement
             if (numberOfNights < ratePlanRule.minLos) {
                 return errorResponse(
-                    `Minimum length of stay is ${ratePlanRule.minLos} nights. Current stay: ${numberOfNights} nights`,
+                    `Minimum length of stay is ${ratePlanRule.minLos} nights. Current stay: ${numberOfNights} nights`
                 );
             }
 
             // Check if stay duration exceeds maximum LOS (if set)
             if (ratePlanRule.maxLos && numberOfNights > ratePlanRule.maxLos) {
                 return errorResponse(
-                    `Maximum length of stay is ${ratePlanRule.maxLos} nights. Current stay: ${numberOfNights} nights`,
+                    `Maximum length of stay is ${ratePlanRule.maxLos} nights. Current stay: ${numberOfNights} nights`
                 );
             }
 
@@ -1311,7 +1432,7 @@ export class RoomRentCalculationService {
 
                 if (checkIn < ruleStartDate || checkIn > ruleEndDate) {
                     return errorResponse(
-                        `Rate plan rule is only valid from ${ruleStartDate.toDateString()} to ${ruleEndDate.toDateString()}`,
+                        `Rate plan rule is only valid from ${ruleStartDate.toDateString()} to ${ruleEndDate.toDateString()}`
                     );
                 }
             }
@@ -1321,13 +1442,13 @@ export class RoomRentCalculationService {
             const baseAmountNumber = Number(baseAmount);
             const discountValue = Number(ratePlanRule.discountValue);
 
-            if (ratePlanRule.discountType === "percentage") {
+            if (ratePlanRule.discountType === 'percentage') {
                 discountAmount = (baseAmountNumber * discountValue) / 100;
-            } else if (ratePlanRule.discountType === "flat") {
+            } else if (ratePlanRule.discountType === 'flat') {
                 discountAmount = discountValue;
             }
 
-            return successResponse("MLOS discount applied successfully", {
+            return successResponse('MLOS discount applied successfully', {
                 id: ratePlanRule.id,
                 ratePlanName: RatePlan.ratePlanName,
                 numberOfNights,
@@ -1339,28 +1460,46 @@ export class RoomRentCalculationService {
             });
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate MLOS", error.message);
+                return errorResponse('Failed to calculate MLOS', error.message);
             }
-            return errorResponse("Failed to calculate MLOS");
+            return errorResponse('Failed to calculate MLOS');
         }
     }
-    private static async geoRatePlanService(usersCountry: string, ratePlanCode: string, roomTypeCode: string, propertyId: string, baseAmount: number): Promise<IApiResponse> {
+    private static async geoRatePlanService(
+        usersCountry: string,
+        ratePlanCode: string,
+        roomTypeCode: string,
+        propertyId: string,
+        baseAmount: number
+    ): Promise<IApiResponse> {
         try {
-
-            const geoRatePlan = await RoomRentCalculationRepository.getGroRatePlan(propertyId, roomTypeCode, ratePlanCode, usersCountry);
+            const geoRatePlan =
+                await RoomRentCalculationRepository.getGroRatePlan(
+                    propertyId,
+                    roomTypeCode,
+                    ratePlanCode,
+                    usersCountry
+                );
             if (!geoRatePlan) {
-                return errorResponse("No geo-based rate plan found for the user's country");
+                return errorResponse(
+                    "No geo-based rate plan found for the user's country"
+                );
             }
 
             // Validate restriction configuration
-            if (geoRatePlan.restrictionValue === null || geoRatePlan.restrictionValue === undefined) {
-                return errorResponse("Restriction value not configured for this geo rate plan");
+            if (
+                geoRatePlan.restrictionValue === null ||
+                geoRatePlan.restrictionValue === undefined
+            ) {
+                return errorResponse(
+                    'Restriction value not configured for this geo rate plan'
+                );
             }
 
             // Check if geo rate plan is restricted completely
-            if (geoRatePlan.restrictionType === "restricted") {
+            if (geoRatePlan.restrictionType === 'restricted') {
                 return errorResponse(
-                    `Bookings from ${usersCountry} are restricted for this rate plan`,
+                    `Bookings from ${usersCountry} are restricted for this rate plan`
                 );
             }
 
@@ -1369,19 +1508,19 @@ export class RoomRentCalculationService {
             const baseAmountNumber = Number(baseAmount);
             const restrictionValue = Number(geoRatePlan.restrictionValue);
 
-            if (geoRatePlan.restrictionType === "percentage") {
+            if (geoRatePlan.restrictionType === 'percentage') {
                 // Calculate percentage-based adjustment
                 adjustmentAmount = (baseAmountNumber * restrictionValue) / 100;
-            } else if (geoRatePlan.restrictionType === "fixed") {
+            } else if (geoRatePlan.restrictionType === 'fixed') {
                 // Fixed amount adjustment
                 adjustmentAmount = restrictionValue;
             }
 
             // Apply action (increase or decrease)
             let finalAmount = baseAmountNumber;
-            if (geoRatePlan.restrictionTypeAction === "increase") {
+            if (geoRatePlan.restrictionTypeAction === 'increase') {
                 finalAmount = baseAmountNumber + adjustmentAmount;
-            } else if (geoRatePlan.restrictionTypeAction === "decrease") {
+            } else if (geoRatePlan.restrictionTypeAction === 'decrease') {
                 finalAmount = baseAmountNumber - adjustmentAmount;
                 // Ensure final amount doesn't go negative
                 if (finalAmount < 0) {
@@ -1389,7 +1528,7 @@ export class RoomRentCalculationService {
                 }
             }
 
-            return successResponse("Geo-based rate plan applied successfully", {
+            return successResponse('Geo-based rate plan applied successfully', {
                 userCountry: usersCountry,
                 restrictionType: geoRatePlan.restrictionType,
                 restrictionAction: geoRatePlan.restrictionTypeAction,
@@ -1399,47 +1538,81 @@ export class RoomRentCalculationService {
             });
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate geo-based rate plan", error.message);
+                return errorResponse(
+                    'Failed to calculate geo-based rate plan',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate geo-based rate plan");
+            return errorResponse('Failed to calculate geo-based rate plan');
         }
     }
     private static async ratePlanWithAddonsService(
         ratePlanCode: string,
         checkInDate: Date,
         checkOutDate: Date,
-        noOfAdults:number,
-        noOfChildren:number,
-        noOfRooms:number
+        noOfAdults: number,
+        noOfChildren: number,
+        noOfRooms: number
     ): Promise<IApiResponse> {
         try {
-            const ratePlan = await RoomRentCalculationRepository.getRatePlanDetails(ratePlanCode);
+            const ratePlan =
+                await RoomRentCalculationRepository.getRatePlanDetails(
+                    ratePlanCode
+                );
 
             if (!ratePlan || !ratePlan.Addons || ratePlan.Addons.length === 0) {
-                return errorResponse("No addons found for this rate plan");
+                return errorResponse('No addons found for this rate plan');
             }
 
             // ✅ Extract the actual addon IDs from the junction table
-            const addonIds = ratePlan.Addons.map((ratePlanAddon: any) => ratePlanAddon.addonId);
+            const addonIds = ratePlan.Addons.map(
+                (ratePlanAddon: any) => ratePlanAddon.addonId
+            );
 
-            return await this.normalAddonsService(addonIds, checkInDate, checkOutDate,noOfAdults,noOfChildren,noOfRooms);
+            return await this.normalAddonsService(
+                addonIds,
+                checkInDate,
+                checkOutDate,
+                noOfAdults,
+                noOfChildren,
+                noOfRooms
+            );
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate rate plan with addons", error.message);
+                return errorResponse(
+                    'Failed to calculate rate plan with addons',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate rate plan with addons");
+            return errorResponse('Failed to calculate rate plan with addons');
         }
     }
-    private static async normalAddonsService(addOnIds: string[], checkInDate: Date, checkOutDate: Date ,noOfAdults:number,noOfChildren:number, noOfRooms:number): Promise<IApiResponse> {
+    private static async normalAddonsService(
+        addOnIds: string[],
+        checkInDate: Date,
+        checkOutDate: Date,
+        noOfAdults: number,
+        noOfChildren: number,
+        noOfRooms: number
+    ): Promise<IApiResponse> {
         try {
-            const addons = await RoomRentCalculationRepository.findAddonsForReservations(addOnIds, checkInDate, checkOutDate);
+            const addons =
+                await RoomRentCalculationRepository.findAddonsForReservations(
+                    addOnIds,
+                    checkInDate,
+                    checkOutDate
+                );
             if (addons.length === 0) {
-                return errorResponse("No addons available for the selected dates");
+                return errorResponse(
+                    'No addons available for the selected dates'
+                );
             }
 
             const numberOfNights = differenceInDays(checkOutDate, checkInDate);
             if (numberOfNights <= 0) {
-                return errorResponse("Invalid stay duration for addons calculation");
+                return errorResponse(
+                    'Invalid stay duration for addons calculation'
+                );
             }
 
             let totalAddonAmount = 0;
@@ -1452,12 +1625,15 @@ export class RoomRentCalculationService {
 
                 let addonAmount = 0;
                 const availabilityCount = addon.availability.length;
-                const totalGuests =noOfAdults+noOfChildren;
+                const totalGuests = noOfAdults + noOfChildren;
 
                 // Calculate price based on posting rhythm
                 switch (addon.postingRhythm) {
                     case 'per_night':
-                        addonAmount = addon.availability.reduce((sum: number, avail: any) => sum + avail.price, 0);
+                        addonAmount = addon.availability.reduce(
+                            (sum: number, avail: any) => sum + avail.price,
+                            0
+                        );
                         break;
 
                     case 'per_stay':
@@ -1465,11 +1641,15 @@ export class RoomRentCalculationService {
                         break;
 
                     case 'per_person_per_night':
-                        addonAmount = addon.availability.reduce((sum: number, avail: any) => sum + avail.price, 0)*totalGuests;
+                        addonAmount =
+                            addon.availability.reduce(
+                                (sum: number, avail: any) => sum + avail.price,
+                                0
+                            ) * totalGuests;
                         break;
 
                     case 'per_person_per_stay':
-                         addonAmount = addon.availability[0].price * totalGuests; // ✅ FIX
+                        addonAmount = addon.availability[0].price * totalGuests; // ✅ FIX
                         break;
 
                     case 'per_room':
@@ -1477,15 +1657,21 @@ export class RoomRentCalculationService {
                         break;
 
                     case 'per_room_per_night':
-                        addonAmount = addon.availability.reduce((sum, avail) => sum + avail.price, 0) * noOfRooms; // ✅ FIX
+                        addonAmount =
+                            addon.availability.reduce(
+                                (sum, avail) => sum + avail.price,
+                                0
+                            ) * noOfRooms; // ✅ FIX
                         break;
 
                     case 'per_person_per_room':
-                        addonAmount = addon.availability[0].price * totalGuests * noOfRooms; // ✅ FIX
+                        addonAmount =
+                            addon.availability[0].price *
+                            totalGuests *
+                            noOfRooms; // ✅ FIX
                         break;
 
                     default:
-
                         addonAmount = addon.availability[0].price;
                 }
 
@@ -1499,21 +1685,24 @@ export class RoomRentCalculationService {
                     amount: Number(addonAmount.toFixed(2)),
                     currencyCode: addon.availability[0].currencyCode,
                     availableDates: availabilityCount,
-                    description: addon.description
+                    description: addon.description,
                 });
             }
 
-            return successResponse("Addons calculated successfully", {
+            return successResponse('Addons calculated successfully', {
                 totalAddonAmount: Number(totalAddonAmount.toFixed(2)),
                 numberOfNights,
                 addonsCount: addonDetails.length,
-                addons: addonDetails
+                addons: addonDetails,
             });
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate addons", error.message);
+                return errorResponse(
+                    'Failed to calculate addons',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate addons");
+            return errorResponse('Failed to calculate addons');
         }
     }
     private static async getLoyalityDiscount(
@@ -1524,20 +1713,24 @@ export class RoomRentCalculationService {
         try {
             // Validate required fields
             if (!guestEmail || !propertyCode) {
-                return errorResponse("Guest email and property code are required");
+                return errorResponse(
+                    'Guest email and property code are required'
+                );
             }
 
             if (!baseAmount || Number(baseAmount) <= 0) {
-                return errorResponse("Invalid base amount for loyalty discount calculation");
+                return errorResponse(
+                    'Invalid base amount for loyalty discount calculation'
+                );
             }
 
             const property = await prisma.property.findUnique({
                 where: { propertyCode: propertyCode },
-                select: { id: true, propertyName: true }
+                select: { id: true, propertyName: true },
             });
 
             if (!property) {
-                return errorResponse("Property not found");
+                return errorResponse('Property not found');
             }
 
             // Check if guest is a loyalty member
@@ -1545,7 +1738,7 @@ export class RoomRentCalculationService {
                 where: {
                     guestEmail: guestEmail,
                     propertyId: property.id,
-                }
+                },
             });
 
             if (!loyaltyGuest) {
@@ -1555,30 +1748,42 @@ export class RoomRentCalculationService {
             }
 
             // Get property loyalty config
-            const propertyLoyaltyConfig = await prisma.propertyLoyaltyConfig.findUnique({
-                where: { propertyId: property.id },
-                include: {
-                    CreationLoyaltyConfig: true
-                }
-            });
+            const propertyLoyaltyConfig =
+                await prisma.propertyLoyaltyConfig.findUnique({
+                    where: { propertyId: property.id },
+                    include: {
+                        CreationLoyaltyConfig: true,
+                    },
+                });
 
             if (!propertyLoyaltyConfig) {
-                return errorResponse("Loyalty program not configured for this property");
+                return errorResponse(
+                    'Loyalty program not configured for this property'
+                );
             }
 
             if (!propertyLoyaltyConfig.isActive) {
-                return errorResponse("Loyalty program is not active for this property");
+                return errorResponse(
+                    'Loyalty program is not active for this property'
+                );
             }
 
             if (!propertyLoyaltyConfig.CreationLoyaltyConfig) {
-                return errorResponse("Loyalty program configuration is incomplete");
+                return errorResponse(
+                    'Loyalty program configuration is incomplete'
+                );
             }
 
             const loyaltyConfig = propertyLoyaltyConfig.CreationLoyaltyConfig;
 
             // Validate discount configuration
-            if (!loyaltyConfig.discountValue || !loyaltyConfig.loyaltyDiscountType) {
-                return errorResponse("Loyalty discount not configured properly");
+            if (
+                !loyaltyConfig.discountValue ||
+                !loyaltyConfig.loyaltyDiscountType
+            ) {
+                return errorResponse(
+                    'Loyalty discount not configured properly'
+                );
             }
 
             const discountType = loyaltyConfig.loyaltyDiscountType;
@@ -1601,7 +1806,7 @@ export class RoomRentCalculationService {
                 discountAmount = baseAmountNumber;
             }
 
-            return successResponse("Loyalty discount applied successfully", {
+            return successResponse('Loyalty discount applied successfully', {
                 guestEmail: guestEmail,
                 propertyName: property.propertyName,
                 loyaltyMemberId: loyaltyGuest.id,
@@ -1611,13 +1816,18 @@ export class RoomRentCalculationService {
                 currencyCode: loyaltyConfig.currencyCode,
                 appliedTo: 'base_amount',
                 originalAmount: baseAmountNumber,
-                amountAfterDiscount: Number((baseAmountNumber - discountAmount).toFixed(2))
+                amountAfterDiscount: Number(
+                    (baseAmountNumber - discountAmount).toFixed(2)
+                ),
             });
         } catch (error) {
             if (error instanceof Error) {
-                return errorResponse("Failed to calculate loyalty discount", error.message);
+                return errorResponse(
+                    'Failed to calculate loyalty discount',
+                    error.message
+                );
             }
-            return errorResponse("Failed to calculate loyalty discount");
+            return errorResponse('Failed to calculate loyalty discount');
         }
     }
 }

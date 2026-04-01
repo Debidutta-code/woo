@@ -1,4 +1,4 @@
-import { ICreationLoyality } from "./creation-loyality.types";
+import { ICreationLoyality } from './creation-loyality.types';
 
 export interface ICPropertyLoyaltyConfig {
     creationLoyaltyConfigId: string;
@@ -12,6 +12,6 @@ export interface IPropertyLoyaltyConfig extends ICPropertyLoyaltyConfig {
     id: string;
     isActive: boolean;
 }
-export interface IPropertyLoyalityWithLoyality{
-    CreationLoyaltyConfig:ICreationLoyality;
+export interface IPropertyLoyalityWithLoyality {
+    CreationLoyaltyConfig: ICreationLoyality;
 }

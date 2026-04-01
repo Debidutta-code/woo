@@ -1,13 +1,21 @@
-import { prisma } from "../../../../config";
-import { IPaginatedResponse } from "../../../../utils/return";
+import { prisma } from '../../../../config';
+import { IPaginatedResponse } from '../../../../utils/return';
 import {
     ICReservation,
     IReservation,
     IReservationWithAllDetails,
     IReservationPriceBrakeDownR,
-    IAriManulupulation
-} from "../types";
-import { BookingStatus, IBookingAddon, IBookingAddonCreate, IGuestDetail, IPropertyEmails, IReservationPromotion, IReservationPromotionCreate } from "../types/reservation.type";
+    IAriManulupulation,
+} from '../types';
+import {
+    BookingStatus,
+    IBookingAddon,
+    IBookingAddonCreate,
+    IGuestDetail,
+    IPropertyEmails,
+    IReservationPromotion,
+    IReservationPromotionCreate,
+} from '../types/reservation.type';
 
 export class ReservationRepository {
     public async createReservation(data: ICReservation) {
@@ -18,32 +26,41 @@ export class ReservationRepository {
                     primaryGuest: true,
                     priceBreakdowns: true,
                     reservationGuests: true,
-                }
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to create reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to create reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to create reservation");
+            throw new Error('Failed to create reservation');
         }
     }
-    public async createReservationGuests(reservationId: string, guestDetails: IGuestDetail[]) {
+    public async createReservationGuests(
+        reservationId: string,
+        guestDetails: IGuestDetail[]
+    ) {
         try {
             return await prisma.reservationGuest.createMany({
-                data: guestDetails.map((guest) => ({
+                data: guestDetails.map(guest => ({
                     reservationId,
                     firstName: guest.firstName,
                     lastName: guest.lastName,
                     type: guest.type,
                     age: guest.age ?? null,
-                    dateOfBirth: guest.dateOfBirth ? new Date(guest.dateOfBirth) : null,
+                    dateOfBirth: guest.dateOfBirth
+                        ? new Date(guest.dateOfBirth)
+                        : null,
                 })),
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to create reservation guests: ${error.message}`);
+                throw new Error(
+                    `Failed to create reservation guests: ${error.message}`
+                );
             }
-            throw new Error("Failed to create reservation guests");
+            throw new Error('Failed to create reservation guests');
         }
     }
     public async updateReservation(
@@ -56,14 +73,16 @@ export class ReservationRepository {
                 data: updateData,
                 include: {
                     primaryGuest: true,
-                    priceBreakdowns: true
-                }
+                    priceBreakdowns: true,
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to update reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to update reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to update reservation");
+            throw new Error('Failed to update reservation');
         }
     }
 
@@ -76,34 +95,38 @@ export class ReservationRepository {
         promotionDetails?: IReservationPromotionCreate[]
     ): Promise<IReservation> {
         try {
-            return await prisma.$transaction(async (tx) => {
+            return await prisma.$transaction(async tx => {
                 // 1. Update reservation
                 const updatedReservation = await tx.reservation.update({
                     where: { id: reservationId },
                     data: updateData,
-                    include: { primaryGuest: true, priceBreakdowns: true }
+                    include: { primaryGuest: true, priceBreakdowns: true },
                 });
 
                 // 2. Update price breakdown
                 if (priceBreakdownData) {
                     await tx.reservationPriceBrakeDown.updateMany({
                         where: { reservationId },
-                        data: priceBreakdownData
+                        data: priceBreakdownData,
                     });
                 }
 
                 // 3. Sync reservation guests
                 if (guestDetails && guestDetails.length > 0) {
-                    await tx.reservationGuest.deleteMany({ where: { reservationId } });
+                    await tx.reservationGuest.deleteMany({
+                        where: { reservationId },
+                    });
                     await tx.reservationGuest.createMany({
-                        data: guestDetails.map((guest) => ({
+                        data: guestDetails.map(guest => ({
                             reservationId,
                             firstName: guest.firstName,
                             lastName: guest.lastName,
                             type: guest.type,
                             age: (guest as any).age ?? null,
-                            dateOfBirth: guest.dateOfBirth ? new Date(guest.dateOfBirth) : null,
-                        }))
+                            dateOfBirth: guest.dateOfBirth
+                                ? new Date(guest.dateOfBirth)
+                                : null,
+                        })),
                     });
                 }
 
@@ -114,18 +137,24 @@ export class ReservationRepository {
                 }
 
                 // 5. Sync reservation promotions
-                await tx.reservationPromotion.deleteMany({ where: { bookingId: reservationId } });
+                await tx.reservationPromotion.deleteMany({
+                    where: { bookingId: reservationId },
+                });
                 if (promotionDetails && promotionDetails.length > 0) {
-                    await tx.reservationPromotion.createMany({ data: promotionDetails });
+                    await tx.reservationPromotion.createMany({
+                        data: promotionDetails,
+                    });
                 }
 
                 return updatedReservation;
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to update reservation in transaction: ${error.message}`);
+                throw new Error(
+                    `Failed to update reservation in transaction: ${error.message}`
+                );
             }
-            throw new Error("Failed to update reservation in transaction");
+            throw new Error('Failed to update reservation in transaction');
         }
     }
 
@@ -140,8 +169,8 @@ export class ReservationRepository {
                 where: {
                     propertyCode,
                     roomTypeCode,
-                    date: { in: dates }
-                }
+                    date: { in: dates },
+                },
             });
 
             // Check if all dates have enough availability
@@ -153,7 +182,7 @@ export class ReservationRepository {
 
             return inventories.length === dates.length; // All dates must exist
         } catch (error) {
-            console.error("Error checking room availability:", error);
+            console.error('Error checking room availability:', error);
             return false;
         }
     }
@@ -164,13 +193,13 @@ export class ReservationRepository {
         page: number,
         limit: number,
         bookingStatus?: string,
-        bookingSource?: string,        
-        deviceType?: string,           
-        bookingCode?: string,          
-        guestName?: string,            
-        promoCode?: string,            
-        countryCode?: string,          
-        dateFilterType?: 'checkin' | 'booking' | 'modification'  
+        bookingSource?: string,
+        deviceType?: string,
+        bookingCode?: string,
+        guestName?: string,
+        promoCode?: string,
+        countryCode?: string,
+        dateFilterType?: 'checkin' | 'booking' | 'modification'
     ): Promise<IPaginatedResponse<IReservationWithAllDetails>> {
         try {
             const start = new Date(startDate);
@@ -180,19 +209,19 @@ export class ReservationRepository {
             end.setHours(23, 59, 59, 999);
 
             const whereClause: any = {
-                propertyId: { in: propertyIds }
+                propertyId: { in: propertyIds },
             };
 
             // Date filtering based on dateFilterType
             if (dateFilterType === 'booking') {
                 whereClause.bookedAt = {
                     gte: start,
-                    lte: end
+                    lte: end,
                 };
             } else if (dateFilterType === 'modification') {
                 whereClause.updatedAt = {
                     gte: start,
-                    lte: end
+                    lte: end,
                 };
             } else {
                 // Default: checkin date
@@ -200,21 +229,21 @@ export class ReservationRepository {
                     {
                         checkInDate: {
                             gte: start,
-                            lte: end
-                        }
+                            lte: end,
+                        },
                     },
                     {
                         checkOutDate: {
                             gte: start,
-                            lte: end
-                        }
+                            lte: end,
+                        },
                     },
                     {
                         AND: [
                             { checkInDate: { lte: start } },
-                            { checkOutDate: { gte: end } }
-                        ]
-                    }
+                            { checkOutDate: { gte: end } },
+                        ],
+                    },
                 ];
             }
 
@@ -237,7 +266,7 @@ export class ReservationRepository {
             if (bookingCode) {
                 whereClause.bookingCode = {
                     contains: bookingCode,
-                    mode: 'insensitive'
+                    mode: 'insensitive',
                 };
             }
 
@@ -247,10 +276,20 @@ export class ReservationRepository {
                 whereClause.AND.push({
                     primaryGuest: {
                         OR: [
-                            { firstName: { contains: guestName, mode: 'insensitive' } },
-                            { lastName: { contains: guestName, mode: 'insensitive' } }
-                        ]
-                    }
+                            {
+                                firstName: {
+                                    contains: guestName,
+                                    mode: 'insensitive',
+                                },
+                            },
+                            {
+                                lastName: {
+                                    contains: guestName,
+                                    mode: 'insensitive',
+                                },
+                            },
+                        ],
+                    },
                 });
             }
 
@@ -266,7 +305,7 @@ export class ReservationRepository {
             }
 
             const totalResults = await prisma.reservation.count({
-                where: whereClause
+                where: whereClause,
             });
 
             const totalPages = Math.ceil(totalResults / limit);
@@ -284,12 +323,12 @@ export class ReservationRepository {
                     property: {
                         select: {
                             propertyName: true,
-                            propertyCode: true
-                        }
+                            propertyCode: true,
+                        },
                     },
                     reservationPromotions: true,
                     reservationGuests: true,
-                }
+                },
             });
 
             return {
@@ -300,14 +339,16 @@ export class ReservationRepository {
                     totalResults,
                     hasNextPage: page < totalPages,
                     hasPreviousPage: page > 1,
-                    resultsPerPage: limit
-                }
+                    resultsPerPage: limit,
+                },
             };
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`getReservationsForDateRange failed: ${error.message}`);
+                throw new Error(
+                    `getReservationsForDateRange failed: ${error.message}`
+                );
             }
-            throw new Error("Failed to fetch reservations");
+            throw new Error('Failed to fetch reservations');
         }
     }
 
@@ -336,18 +377,20 @@ export class ReservationRepository {
                 propertyId: { in: propertyIds },
                 checkInDate: {
                     gte: effectiveStart,
-                    lte: end
-                }
+                    lte: end,
+                },
             };
 
             // 🔥 Booking status logic
             if (bookingStatus) {
                 whereClause.bookingStatus = bookingStatus;
             } else {
-                whereClause.bookingStatus = { not: "cancelled" };
+                whereClause.bookingStatus = { not: 'cancelled' };
             }
 
-            const totalResults = await prisma.reservation.count({ where: whereClause });
+            const totalResults = await prisma.reservation.count({
+                where: whereClause,
+            });
 
             const totalPages = Math.ceil(totalResults / limit);
             const skip = (page - 1) * limit;
@@ -356,7 +399,7 @@ export class ReservationRepository {
                 where: whereClause,
                 skip,
                 take: limit,
-                orderBy: { checkInDate: "asc" },
+                orderBy: { checkInDate: 'asc' },
                 include: {
                     primaryGuest: true,
                     priceBreakdowns: true,
@@ -364,10 +407,10 @@ export class ReservationRepository {
                     property: {
                         select: {
                             propertyName: true,
-                            propertyCode: true
-                        }
-                    }
-                }
+                            propertyCode: true,
+                        },
+                    },
+                },
             });
 
             return {
@@ -378,17 +421,16 @@ export class ReservationRepository {
                     totalResults,
                     hasNextPage: page < totalPages,
                     hasPreviousPage: page > 1,
-                    resultsPerPage: limit
-                }
+                    resultsPerPage: limit,
+                },
             };
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`getArrivals failed: ${error.message}`);
             }
-            throw new Error("Failed to fetch arrivals");
+            throw new Error('Failed to fetch arrivals');
         }
     }
-
 
     public async getDepartures(
         propertyIds: string[],
@@ -414,18 +456,20 @@ export class ReservationRepository {
                 propertyId: { in: propertyIds },
                 checkOutDate: {
                     gte: effectiveStart,
-                    lte: end
-                }
+                    lte: end,
+                },
             };
 
             // 🔥 Booking status logic
             if (bookingStatus) {
                 whereClause.bookingStatus = bookingStatus;
             } else {
-                whereClause.bookingStatus = { not: "cancelled" };
+                whereClause.bookingStatus = { not: 'cancelled' };
             }
 
-            const totalResults = await prisma.reservation.count({ where: whereClause });
+            const totalResults = await prisma.reservation.count({
+                where: whereClause,
+            });
 
             const totalPages = Math.ceil(totalResults / limit);
             const skip = (page - 1) * limit;
@@ -434,7 +478,7 @@ export class ReservationRepository {
                 where: whereClause,
                 skip,
                 take: limit,
-                orderBy: { checkOutDate: "asc" },
+                orderBy: { checkOutDate: 'asc' },
                 include: {
                     primaryGuest: true,
                     priceBreakdowns: true,
@@ -442,10 +486,10 @@ export class ReservationRepository {
                     property: {
                         select: {
                             propertyName: true,
-                            propertyCode: true
-                        }
-                    }
-                }
+                            propertyCode: true,
+                        },
+                    },
+                },
             });
 
             return {
@@ -456,17 +500,16 @@ export class ReservationRepository {
                     totalResults,
                     hasNextPage: page < totalPages,
                     hasPreviousPage: page > 1,
-                    resultsPerPage: limit
-                }
+                    resultsPerPage: limit,
+                },
             };
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`getDepartures failed: ${error.message}`);
             }
-            throw new Error("Failed to fetch departures");
+            throw new Error('Failed to fetch departures');
         }
     }
-
 
     public async getCheckIns(
         propertyIds: string[],
@@ -486,13 +529,13 @@ export class ReservationRepository {
                 propertyId: { in: propertyIds },
                 checkInDate: {
                     gte: start,
-                    lte: end
+                    lte: end,
                 },
-                bookingStatus: "confirmed" as const
+                bookingStatus: 'confirmed' as const,
             };
 
             const totalResults = await prisma.reservation.count({
-                where: whereClause
+                where: whereClause,
             });
 
             const totalPages = Math.ceil(totalResults / limit);
@@ -510,10 +553,10 @@ export class ReservationRepository {
                     property: {
                         select: {
                             propertyName: true,
-                            propertyCode: true
-                        }
-                    }
-                }
+                            propertyCode: true,
+                        },
+                    },
+                },
             });
 
             return {
@@ -524,14 +567,14 @@ export class ReservationRepository {
                     totalResults,
                     hasNextPage: page < totalPages,
                     hasPreviousPage: page > 1,
-                    resultsPerPage: limit
-                }
+                    resultsPerPage: limit,
+                },
             };
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`getCheckIns failed: ${error.message}`);
             }
-            throw new Error("Failed to fetch check-ins");
+            throw new Error('Failed to fetch check-ins');
         }
     }
 
@@ -553,13 +596,13 @@ export class ReservationRepository {
                 propertyId: { in: propertyIds },
                 checkOutDate: {
                     gte: start,
-                    lte: end
+                    lte: end,
                 },
-                bookingStatus: "confirmed" as const
+                bookingStatus: 'confirmed' as const,
             };
 
             const totalResults = await prisma.reservation.count({
-                where: whereClause
+                where: whereClause,
             });
 
             const totalPages = Math.ceil(totalResults / limit);
@@ -577,10 +620,10 @@ export class ReservationRepository {
                     property: {
                         select: {
                             propertyName: true,
-                            propertyCode: true
-                        }
-                    }
-                }
+                            propertyCode: true,
+                        },
+                    },
+                },
             });
 
             return {
@@ -591,14 +634,14 @@ export class ReservationRepository {
                     totalResults,
                     hasNextPage: page < totalPages,
                     hasPreviousPage: page > 1,
-                    resultsPerPage: limit
-                }
+                    resultsPerPage: limit,
+                },
             };
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`getCheckouts failed: ${error.message}`);
             }
-            throw new Error("Failed to fetch check-outs");
+            throw new Error('Failed to fetch check-outs');
         }
     }
     private getNextDate(currentDate: Date): Date {
@@ -609,62 +652,79 @@ export class ReservationRepository {
         return end;
     }
 
-    public async amendReservation(reservationId: string, newCheckoutDate: Date): Promise<IReservation> {
+    public async amendReservation(
+        reservationId: string,
+        newCheckoutDate: Date
+    ): Promise<IReservation> {
         try {
             return await prisma.reservation.update({
                 where: { id: reservationId },
                 data: { checkOutDate: newCheckoutDate },
                 include: {
                     primaryGuest: true,
-                    priceBreakdowns: true
-                }
+                    priceBreakdowns: true,
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to amend reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to amend reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to extend ReservationDate");
+            throw new Error('Failed to extend ReservationDate');
         }
     }
 
-    public async deleteReservation(reservationId: string): Promise<IReservation> {
+    public async deleteReservation(
+        reservationId: string
+    ): Promise<IReservation> {
         try {
             return await prisma.reservation.update({
                 where: { id: reservationId },
-                data: { bookingStatus: "cancelled" },
+                data: { bookingStatus: 'cancelled' },
                 include: {
                     primaryGuest: true,
-                    priceBreakdowns: true
-                }
+                    priceBreakdowns: true,
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to cancel reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to cancel reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to delete ReservationDate");
+            throw new Error('Failed to delete ReservationDate');
         }
     }
     public async NoShow(reservationId: string): Promise<IReservation> {
         try {
             return await prisma.reservation.update({
                 where: { id: reservationId },
-                data: { bookingStatus: "no_show" },
+                data: { bookingStatus: 'no_show' },
                 include: {
                     primaryGuest: true,
-                    priceBreakdowns: true
-                }
+                    priceBreakdowns: true,
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to cancel reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to cancel reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to delete ReservationDate");
+            throw new Error('Failed to delete ReservationDate');
         }
     }
-    public async getReservaltionByCode(reservationCode: string, propertyCode: string): Promise<IReservationWithAllDetails | null> {
+    public async getReservaltionByCode(
+        reservationCode: string,
+        propertyCode: string
+    ): Promise<IReservationWithAllDetails | null> {
         try {
             return await prisma.reservation.findUnique({
-                where: { bookingCode: reservationCode, propertyCode: propertyCode },
+                where: {
+                    bookingCode: reservationCode,
+                    propertyCode: propertyCode,
+                },
                 include: {
                     primaryGuest: true,
                     priceBreakdowns: true,
@@ -674,31 +734,38 @@ export class ReservationRepository {
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to fetch reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to fetch reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to fetch reservation by code");
+            throw new Error('Failed to fetch reservation by code');
         }
     }
 
-    public async updateReservationStatus(reservationId: string, status: BookingStatus): Promise<IReservation> {
+    public async updateReservationStatus(
+        reservationId: string,
+        status: BookingStatus
+    ): Promise<IReservation> {
         try {
             return await prisma.reservation.update({
                 where: { id: reservationId },
                 data: { bookingStatus: status },
                 include: {
                     primaryGuest: true,
-                    priceBreakdowns: true
-                }
+                    priceBreakdowns: true,
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to update status: ${error.message}`);
             }
-            throw new Error("Failed to update reservation status");
+            throw new Error('Failed to update reservation status');
         }
     }
 
-    public async getReservationById(reservationId: string): Promise<IReservationWithAllDetails | null> {
+    public async getReservationById(
+        reservationId: string
+    ): Promise<IReservationWithAllDetails | null> {
         try {
             return await prisma.reservation.findUnique({
                 where: { id: reservationId },
@@ -707,102 +774,123 @@ export class ReservationRepository {
                     priceBreakdowns: true,
                     addOns: true,
                     reservationGuests: true,
-                }
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to fetch reservation: ${error.message}`);
+                throw new Error(
+                    `Failed to fetch reservation: ${error.message}`
+                );
             }
-            throw new Error("Failed to fetch reservation by Id");
+            throw new Error('Failed to fetch reservation by Id');
         }
     }
-    public async getPropertyEmails(propertyId: string): Promise<IPropertyEmails[]> {
+    public async getPropertyEmails(
+        propertyId: string
+    ): Promise<IPropertyEmails[]> {
         try {
             const property = await prisma.propertyEmails.findMany({
                 where: { id: propertyId },
-                select: { email: true }
+                select: { email: true },
             });
             return property;
         } catch (error) {
             throw new Error(`Failed to fetch property emails`);
         }
     }
-
 }
 
 export class PriceBrakeDownRepo {
-    public async createpriceBrakeDowns(priceBrakeDowns: IReservationPriceBrakeDownR[]) {
+    public async createpriceBrakeDowns(
+        priceBrakeDowns: IReservationPriceBrakeDownR[]
+    ) {
         try {
             return await prisma.reservationPriceBrakeDown.createMany({
-                data: priceBrakeDowns
+                data: priceBrakeDowns,
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to create price breakdowns: ${error.message}`);
+                throw new Error(
+                    `Failed to create price breakdowns: ${error.message}`
+                );
             }
-            throw new Error("Failed to create Price Brake Downs");
+            throw new Error('Failed to create Price Brake Downs');
         }
     }
 }
 
 export class AriManupulationRepo {
-    public async decreaseAvailableRooms(ariManupulationRooms: IAriManulupulation) {
+    public async decreaseAvailableRooms(
+        ariManupulationRooms: IAriManulupulation
+    ) {
         try {
-            return await prisma.$transaction(async (tx) => {
+            return await prisma.$transaction(async tx => {
                 for (const room of ariManupulationRooms.roomInfos) {
                     const result = await tx.inventory.updateMany({
                         where: {
                             propertyCode: ariManupulationRooms.propertyCode,
                             roomTypeCode: room.roomTypeCode,
                             date: {
-                                in: ariManupulationRooms.dates
-                            }
+                                in: ariManupulationRooms.dates,
+                            },
                         },
                         data: {
                             availability: {
-                                decrement: room.numberOfRooms
-                            }
-                        }
+                                decrement: room.numberOfRooms,
+                            },
+                        },
                     });
                     ////console.log(`Decreased availability for ${room.roomTypeCode} in ${ariManupulationRooms.propertyCode}: ${result.count} records updated`);
                 }
             });
         } catch (error) {
             if (error instanceof Error) {
-                console.error("Failed to decrease Available Rooms:", error.message);
-                throw new Error(`Failed to decrease Available Rooms: ${error.message}`);
+                console.error(
+                    'Failed to decrease Available Rooms:',
+                    error.message
+                );
+                throw new Error(
+                    `Failed to decrease Available Rooms: ${error.message}`
+                );
             }
-            throw new Error("Failed to decrease Available Rooms");
+            throw new Error('Failed to decrease Available Rooms');
         }
     }
 
-    public async increaseAvailableRooms(ariManupulationRooms: IAriManulupulation) {
+    public async increaseAvailableRooms(
+        ariManupulationRooms: IAriManulupulation
+    ) {
         try {
-            return await prisma.$transaction(async (tx) => {
+            return await prisma.$transaction(async tx => {
                 for (const room of ariManupulationRooms.roomInfos) {
                     const result = await tx.inventory.updateMany({
                         where: {
                             propertyCode: ariManupulationRooms.propertyCode,
                             roomTypeCode: room.roomTypeCode,
                             date: {
-                                in: ariManupulationRooms.dates
-                            }
+                                in: ariManupulationRooms.dates,
+                            },
                         },
                         data: {
                             availability: {
-                                increment: room.numberOfRooms
-                            }
-                        }
+                                increment: room.numberOfRooms,
+                            },
+                        },
                     });
                     //console.log(`Increased availability for ${room.roomTypeCode}: ${result.count} records updated`);
                 }
             });
         } catch (error) {
             if (error instanceof Error) {
-                console.error("Failed to increase Available Rooms:", error.message);
-                throw new Error(`Failed to increase Available Rooms: ${error.message}`);
+                console.error(
+                    'Failed to increase Available Rooms:',
+                    error.message
+                );
+                throw new Error(
+                    `Failed to increase Available Rooms: ${error.message}`
+                );
             }
-            throw new Error("Failed to increase Available Rooms");
+            throw new Error('Failed to increase Available Rooms');
         }
     }
 }
@@ -812,87 +900,103 @@ export class GuestRepository {
     public async getGuestByEmail(email: string) {
         try {
             return await prisma.guests.findFirst({
-                where: { email }
+                where: { email },
             });
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to fetch guest: ${error.message}`);
             }
-            throw new Error("Failed to fetch guest by email");
+            throw new Error('Failed to fetch guest by email');
         }
     }
 
     public async createGuest(data: any) {
         try {
             return await prisma.guests.create({
-                data
+                data,
             });
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`Failed to create guest: ${error.message}`);
             }
-            throw new Error("Failed to create guest");
+            throw new Error('Failed to create guest');
         }
     }
 }
 // ==================== BOOKING ADDON REPOSITORY ====================
 export class BookingAddonRepository {
-    public async createBookingAddons(addons: IBookingAddonCreate[]): Promise<any> {
+    public async createBookingAddons(
+        addons: IBookingAddonCreate[]
+    ): Promise<any> {
         try {
             return await prisma.bookingAddon.createMany({
-                data: addons
+                data: addons,
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to create booking addons: ${error.message}`);
+                throw new Error(
+                    `Failed to create booking addons: ${error.message}`
+                );
             }
-            throw new Error("Failed to create booking addons");
+            throw new Error('Failed to create booking addons');
         }
     }
 
-    public async getBookingAddonsByReservationId(reservationId: string): Promise<IBookingAddon[]> {
+    public async getBookingAddonsByReservationId(
+        reservationId: string
+    ): Promise<IBookingAddon[]> {
         try {
             return await prisma.bookingAddon.findMany({
-                where: { reservationId }
+                where: { reservationId },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to fetch booking addons: ${error.message}`);
+                throw new Error(
+                    `Failed to fetch booking addons: ${error.message}`
+                );
             }
-            throw new Error("Failed to fetch booking addons");
+            throw new Error('Failed to fetch booking addons');
         }
     }
 }
 
 // ==================== RESERVATION PROMOTION REPOSITORY ====================
 export class ReservationPromotionRepository {
-    public async createReservationPromotions(promotions: IReservationPromotionCreate[]): Promise<any> {
+    public async createReservationPromotions(
+        promotions: IReservationPromotionCreate[]
+    ): Promise<any> {
         try {
             return await prisma.reservationPromotion.createMany({
-                data: promotions
+                data: promotions,
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to create reservation promotions: ${error.message}`);
+                throw new Error(
+                    `Failed to create reservation promotions: ${error.message}`
+                );
             }
-            throw new Error("Failed to create reservation promotions");
+            throw new Error('Failed to create reservation promotions');
         }
     }
 
-    public async getPromotionsByReservationId(reservationId: string): Promise<IReservationPromotion[]> {
+    public async getPromotionsByReservationId(
+        reservationId: string
+    ): Promise<IReservationPromotion[]> {
         try {
             return await prisma.reservationPromotion.findMany({
                 where: { bookingId: reservationId },
                 include: {
                     Promotion: true,
-                    RatePlanRule: true
-                }
+                    RatePlanRule: true,
+                },
             });
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`Failed to fetch reservation promotions: ${error.message}`);
+                throw new Error(
+                    `Failed to fetch reservation promotions: ${error.message}`
+                );
             }
-            throw new Error("Failed to fetch reservation promotions");
+            throw new Error('Failed to fetch reservation promotions');
         }
     }
 }

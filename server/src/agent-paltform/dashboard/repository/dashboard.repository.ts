@@ -1,4 +1,4 @@
-import { prisma } from "../../../config";
+import { prisma } from '../../../config';
 import {
     IAgentAnalyticsData,
     IAgentReservationAnalytics,
@@ -6,16 +6,18 @@ import {
     IAgentGuestAnalytics,
     IAgentBookingSourceAnalytics,
     IAgentPropertyAnalytics,
-    IAgentDashboardFilters
-} from "../types";
+    IAgentDashboardFilters,
+} from '../types';
 
 export class AgentDashboardRepository {
-   
-    public async getAgencyAnalytics(agencyId: string, filters?: IAgentDashboardFilters) {
+    public async getAgencyAnalytics(
+        agencyId: string,
+        filters?: IAgentDashboardFilters
+    ) {
         try {
             const whereClause: any = {
                 agencyId: agencyId,
-                bookingSource: 'agency'
+                bookingSource: 'agency',
             };
 
             if (filters?.propertyId) {
@@ -41,13 +43,13 @@ export class AgentDashboardRepository {
                 revenueStats,
                 guestStats,
                 bookingSourceStats,
-                propertiesBreakdown
+                propertiesBreakdown,
             ] = await Promise.all([
                 this.getReservationAnalytics(agencyId, whereClause),
                 this.getRevenueAnalytics(agencyId, whereClause),
                 this.getGuestAnalytics(agencyId, whereClause),
                 this.getBookingSourceAnalytics(agencyId, whereClause),
-                this.getPropertiesBreakdown(agencyId, whereClause)
+                this.getPropertiesBreakdown(agencyId, whereClause),
             ]);
 
             const analyticsData: IAgentAnalyticsData = {
@@ -55,18 +57,21 @@ export class AgentDashboardRepository {
                 revenue: revenueStats,
                 guest: guestStats,
                 bookingSource: bookingSourceStats,
-                propertiesBreakdown: propertiesBreakdown
+                propertiesBreakdown: propertiesBreakdown,
             };
 
             return {
                 success: true,
-                data: analyticsData
+                data: analyticsData,
             };
         } catch (error) {
             return {
                 success: false,
-                message: error instanceof Error ? error.message : "Unknown error occurred",
-                data: null
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : 'Unknown error occurred',
+                data: null,
             };
         }
     }
@@ -78,7 +83,9 @@ export class AgentDashboardRepository {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const thirtyDaysAgo = new Date(
+            today.getTime() - 30 * 24 * 60 * 60 * 1000
+        );
 
         const [
             totalReservations,
@@ -86,18 +93,18 @@ export class AgentDashboardRepository {
             todayCheckIns,
             todayCheckOuts,
             upcomingReservations,
-            recentBookings
+            recentBookings,
         ] = await Promise.all([
             prisma.reservation.count({
-                where: baseWhereClause
+                where: baseWhereClause,
             }),
 
             prisma.reservation.groupBy({
                 by: ['bookingStatus'],
                 where: baseWhereClause,
                 _count: {
-                    id: true
-                }
+                    id: true,
+                },
             }),
 
             prisma.reservation.count({
@@ -105,9 +112,9 @@ export class AgentDashboardRepository {
                     ...baseWhereClause,
                     checkInDate: {
                         gte: today,
-                        lt: tomorrow
-                    }
-                }
+                        lt: tomorrow,
+                    },
+                },
             }),
 
             prisma.reservation.count({
@@ -115,9 +122,9 @@ export class AgentDashboardRepository {
                     ...baseWhereClause,
                     checkOutDate: {
                         gte: today,
-                        lt: tomorrow
-                    }
-                }
+                        lt: tomorrow,
+                    },
+                },
             }),
 
             prisma.reservation.count({
@@ -125,31 +132,40 @@ export class AgentDashboardRepository {
                     ...baseWhereClause,
                     checkInDate: {
                         gte: today,
-                        lte: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+                        lte: new Date(
+                            today.getTime() + 30 * 24 * 60 * 60 * 1000
+                        ),
                     },
                     bookingStatus: {
-                        in: ['confirmed', 'pending']
-                    }
-                }
+                        in: ['confirmed', 'pending'],
+                    },
+                },
             }),
 
             prisma.reservation.count({
                 where: {
                     ...baseWhereClause,
                     bookedAt: {
-                        gte: thirtyDaysAgo
-                    }
-                }
-            })
+                        gte: thirtyDaysAgo,
+                    },
+                },
+            }),
         ]);
 
-        const confirmedReservations = statusCounts.find(s => s.bookingStatus === 'confirmed')?._count.id || 0;
-        const pendingReservations = statusCounts.find(s => s.bookingStatus === 'pending')?._count.id || 0;
-        const cancelledReservations = statusCounts.find(s => s.bookingStatus === 'cancelled')?._count.id || 0;
+        const confirmedReservations =
+            statusCounts.find(s => s.bookingStatus === 'confirmed')?._count
+                .id || 0;
+        const pendingReservations =
+            statusCounts.find(s => s.bookingStatus === 'pending')?._count.id ||
+            0;
+        const cancelledReservations =
+            statusCounts.find(s => s.bookingStatus === 'cancelled')?._count
+                .id || 0;
 
-        const cancellationRate = totalReservations > 0 
-            ? (cancelledReservations / totalReservations) * 100 
-            : 0;
+        const cancellationRate =
+            totalReservations > 0
+                ? (cancelledReservations / totalReservations) * 100
+                : 0;
 
         return {
             totalReservations,
@@ -160,7 +176,7 @@ export class AgentDashboardRepository {
             todayCheckOuts,
             upcomingReservations,
             recentBookings,
-            cancellationRate: Number(cancellationRate.toFixed(2))
+            cancellationRate: Number(cancellationRate.toFixed(2)),
         };
     }
 
@@ -168,30 +184,27 @@ export class AgentDashboardRepository {
         agencyId: string,
         baseWhereClause: any
     ): Promise<IAgentRevenueAnalytics> {
-        const [
-            revenueData,
-            paymentMethodBreakdown
-        ] = await Promise.all([
+        const [revenueData, paymentMethodBreakdown] = await Promise.all([
             prisma.reservation.aggregate({
                 where: baseWhereClause,
                 _sum: {
                     amount: true,
                     paidAmount: true,
                     extraAmountToPay: true,
-                    refundAmount: true
+                    refundAmount: true,
                 },
                 _avg: {
-                    amount: true
-                }
+                    amount: true,
+                },
             }),
 
             prisma.reservation.groupBy({
                 by: ['paymentMethod'],
                 where: baseWhereClause,
                 _sum: {
-                    amount: true
-                }
-            })
+                    amount: true,
+                },
+            }),
         ]);
 
         const totalRevenue = revenueData._sum.amount || 0;
@@ -204,11 +217,12 @@ export class AgentDashboardRepository {
             pay_at_hotel: 0,
             net_banking: 0,
             upi: 0,
-            payment_gateway: 0
+            payment_gateway: 0,
         };
 
         paymentMethodBreakdown.forEach(pm => {
-            const method = pm.paymentMethod as keyof typeof revenueByPaymentMethod;
+            const method =
+                pm.paymentMethod as keyof typeof revenueByPaymentMethod;
             if (method in revenueByPaymentMethod) {
                 revenueByPaymentMethod[method] = pm._sum.amount || 0;
             }
@@ -220,7 +234,7 @@ export class AgentDashboardRepository {
             pendingAmount,
             refundedAmount,
             averageBookingValue,
-            revenueByPaymentMethod
+            revenueByPaymentMethod,
         };
     }
 
@@ -232,8 +246,8 @@ export class AgentDashboardRepository {
             where: baseWhereClause,
             select: {
                 guests: true,
-                bookingUserEmail: true
-            }
+                bookingUserEmail: true,
+            },
         });
 
         let totalGuests = 0;
@@ -250,7 +264,7 @@ export class AgentDashboardRepository {
                     if (guest.userType === 'adult') adults++;
                     else if (guest.userType === 'child') children++;
                     else if (guest.userType === 'infant') infants++;
-                    
+
                     if (guest.email) {
                         guestEmails.add(guest.email);
                     }
@@ -265,7 +279,7 @@ export class AgentDashboardRepository {
             adults,
             children,
             infants,
-            repeatGuests: repeatGuests > 0 ? repeatGuests : 0
+            repeatGuests: repeatGuests > 0 ? repeatGuests : 0,
         };
     }
 
@@ -277,8 +291,8 @@ export class AgentDashboardRepository {
             by: ['bookingSource'],
             where: baseWhereClause,
             _count: {
-                id: true
-            }
+                id: true,
+            },
         });
 
         const analytics: IAgentBookingSourceAnalytics = {
@@ -287,11 +301,12 @@ export class AgentDashboardRepository {
             trip_adviser: 0,
             trivago: 0,
             social_media: 0,
-            agency: 0
+            agency: 0,
         };
 
         bookingSources.forEach(source => {
-            const sourceName = source.bookingSource as keyof IAgentBookingSourceAnalytics;
+            const sourceName =
+                source.bookingSource as keyof IAgentBookingSourceAnalytics;
             if (sourceName in analytics) {
                 analytics[sourceName] = source._count.id;
             }
@@ -308,14 +323,14 @@ export class AgentDashboardRepository {
             by: ['propertyId', 'propertyCode', 'hotelName'],
             where: baseWhereClause,
             _count: {
-                id: true
+                id: true,
             },
             _sum: {
-                amount: true
+                amount: true,
             },
             _avg: {
-                amount: true
-            }
+                amount: true,
+            },
         });
 
         return propertiesData.map(property => ({
@@ -324,7 +339,7 @@ export class AgentDashboardRepository {
             propertyCode: property.propertyCode || 'N/A',
             totalReservations: property._count.id,
             totalRevenue: property._sum.amount || 0,
-            averageBookingValue: property._avg.amount || 0
+            averageBookingValue: property._avg.amount || 0,
         }));
     }
 
@@ -334,24 +349,27 @@ export class AgentDashboardRepository {
                 where: {
                     agencyId: agencyId,
                     isActive: true,
-                    isDeleted: false
+                    isDeleted: false,
                 },
                 select: {
                     propertyId: true,
                     propertyCode: true,
-                    propertyName: true
-                }
+                    propertyName: true,
+                },
             });
 
             return {
                 success: true,
-                data: properties
+                data: properties,
             };
         } catch (error) {
             return {
                 success: false,
-                message: error instanceof Error ? error.message : "Failed to fetch properties",
-                data: []
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to fetch properties',
+                data: [],
             };
         }
     }

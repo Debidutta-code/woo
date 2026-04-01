@@ -25,23 +25,36 @@ import {
     IAddonWithRelations,
     IAddonAvailability,
 } from '../types';
-import { CurrencyCode, DiscountType } from '../../tax-system/interfaces/tourist-tax.type';
+import {
+    CurrencyCode,
+    DiscountType,
+} from '../../tax-system/interfaces/tourist-tax.type';
 
 export class RoomBookingService {
     public static async fetchRooms(payload: IBookingSearchPayload) {
-        const { propertyCode, startDate, endDate, guests, deviceType, countryCode } = payload;
+        const {
+            propertyCode,
+            startDate,
+            endDate,
+            guests,
+            deviceType,
+            countryCode,
+        } = payload;
 
-        const property = await RoomBookingRepository.getPropertyByCode(propertyCode) as IPropertyData | null;
+        const property = (await RoomBookingRepository.getPropertyByCode(
+            propertyCode
+        )) as IPropertyData | null;
         if (!property || !property.isAvailable) {
             return { success: false, message: 'Property not available' };
         }
 
         let promoCodeData: IRoomPromoCode | null = null;
         if (payload.promocode) {
-            promoCodeData = await RoomBookingRepository.getPromoCodeByPropertyAndCode(
-                property.id,
-                payload.promocode
-            ) as IRoomPromoCode | null;
+            promoCodeData =
+                (await RoomBookingRepository.getPromoCodeByPropertyAndCode(
+                    property.id,
+                    payload.promocode
+                )) as IRoomPromoCode | null;
         }
 
         const dates: Date[] = [];
@@ -49,7 +62,9 @@ export class RoomBookingService {
         const last = toUTCDate(endDate);
         while (current < last) {
             dates.push(current);
-            current = toUTCDate(new Date(new Date(current).setDate(current.getDate() + 1)));
+            current = toUTCDate(
+                new Date(new Date(current).setDate(current.getDate() + 1))
+            );
         }
 
         const totalGuests = guests.adults + guests.children;
@@ -72,7 +87,9 @@ export class RoomBookingService {
             )
         );
 
-        const rooms: IRoom[] = roomResults.filter((r): r is IRoom => r !== null);
+        const rooms: IRoom[] = roomResults.filter(
+            (r): r is IRoom => r !== null
+        );
 
         return {
             success: true,
@@ -202,18 +219,25 @@ export class RoomBookingService {
                 today,
                 numberOfNights
             ) as Promise<IRoomPromotionData[]>,
-            RoomBookingRepository.getRatePlanRule(ratePlan.id) as Promise<IRoomRatePlanRule | null>,
+            RoomBookingRepository.getRatePlanRule(
+                ratePlan.id
+            ) as Promise<IRoomRatePlanRule | null>,
             deviceType
-                ? RoomBookingRepository.getDeviceSpecificPromotion(
-                    property.id,
-                    room.id,
-                    ratePlan.id,
-                    checkInDate,
-                    deviceType
-                ) as Promise<IRoomPromotionData | null>
+                ? (RoomBookingRepository.getDeviceSpecificPromotion(
+                      property.id,
+                      room.id,
+                      ratePlan.id,
+                      checkInDate,
+                      deviceType
+                  ) as Promise<IRoomPromotionData | null>)
                 : Promise.resolve(null),
-            RoomBookingRepository.getTouristTax(ratePlan.id) as Promise<IRoomTouristTaxData | null>,
-            RoomBookingRepository.getBookingOffset(ratePlan.id, toUTCDate(checkInDate)) as Promise<IRoomBookingOffset | null>,
+            RoomBookingRepository.getTouristTax(
+                ratePlan.id
+            ) as Promise<IRoomTouristTaxData | null>,
+            RoomBookingRepository.getBookingOffset(
+                ratePlan.id,
+                toUTCDate(checkInDate)
+            ) as Promise<IRoomBookingOffset | null>,
         ]);
 
         const chargeValidator = new ChargeValidator(charges, dates);
@@ -238,7 +262,7 @@ export class RoomBookingService {
         const roomsArray = guests.roomsArray || [];
 
         const anyRoomExceedsCapacity = roomsArray.some(
-            r => (r.adults + r.children) > room.maxOccupancy
+            r => r.adults + r.children > room.maxOccupancy
         );
         if (anyRoomExceedsCapacity) return null;
 
@@ -249,7 +273,7 @@ export class RoomBookingService {
             const perRoomGuests = {
                 ...guests,
                 adults: roomConfig.adults,
-                children: roomConfig.children
+                children: roomConfig.children,
             };
             const calc = new RoomBasePriceCalculator(charges[0], perRoomGuests);
             const result = calc.calculate();
@@ -270,11 +294,8 @@ export class RoomBookingService {
             ratePlan.ratePlanCode,
             deviceType
         );
-        const {
-            totalAutoDiscount,
-            appliedDiscounts,
-            availablePromotions,
-        } = discountCalc.calculate();
+        const { totalAutoDiscount, appliedDiscounts, availablePromotions } =
+            discountCalc.calculate();
 
         const touristTax = RoomTouristTaxCalculator.calculate(
             touristTaxData,
@@ -436,7 +457,6 @@ class ChargeValidator {
     }
 }
 
-
 class RestrictionChecker {
     private geoRatePlan: IRoomGeoRatePlan | null;
     private bookingOffset: IRoomBookingOffset | null;
@@ -476,9 +496,9 @@ class RestrictionChecker {
     private validateBookingOffset(): boolean {
         if (!this.bookingOffset) return true;
 
-        const hoursUntilCheckIn = DateTime.fromJSDate(toUTCDate(this.checkInDate))
-            .diff(DateTime.fromJSDate(toUTCDate(this.today)), 'hours')
-            .hours;
+        const hoursUntilCheckIn = DateTime.fromJSDate(
+            toUTCDate(this.checkInDate)
+        ).diff(DateTime.fromJSDate(toUTCDate(this.today)), 'hours').hours;
 
         if (
             this.bookingOffset.minimumAdvanceBookingOffset !== null &&
@@ -510,10 +530,16 @@ class RestrictionChecker {
         );
 
         if (withinPeriod) {
-            if (this.ratePlanRule.minLos && this.numberOfNights < this.ratePlanRule.minLos) {
+            if (
+                this.ratePlanRule.minLos &&
+                this.numberOfNights < this.ratePlanRule.minLos
+            ) {
                 return false;
             }
-            if (this.ratePlanRule.maxLos && this.numberOfNights > this.ratePlanRule.maxLos) {
+            if (
+                this.ratePlanRule.maxLos &&
+                this.numberOfNights > this.ratePlanRule.maxLos
+            ) {
                 return false;
             }
         }
@@ -529,9 +555,10 @@ class PromotionFilter {
         today: Date
     ): IRoomPromotionData[] {
         const daysBetweenBookingAndCheckIn = Math.floor(
-            DateTime.fromJSDate(toUTCDate(checkInDate))
-                .diff(DateTime.fromJSDate(toUTCDate(today)), 'days')
-                .days
+            DateTime.fromJSDate(toUTCDate(checkInDate)).diff(
+                DateTime.fromJSDate(toUTCDate(today)),
+                'days'
+            ).days
         );
 
         return promotions.filter(promo => {
@@ -556,35 +583,55 @@ class RoomBasePriceCalculator {
         this.guests = guests;
     }
 
-    calculate(): { baseAmount: number; sortedBaseAmounts: IRoomChargeBaseByGuest[] } | null {
+    calculate(): {
+        baseAmount: number;
+        sortedBaseAmounts: IRoomChargeBaseByGuest[];
+    } | null {
         const adultBaseAmounts = this.charge.baseGuestAmounts
             .filter((b: IRoomChargeBaseByGuest) => b.ageQualifyingCode === '10')
-            .sort((a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) => a.numberOfGuests - b.numberOfGuests);
+            .sort(
+                (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) =>
+                    a.numberOfGuests - b.numberOfGuests
+            );
 
         const childBaseAmounts = this.charge.baseGuestAmounts
             .filter((b: IRoomChargeBaseByGuest) => b.ageQualifyingCode === '8')
-            .sort((a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) => a.numberOfGuests - b.numberOfGuests);
+            .sort(
+                (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) =>
+                    a.numberOfGuests - b.numberOfGuests
+            );
 
-        const additionalAdultCharge = this.charge.additionalGuestAmounts
-            .find((a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '10');
+        const additionalAdultCharge = this.charge.additionalGuestAmounts.find(
+            (a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '10'
+        );
 
-        const additionalChildCharge = this.charge.additionalGuestAmounts
-            .find((a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '8');
+        const additionalChildCharge = this.charge.additionalGuestAmounts.find(
+            (a: IRoomChargeAdditionalGuest) => a.ageQualifyingCode === '8'
+        );
 
         // Calculate adult price
-        const adultResult = this.calculateAdultPrice(adultBaseAmounts, additionalAdultCharge);
+        const adultResult = this.calculateAdultPrice(
+            adultBaseAmounts,
+            additionalAdultCharge
+        );
         if (adultResult === null) return null;
 
         // Calculate child price
-        const childResult = this.calculateChildPrice(childBaseAmounts, additionalChildCharge);
+        const childResult = this.calculateChildPrice(
+            childBaseAmounts,
+            additionalChildCharge
+        );
         if (childResult === null) return null;
 
         const baseAmount =
-            adultResult.basePrice + childResult.basePrice +
-            adultResult.additionalCharges + childResult.additionalCharges;
+            adultResult.basePrice +
+            childResult.basePrice +
+            adultResult.additionalCharges +
+            childResult.additionalCharges;
 
         const sortedBaseAmounts = [...this.charge.baseGuestAmounts].sort(
-            (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) => a.numberOfGuests - b.numberOfGuests
+            (a: IRoomChargeBaseByGuest, b: IRoomChargeBaseByGuest) =>
+                a.numberOfGuests - b.numberOfGuests
         );
 
         return { baseAmount, sortedBaseAmounts };
@@ -597,20 +644,25 @@ class RoomBasePriceCalculator {
         let basePrice = 0;
         let additionalCharges = 0;
 
-        const exactAdultBase = adultBaseAmounts.find(b => b.numberOfGuests === this.guests.adults);
+        const exactAdultBase = adultBaseAmounts.find(
+            b => b.numberOfGuests === this.guests.adults
+        );
         if (exactAdultBase) {
             basePrice = Number(exactAdultBase.amountBeforeTax);
         } else if (adultBaseAmounts.length > 0) {
             const maxAdultBase = adultBaseAmounts[adultBaseAmounts.length - 1];
             basePrice = Number(maxAdultBase.amountBeforeTax);
-            const extraAdults = this.guests.adults - maxAdultBase.numberOfGuests;
+            const extraAdults =
+                this.guests.adults - maxAdultBase.numberOfGuests;
             if (extraAdults > 0) {
                 if (!additionalAdultCharge) return null;
-                additionalCharges = extraAdults * Number(additionalAdultCharge.amount);
+                additionalCharges =
+                    extraAdults * Number(additionalAdultCharge.amount);
             }
         } else {
             if (additionalAdultCharge) {
-                additionalCharges = this.guests.adults * Number(additionalAdultCharge.amount);
+                additionalCharges =
+                    this.guests.adults * Number(additionalAdultCharge.amount);
             } else {
                 return null;
             }
@@ -626,22 +678,28 @@ class RoomBasePriceCalculator {
         let basePrice = 0;
         let additionalCharges = 0;
 
-        if (this.guests.children <= 0) return { basePrice: 0, additionalCharges: 0 };
+        if (this.guests.children <= 0)
+            return { basePrice: 0, additionalCharges: 0 };
 
-        const exactChildBase = childBaseAmounts.find(b => b.numberOfGuests === this.guests.children);
+        const exactChildBase = childBaseAmounts.find(
+            b => b.numberOfGuests === this.guests.children
+        );
         if (exactChildBase) {
             basePrice = Number(exactChildBase.amountBeforeTax);
         } else if (childBaseAmounts.length > 0) {
             const maxChildBase = childBaseAmounts[childBaseAmounts.length - 1];
             basePrice = Number(maxChildBase.amountBeforeTax);
-            const extraChildren = this.guests.children - maxChildBase.numberOfGuests;
+            const extraChildren =
+                this.guests.children - maxChildBase.numberOfGuests;
             if (extraChildren > 0) {
                 if (!additionalChildCharge) return null;
-                additionalCharges = extraChildren * Number(additionalChildCharge.amount);
+                additionalCharges =
+                    extraChildren * Number(additionalChildCharge.amount);
             }
         } else {
             if (additionalChildCharge) {
-                additionalCharges = this.guests.children * Number(additionalChildCharge.amount);
+                additionalCharges =
+                    this.guests.children * Number(additionalChildCharge.amount);
             } else {
                 return null;
             }
@@ -690,30 +748,33 @@ class RoomDiscountCalculator {
         this.deviceType = deviceType;
     }
 
-calculate(): {
-    totalAutoDiscount: number;
-    appliedDiscounts: IAppliedDiscount[];
-    availablePromotions: IPromotion[];
-} {
-    const appliedDiscounts: IAppliedDiscount[] = [];
-    const internalDiscounts: IAppliedDiscount[] = [];
-    const availablePromotions: IPromotion[] = [];
+    calculate(): {
+        totalAutoDiscount: number;
+        appliedDiscounts: IAppliedDiscount[];
+        availablePromotions: IPromotion[];
+    } {
+        const appliedDiscounts: IAppliedDiscount[] = [];
+        const internalDiscounts: IAppliedDiscount[] = [];
+        const availablePromotions: IPromotion[] = [];
 
-    // Apply all discounts
-    this.applyDevicePromotion(appliedDiscounts);
-    this.applyGeoDiscount(internalDiscounts);
-    this.applyPromotions(appliedDiscounts, availablePromotions);
-    this.applyRatePlanRule(appliedDiscounts, availablePromotions);
-    this.applyPromoCode(appliedDiscounts);
+        // Apply all discounts
+        this.applyDevicePromotion(appliedDiscounts);
+        this.applyGeoDiscount(internalDiscounts);
+        this.applyPromotions(appliedDiscounts, availablePromotions);
+        this.applyRatePlanRule(appliedDiscounts, availablePromotions);
+        this.applyPromoCode(appliedDiscounts);
 
-    const totalAutoDiscount = [...appliedDiscounts, ...internalDiscounts]
-        .reduce((sum, d) => sum + d.calculatedDiscountAmount, 0);
+        const totalAutoDiscount = [
+            ...appliedDiscounts,
+            ...internalDiscounts,
+        ].reduce((sum, d) => sum + d.calculatedDiscountAmount, 0);
 
-    return { totalAutoDiscount, appliedDiscounts, availablePromotions };
-}
+        return { totalAutoDiscount, appliedDiscounts, availablePromotions };
+    }
 
     private applyDevicePromotion(appliedDiscounts: IAppliedDiscount[]): void {
-        if (!this.devicePromotion || !this.devicePromotion.isAutoApplied) return;
+        if (!this.devicePromotion || !this.devicePromotion.isAutoApplied)
+            return;
 
         const discount = RoomBookingService.calculateDiscount(
             this.baseAmount,
@@ -746,7 +807,10 @@ calculate(): {
             id: this.geoRatePlan.id,
             promotionName: 'Geo rate adjustment',
             promotionType: 'geo',
-            discountType: this.geoRatePlan.restrictionType === 'percentage' ? 'percentage' : 'fixed',
+            discountType:
+                this.geoRatePlan.restrictionType === 'percentage'
+                    ? 'percentage'
+                    : 'fixed',
             discountValue: restrictionValue,
             calculatedDiscountAmount: geoDiscount,
         });
@@ -772,7 +836,9 @@ calculate(): {
                     calculatedDiscountAmount: discount,
                 });
             } else {
-                availablePromotions.push(RoomBookingService.mapPromotion(promo));
+                availablePromotions.push(
+                    RoomBookingService.mapPromotion(promo)
+                );
             }
         }
     }
@@ -842,20 +908,31 @@ calculate(): {
 
         const deviceApplicable =
             !this.deviceType ||
-            (this.deviceType === 'mobile' && this.promoCodeData.isApplicableForMobileApp) ||
-            (this.deviceType === 'tablet' && this.promoCodeData.isApplicableForTablet) ||
-            (this.deviceType === 'desktop' && this.promoCodeData.isApplicableForDesktop);
+            (this.deviceType === 'mobile' &&
+                this.promoCodeData.isApplicableForMobileApp) ||
+            (this.deviceType === 'tablet' &&
+                this.promoCodeData.isApplicableForTablet) ||
+            (this.deviceType === 'desktop' &&
+                this.promoCodeData.isApplicableForDesktop);
 
         const now = new Date();
         const dateValid =
-            (!this.promoCodeData.validFrom || new Date(this.promoCodeData.validFrom) <= now) &&
-            (!this.promoCodeData.validTo || new Date(this.promoCodeData.validTo) >= now);
+            (!this.promoCodeData.validFrom ||
+                new Date(this.promoCodeData.validFrom) <= now) &&
+            (!this.promoCodeData.validTo ||
+                new Date(this.promoCodeData.validTo) >= now);
 
         const minAmountValid =
             !this.promoCodeData.minBookingAmount ||
             this.baseAmount >= Number(this.promoCodeData.minBookingAmount);
 
-        if (roomApplicable && ratePlanApplicable && deviceApplicable && dateValid && minAmountValid) {
+        if (
+            roomApplicable &&
+            ratePlanApplicable &&
+            deviceApplicable &&
+            dateValid &&
+            minAmountValid
+        ) {
             let promoDiscount = RoomBookingService.calculateDiscount(
                 this.baseAmount,
                 this.promoCodeData.discountType,
@@ -893,14 +970,17 @@ class RoomTouristTaxCalculator {
         const calculatedTaxAmount =
             touristTaxData.discountType === 'percentage'
                 ? baseAmount * (Number(touristTaxData.discountValue) / 100)
-                : Number(touristTaxData.discountValue) * numberOfNights * numberOfRooms; // ✅
+                : Number(touristTaxData.discountValue) *
+                  numberOfNights *
+                  numberOfRooms; // ✅
 
         return {
             id: touristTaxData.id,
             name: touristTaxData.name || '',
             discountType: touristTaxData.discountType as DiscountType,
             discountValue: touristTaxData.discountValue,
-            currencyCode: (touristTaxData.currencyCode || 'USD') as CurrencyCode,
+            currencyCode: (touristTaxData.currencyCode ||
+                'USD') as CurrencyCode,
             calculatedTaxAmount,
         };
     }
@@ -912,7 +992,11 @@ class RoomAddonCalculator {
     private numberOfNights: number;
     private totalGuests: number;
     private numberOfRooms: number;
-    private roomsArray: { adults: number; children: number; childAges: number[] }[];
+    private roomsArray: {
+        adults: number;
+        children: number;
+        childAges: number[];
+    }[];
 
     constructor(
         ratePlanAddons: IRatePlanAddon[],
@@ -937,7 +1021,10 @@ class RoomAddonCalculator {
 
         const addonAvailabilityResults = await Promise.all(
             this.ratePlanAddons.map(rpa =>
-                RoomBookingRepository.getAddonAvailability(rpa.addonId, this.dates)
+                RoomBookingRepository.getAddonAvailability(
+                    rpa.addonId,
+                    this.dates
+                )
             )
         );
 
@@ -957,13 +1044,25 @@ class RoomAddonCalculator {
                 description: addon.description,
                 images: addon.images || [],
                 category: addon.category
-                    ? { id: addon.category.id, name: addon.category.name, code: addon.category.code }
+                    ? {
+                          id: addon.category.id,
+                          name: addon.category.name,
+                          code: addon.category.code,
+                      }
                     : null,
                 subCategory: addon.subCategory
-                    ? { id: addon.subCategory.id, name: addon.subCategory.name, code: addon.subCategory.code }
+                    ? {
+                          id: addon.subCategory.id,
+                          name: addon.subCategory.name,
+                          code: addon.subCategory.code,
+                      }
                     : null,
                 addonVariant: addon.addonVariant
-                    ? { id: addon.addonVariant.id, name: addon.addonVariant.name, code: addon.addonVariant.code }
+                    ? {
+                          id: addon.addonVariant.id,
+                          name: addon.addonVariant.name,
+                          code: addon.addonVariant.code,
+                      }
                     : null,
             });
         }
@@ -971,26 +1070,38 @@ class RoomAddonCalculator {
         return availableAddonDetails;
     }
 
-    private calculateAddonPrice(addon: IAddonWithRelations, availabilities: IAddonAvailability[]): number {
+    private calculateAddonPrice(
+        addon: IAddonWithRelations,
+        availabilities: IAddonAvailability[]
+    ): number {
         const singleDatePrice = Number(availabilities[0].price);
         const childAddons = addon.ChildAddons || [];
 
         const getChildPrice = (age: number): number => {
             const match = childAddons.find(
-                (c) => age >= c.minAge && age <= c.maxAge
+                c => age >= c.minAge && age <= c.maxAge
             );
             if (!match) return singleDatePrice;
-            if (!match.discountApplicable || !match.discountType || !match.discountAmount) return 0;
+            if (
+                !match.discountApplicable ||
+                !match.discountType ||
+                !match.discountAmount
+            )
+                return 0;
             if (match.discountType === 'percentage') {
                 return singleDatePrice * (1 - match.discountAmount / 100);
             }
             return Math.max(0, singleDatePrice - match.discountAmount);
         };
 
-        const getRoomGuestPrice = (room: { adults: number; childAges: number[] }): number => {
+        const getRoomGuestPrice = (room: {
+            adults: number;
+            childAges: number[];
+        }): number => {
             const adultPrice = singleDatePrice * room.adults;
             const childPrice = room.childAges.reduce(
-                (sum, age) => sum + getChildPrice(age), 0
+                (sum, age) => sum + getChildPrice(age),
+                0
             );
             return adultPrice + childPrice;
         };
@@ -1003,18 +1114,26 @@ class RoomAddonCalculator {
             case 'per_room':
                 return singleDatePrice * this.numberOfRooms;
             case 'per_room_per_night':
-                return singleDatePrice * this.numberOfRooms * this.numberOfNights;
+                return (
+                    singleDatePrice * this.numberOfRooms * this.numberOfNights
+                );
             case 'per_person_per_stay':
                 return this.roomsArray.reduce(
-                    (sum, room) => sum + getRoomGuestPrice(room), 0
+                    (sum, room) => sum + getRoomGuestPrice(room),
+                    0
                 );
             case 'per_person_per_night':
-                return this.roomsArray.reduce(
-                    (sum, room) => sum + getRoomGuestPrice(room), 0
-                ) * this.numberOfNights;
+                return (
+                    this.roomsArray.reduce(
+                        (sum, room) => sum + getRoomGuestPrice(room),
+                        0
+                    ) * this.numberOfNights
+                );
             case 'per_person_per_room':
                 return this.roomsArray.reduce(
-                    (sum, room) => sum + getRoomGuestPrice(room) * this.numberOfRooms, 0
+                    (sum, room) =>
+                        sum + getRoomGuestPrice(room) * this.numberOfRooms,
+                    0
                 );
             default:
                 return 0;

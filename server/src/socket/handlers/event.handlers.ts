@@ -66,9 +66,16 @@ export class SocketEventHandlers {
 
         try {
             const redis = RedisClient.getInstance();
-            const cachedSuccessRaw = await redis.get(`payment:confirmed:${orderReference}`);
-            const cachedSuccess = cachedSuccessRaw ? String(cachedSuccessRaw) : null;
-            console.log(`🔍 Redis check - success key: payment:confirmed:${orderReference}, found:`, !!cachedSuccess);
+            const cachedSuccessRaw = await redis.get(
+                `payment:confirmed:${orderReference}`
+            );
+            const cachedSuccess = cachedSuccessRaw
+                ? String(cachedSuccessRaw)
+                : null;
+            console.log(
+                `🔍 Redis check - success key: payment:confirmed:${orderReference}, found:`,
+                !!cachedSuccess
+            );
             if (cachedSuccess) {
                 const paymentData = JSON.parse(cachedSuccess);
                 socket.emit('payment-status-update', {
@@ -80,9 +87,16 @@ export class SocketEventHandlers {
                 });
                 await redis.del(`payment:confirmed:${orderReference}`);
             } else {
-                const cachedFailureRaw = await redis.get(`payment:failed:${orderReference}`);
-                cachedFailure = cachedFailureRaw ? String(cachedFailureRaw) : null;
-                console.log(`🔍 Redis check - failure key: payment:failed:${orderReference}, found:`, !!cachedFailure);
+                const cachedFailureRaw = await redis.get(
+                    `payment:failed:${orderReference}`
+                );
+                cachedFailure = cachedFailureRaw
+                    ? String(cachedFailureRaw)
+                    : null;
+                console.log(
+                    `🔍 Redis check - failure key: payment:failed:${orderReference}, found:`,
+                    !!cachedFailure
+                );
                 if (cachedFailure) {
                     const failureData = JSON.parse(cachedFailure);
 

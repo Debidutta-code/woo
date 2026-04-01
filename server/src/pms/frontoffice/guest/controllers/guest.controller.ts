@@ -47,7 +47,7 @@
 //             }
 //             const serRes=await this.guestServices.getGuestDetailsById(guestId);
 //             return res.status(serRes.success?200:400).json(serRes)
-        
+
 //         } catch (error) {
 //             if(error instanceof Error){
 //                 return res.status(500).json(errorResponse("Failed to get Guests",error.message));
@@ -101,7 +101,7 @@
 //             }
 //             return res.status(500).json(errorResponse("Internal Server Error"));
 //         }
-    
+
 //     }
 //     public async deleteGuest(req:CustomRequest,res:Response):Promise<Response>{
 //         try {

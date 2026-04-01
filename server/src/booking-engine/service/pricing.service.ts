@@ -1320,8 +1320,7 @@ class TouristTaxClass {
         return {
             ...this.priceBrakedown,
             latterpayableAmount: totalTouristCharges,
-            totalAmount:
-                this.priceBrakedown.totalAmount + totalTouristCharges,
+            totalAmount: this.priceBrakedown.totalAmount + totalTouristCharges,
             promotionBrakeDown: [
                 ...this.priceBrakedown.promotionBrakeDown,
                 ...touristTaxes,
@@ -1359,7 +1358,7 @@ class TouristTaxClass {
                     this.noOfDays *
                     this.noOfRooms, // ← fully calculated
                 type: 'auto-applied',
-                restrictionType:"payLater"
+                restrictionType: 'payLater',
             };
         }
     }

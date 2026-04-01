@@ -19,5 +19,4 @@ managementRoute.use('/integration-partner', partnerIntegrationRoute);
 managementRoute.use('/room-view', roomViewRouter);
 aminityRouter.use('/room', roomAminityRouteM);
 
-
 export { managementRoute };

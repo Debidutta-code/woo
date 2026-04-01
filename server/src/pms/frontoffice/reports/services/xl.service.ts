@@ -1,9 +1,10 @@
 import ExcelJS from 'exceljs';
+import { IArrivalReport, IDepartureReport } from '../interfaces';
 import {
-    IArrivalReport,
-    IDepartureReport,
-} from '../interfaces';
-import { IGuestReport, IReservationReport, ReportType } from '../interfaces/reports.type';
+    IGuestReport,
+    IReservationReport,
+    ReportType,
+} from '../interfaces/reports.type';
 
 export class ExcelExportService {
     /**

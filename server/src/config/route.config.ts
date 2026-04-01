@@ -28,10 +28,10 @@ import promotionRouter from '../promotions/routes';
 import { agentPlatformRouter } from '../agent-paltform/routes';
 import integrationRouter from '../integrations/routes/index.routes';
 import platformRouter from '../platforms/routes/platform.routes';
-import { currencyRoutes } from "../currency-maping/routes"
+import { currencyRoutes } from '../currency-maping/routes';
 import { fikafiPaymentRoutes } from '../payment/routes/fikafi.routes';
 import { managementRoute } from '../utils-management/routes';
-import {dynamicPricingRouter} from "../dynamic-pricing/routes"
+import { dynamicPricingRouter } from '../dynamic-pricing/routes';
 import { uploadRouter } from '../uploads/routes';
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
@@ -62,7 +62,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/agent-platform', agentPlatformRouter);
     apiV1Router.use('/property-management', PropertyManagement);
     apiV1Router.use('/ari', AriRouter);
-    apiV1Router.use('/dynamic-pricing',dynamicPricingRouter)
+    apiV1Router.use('/dynamic-pricing', dynamicPricingRouter);
     apiV1Router.use('/activities', ActivityRouter);
     apiV1Router.use('/promo-codes', promoCodeRoutes);
     apiV1Router.use('/tax-system', TaxSystemRouter);
@@ -74,7 +74,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/loyalty', loyaltyRouter);
     apiV1Router.use('/fikafi', fikafiPaymentRoutes);
     apiV1Router.use('/utils-management', managementRoute);
-    apiV1Router.use("/upload",uploadRouter)
+    apiV1Router.use('/upload', uploadRouter);
 
     apiV1Router.use('/payment', PaymentRoutes);
     apiV1Router.use('/integrations', integrationRouter);

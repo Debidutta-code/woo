@@ -89,9 +89,8 @@ export class propertyLoyalityRepository {
     }
     public async updatePropertyLoyality(
         propertyLoyalityId: string,
-        newLoyalityConfig:ICPropertyLoyaltyConfig,
-        isActive:boolean,
-        
+        newLoyalityConfig: ICPropertyLoyaltyConfig,
+        isActive: boolean
     ): Promise<IPropertyLoyaltyConfig> {
         try {
             return await prisma.propertyLoyaltyConfig.update({
@@ -99,10 +98,11 @@ export class propertyLoyalityRepository {
                     id: propertyLoyalityId,
                 },
                 data: {
-                    creationLoyaltyConfigId:newLoyalityConfig.creationLoyaltyConfigId,
-                    discountPercentage:newLoyalityConfig.discountPercentage,
-                    loyalityConfigLogo:newLoyalityConfig.loyalityConfigLogo,
-                    isActive:true
+                    creationLoyaltyConfigId:
+                        newLoyalityConfig.creationLoyaltyConfigId,
+                    discountPercentage: newLoyalityConfig.discountPercentage,
+                    loyalityConfigLogo: newLoyalityConfig.loyalityConfigLogo,
+                    isActive: true,
                 },
             });
         } catch (error) {

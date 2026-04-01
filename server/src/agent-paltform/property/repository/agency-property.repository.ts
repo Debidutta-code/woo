@@ -1,57 +1,56 @@
-import { prisma } from "../../../config";
-import { IProperty } from "../types";
+import { prisma } from '../../../config';
+import { IProperty } from '../types';
 
 export class AgenticPropertyRepository {
     public async getAgenticProperties(agencyId: string): Promise<IProperty[]> {
         try {
-
             return await prisma.property.findMany({
                 where: {
                     agenticProperties: {
                         some: {
-                            agencyId
-                        }
-                    }
-                }, include: {
+                            agencyId,
+                        },
+                    },
+                },
+                include: {
                     propertyAddress: true,
                     propertyAmenities: {
                         include: {
-                            amenity: true
-                        }
+                            amenity: true,
+                        },
                     },
                     propertyCategory: {
                         include: {
-                            masterCategory: true
-                        }
+                            masterCategory: true,
+                        },
                     },
                     propertyType: {
                         include: {
-                            masterPropertyType: true
-                        }
+                            masterPropertyType: true,
+                        },
                     },
                     propertyVideos: true,
-                    
-                }
-            })
+                },
+            });
         } catch (error) {
-            throw new Error("Failed to retrieve properties");
+            throw new Error('Failed to retrieve properties');
         }
     }
-    public async getAgenticPropertyById(agencyId:string,propertyId:string) {
+    public async getAgenticPropertyById(agencyId: string, propertyId: string) {
         try {
             return await prisma.agenticProperty.findFirst({
-                where:{
+                where: {
                     propertyId: propertyId,
                     agencyId: agencyId,
-                    isActive:true,
-                    isDeleted:false
+                    isActive: true,
+                    isDeleted: false,
                 },
-                include:{
-                    Property:true
-                }
-            })
+                include: {
+                    Property: true,
+                },
+            });
         } catch (error) {
-            throw new Error("Failed to retrieve property");
+            throw new Error('Failed to retrieve property');
         }
     }
 
@@ -60,11 +59,11 @@ export class AgenticPropertyRepository {
             return await prisma.agency.findFirst({
                 where: {
                     id: agencyId,
-                    isDeleted:false,
-               }
+                    isDeleted: false,
+                },
             });
         } catch (error) {
-            throw new Error("Failed to retrieve agency");
+            throw new Error('Failed to retrieve agency');
         }
     }
 }

@@ -10,7 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, CalendarDays } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Plus, Pencil, Trash2, CalendarDays, MoreVertical } from "lucide-react";
 import toast from "react-hot-toast";
 import Loader from "@/components/Loader/Loader";
 import type { RoomTypes } from "@/pages/inventory/types";
@@ -203,68 +217,90 @@ export default function SeasonalTab({
         </Card>
       )}
 
-      {/* Cards grid */}
+      {/* Table view */}
       {!loader.isLoading && rules.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-medium text-sm text-muted-foreground">
-              {rules.length} {rules.length === 1 ? "rule" : "rules"} for{" "}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              Rules for{" "}
               {rooms.find((r) => r.id === selectedRoomId)?.roomName ?? "All Rooms"}
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {rules.map((rule) => (
-              <Card key={rule.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-tight">{rule.ruleName}</CardTitle>
-                    <Badge variant={PERIOD_VARIANTS[rule.periodType] ?? "outline"} className="capitalize shrink-0">
-                      {rule.periodType}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2 pb-3">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <CalendarDays className="w-3.5 h-3.5" />
-                    <span>
-                      {formatDate(rule.startDate)} → {formatDate(rule.endDate)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{formatAdjustment(rule)}</span>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {rule.adjustmentType}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-1 pt-1 justify-end">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={() => setDialog({ open: true, mode: "edit", item: rule })}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() =>
-                        setDeleteDialog({
-                          open: true,
-                          id: rule.id,
-                          label: rule.ruleName,
-                        })
-                      }
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+              <Badge variant="secondary" className="ml-2">
+                {rules.length} {rules.length === 1 ? "rule" : "rules"}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Rule Name</TableHead>
+                  <TableHead>Period</TableHead>
+                  <TableHead>Date Range</TableHead>
+                  <TableHead>Adjustment</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rules.map((rule) => (
+                  <TableRow key={rule.id}>
+                    <TableCell className="font-medium">{rule.ruleName}</TableCell>
+                    <TableCell>
+                      <Badge variant={PERIOD_VARIANTS[rule.periodType] ?? "outline"} className="capitalize">
+                        {rule.periodType}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        <span>
+                          {formatDate(rule.startDate)} → {formatDate(rule.endDate)}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{formatAdjustment(rule)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              setDialog({ open: true, mode: "edit", item: rule })
+                            }
+                          >
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() =>
+                              setDeleteDialog({
+                                open: true,
+                                id: rule.id,
+                                label: rule.ruleName,
+                              })
+                            }
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
 
       {/* Dialogs */}

@@ -109,7 +109,7 @@ export class PriceUpdateDao {
                     propertyCode,
                     roomTypeCode,
                     ratePlanCode,
-                    roomId:room.id,
+                    roomId: room.id,
                     ratePlanName: ratePlanCode, // fallback, RT doesn't send name
                     roomTypeName: roomTypeCode, // fallback, RT doesn't send name
                     date,

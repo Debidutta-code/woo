@@ -57,14 +57,12 @@ export class PriceUpdateService {
 
                 // Get currency from first base amount
                 const currencyCode =
-                    (baseByGuestAmts[0]?.currencyCode as CurrencyCode) ??
-                    'AED';
+                    (baseByGuestAmts[0]?.currencyCode as CurrencyCode) ?? 'AED';
 
                 // Parse adult amounts (ageQualifyingCode '10' with numberOfGuests)
                 const adultAmounts = baseByGuestAmts
                     .filter(
-                        bg =>
-                            bg.ageQualifyingCode === '10' && bg.numberOfGuests
+                        bg => bg.ageQualifyingCode === '10' && bg.numberOfGuests
                     )
                     .map(bg => ({
                         numberOfGuests: parseInt(bg.numberOfGuests),
@@ -91,12 +89,10 @@ export class PriceUpdateService {
                 const parsedBaseAmounts = [...adultAmounts, ...childAmounts];
 
                 // Parse additional guest amounts (extra adult + extra child)
-                const parsedAdditionalAmounts = additionalGuestAmts.map(
-                    ag => ({
-                        ageQualifyingCode: ag.ageQualifyingCode,
-                        amount: parseFloat(ag.amount),
-                    })
-                );
+                const parsedAdditionalAmounts = additionalGuestAmts.map(ag => ({
+                    ageQualifyingCode: ag.ageQualifyingCode,
+                    amount: parseFloat(ag.amount),
+                }));
 
                 // Expand date range day by day and upsert each date
                 const startDate = new Date(start);

@@ -159,7 +159,7 @@ export default function SeasonalDialog({
               <SelectContent>
                 <SelectItem value="season">Season</SelectItem>
                 <SelectItem value="holiday">Holiday</SelectItem>
-                <SelectItem value="weekend">Weekend</SelectItem>
+                {/* <SelectItem value="weekend">Weekend</SelectItem> */} //
               </SelectContent>
             </Select>
           </div>
