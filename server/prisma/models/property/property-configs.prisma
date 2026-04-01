@@ -5,6 +5,7 @@ model PropertyEmails {
   Property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, email])
+  @@map("property_emails")
 }
 
 model PropertyConfigs {

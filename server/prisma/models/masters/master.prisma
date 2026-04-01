@@ -53,5 +53,5 @@ model MasterRoomView {
   RoomViews MRoomView[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+@@map("master_room_view")
 }

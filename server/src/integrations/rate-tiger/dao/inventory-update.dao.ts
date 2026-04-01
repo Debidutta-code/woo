@@ -30,8 +30,22 @@ export class InventoryUpdateDao {
             isClosedToDeparture,
             minAdvanceBookingDays,
             maxAdvanceBookingDays,
+            
         } = params;
-
+        const room=await prisma.room.findFirst({
+            where:{
+                roomType:roomTypeCode,
+                property:{
+                    propertyCode:propertyCode
+                }
+            },
+            select:{
+                id:true
+            }
+        })
+        if(!room){
+            throw new Error('Room not found')
+        }
         // 1. Upsert Inventory (availability count) — at roomType level
         if (bookingLimit !== undefined) {
             const existingInventory = await prisma.inventory.findFirst({
@@ -76,6 +90,7 @@ export class InventoryUpdateDao {
                 ...(isClosedToArrival !== undefined && { isClosedToArrival }),
                 ...(isClosedToDeparture !== undefined && {
                     isClosedToDeparture,
+                    
                 })
             };
 
@@ -97,13 +112,12 @@ export class InventoryUpdateDao {
                         roomTypeName: roomTypeCode,
                         date,
                         ...restrictionData,
+                        roomId:room.id
                     },
                 });
             }
         }
 
-        // 3. Upsert RatePlanRule for MinLOS/MaxLOS
-        // 3. Upsert RatePlanRule for MinLOS/MaxLOS
         if (params.minLos !== undefined || params.maxLos !== undefined) {
             // Find the rate plan first
             const ratePlan = await prisma.ratePlan.findFirst({

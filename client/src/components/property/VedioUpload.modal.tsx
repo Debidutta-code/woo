@@ -1,5 +1,79 @@
 import React, { useState, useRef } from 'react';
 import { X, Upload, Video, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+import createAxiosInstance from '../axiosInstance';
+
+const uploadToS3 = async (
+  file: File,
+  onProgress: (p: number) => void
+) => {
+  const axiosinstance = createAxiosInstance();
+
+  const res = await axiosinstance.post("/upload/generate-url", {
+    fileType: file.type,
+  });
+
+  const { uploadUrl, fileUrl } = res.data.data;
+
+  await axios.put(uploadUrl, file, {
+    headers: {
+      "Content-Type": file.type,
+    },
+    onUploadProgress: (e) => {
+      const percent = Math.round((e.loaded * 100) / (e.total || 1));
+      onProgress(percent);
+    },
+  });
+
+  return {
+    videoUrl: fileUrl,
+    thumbnailUrl: null, 
+  };
+};
+
+const uploadToCloudinary = async (
+  file: File,
+  cloudName: string,
+  uploadPreset: string,
+  onProgress: (p: number) => void
+): Promise<{ videoUrl: string; thumbnailUrl: string }> => {
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onProgress(progress);
+      }
+    });
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const response = JSON.parse(xhr.responseText);
+
+        const videoUrl = response.secure_url;
+        const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/video/upload/so_1/${response.public_id}.jpg`;
+
+        resolve({ videoUrl, thumbnailUrl });
+      } else {
+        reject(new Error("Upload failed"));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Upload failed"));
+
+    xhr.open(
+      "POST",
+      `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
+    );
+    xhr.send(formData);
+  });
+};
+
 
 interface VideoUploadModalProps {
   isOpen: boolean;
@@ -22,24 +96,21 @@ const VideoUploadModal: React.FC<VideoUploadModalProps> = ({
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Cloudinary configuration - Replace with your actual values
-  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your-cloud-name';
-  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'your-upload-preset';
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('video/')) {
-      setError('Please select a valid video file');
+    if (!file.type.startsWith("video/")) {
+      setError("Please select a valid video file");
       return;
     }
 
-    // Validate file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError('Video file size should not exceed 50MB');
+      setError("Video file size should not exceed 50MB");
       return;
     }
 
@@ -47,14 +118,12 @@ const VideoUploadModal: React.FC<VideoUploadModalProps> = ({
     setError(null);
     setUploadSuccess(false);
 
-    // Create preview URL
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
   };
-
   const handleUpload = async () => {
     if (!selectedFile) {
-      setError('Please select a video file');
+      setError("Please select a video file");
       return;
     }
 
@@ -62,57 +131,39 @@ const VideoUploadModal: React.FC<VideoUploadModalProps> = ({
     setError(null);
     setUploadProgress(0);
 
+    const isDev = import.meta.env.VITE_NODE_ENV === "development";
+
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('resource_type', 'video');
+      let result;
 
-      const xhr = new XMLHttpRequest();
+      if (isDev) {
+        result = await uploadToCloudinary(
+          selectedFile,
+          CLOUDINARY_CLOUD_NAME,
+          CLOUDINARY_UPLOAD_PRESET,
+          setUploadProgress
+        );
+      } else {
+        result = await uploadToS3(selectedFile, setUploadProgress);
+      }
 
-      // Track upload progress
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(progress);
-        }
-      });
+      setUploadSuccess(true);
+      setIsUploading(false);
 
-      // Handle upload completion
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText);
-          const videoUrl = response.secure_url;
-          const thumbnailUrl = response.secure_url.replace(/\.[^.]+$/, '.jpg');
-
-          setUploadSuccess(true);
-          setIsUploading(false);
-
-          // Call success callback
-          setTimeout(() => {
-            onUploadSuccess(videoUrl, thumbnailUrl);
-            handleClose();
-          }, 1500);
-        } else {
-          throw new Error('Upload failed');
-        }
-      });
-
-      // Handle upload error
-      xhr.addEventListener('error', () => {
-        throw new Error('Upload failed. Please try again.');
-      });
-
-      xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`);
-      xhr.send(formData);
+      setTimeout(() => {
+        onUploadSuccess(
+          result.videoUrl,
+          result.thumbnailUrl || ""
+        );
+        handleClose();
+      }, 1200);
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
+      setError(err instanceof Error ? err.message : "Upload failed");
       setIsUploading(false);
       setUploadProgress(0);
     }
   };
-
   const handleClose = () => {
     if (!isUploading) {
       setSelectedFile(null);
@@ -134,13 +185,13 @@ const VideoUploadModal: React.FC<VideoUploadModalProps> = ({
     e.stopPropagation();
 
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('video/')) {
+    if (file && file.type.startsWith("video/")) {
       const event = {
         target: { files: [file] }
       } as unknown as React.ChangeEvent<HTMLInputElement>;
       handleFileSelect(event);
     } else {
-      setError('Please drop a valid video file');
+      setError("Please drop a valid video file");
     }
   };
 

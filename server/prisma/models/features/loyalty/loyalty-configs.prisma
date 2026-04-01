@@ -78,4 +78,5 @@ model LoyaltyProgramFieldConfig {
     updatedAt DateTime @default(now()) @updatedAt
 
     @@unique([loyaltyProgramId, fieldName])
+    @@map("loyalty_program_field_config")
 }

@@ -46,9 +46,6 @@ export class SeasonalDynamicPricingService {
     public async getSeasonalDynamicPricingByRoomId(roomId: string): Promise<IApiResponse> {
         try {
             const seasonalDynamicPricing = await this.seasonalRepo.getSeasonalDynamicPricingByRoomId(roomId);
-            if (!seasonalDynamicPricing) {
-                return errorResponse("Seasonal dynamic pricing not found for this room", "Seasonal dynamic pricing not found");
-            }
             return successResponse("Seasonal dynamic pricing retrieved successfully", seasonalDynamicPricing);
         } catch (error) {
             if (error instanceof Error) {

@@ -22,6 +22,7 @@ model Addon {
     ratePlans                         RatePlanWithAddon[]
     customizableDealsApplicableAddons CustomizableDealsApplicableAddons[]
     ChildAddons                       ChildAddon[]
+    @@map("addon")
 }
 
 model ChildAddon {
@@ -34,4 +35,5 @@ model ChildAddon {
     discountType       DiscountType? @default(percentage) @map("discount_type")
     discountAmount     Float?        @default(0) @map("discount_amount")
     currencyCode       CurrencyCode? @default(INR) @map("currency_code")
+    @@map("child_addon")
 }

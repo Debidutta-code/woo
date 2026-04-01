@@ -8,4 +8,5 @@ model AddonSubCategory {
     variants   AddonVariant[]
     createdAt  DateTime       @default(now())
     updatedAt  DateTime       @updatedAt
+    @@map("addon_sub_category")
 }

@@ -3,6 +3,7 @@ model Charge {
     propertyCode  String
     ratePlanName  String
     ratePlanCode  String
+    roomId        String
     roomTypeCode  String
     roomTypeName  String
     currencyCode  CurrencyCode @default(INR)
@@ -24,7 +25,7 @@ model Charge {
 
     // Relations
     ratePlan               RatePlan                @relation(fields: [ratePlanCode], references: [ratePlanCode], onDelete: Cascade)
-    // room                   Room?                 @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    Room                   Room?                 @relation(fields: [roomId], references: [id], onDelete: Cascade)
     baseGuestAmounts       ChargeBaseByGuest[]
     additionalGuestAmounts ChargeAdditionalGuest[]
 

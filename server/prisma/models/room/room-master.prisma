@@ -5,4 +5,5 @@ model MRoomView{
 
     MasterRoomView MasterRoomView @relation(fields: [masterRoomViewId], references: [id], onDelete: Cascade)
     Room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    @@map("room_view")
 }
