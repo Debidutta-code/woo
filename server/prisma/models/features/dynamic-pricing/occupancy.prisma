@@ -1,0 +1,15 @@
+model OccupancyBasedDynamicPricing {
+  id                String        @id @default(cuid())
+  dynamicId         String        @map("dynamic_id")
+  roomId            String        @map("room_id")
+  minInventoryPercentage      Int           @map("min_inventory")
+  maxInventoryPercentage      Int           @map("max_inventory")
+  adjustmentType    DiscountType  @map("adjustment_type")
+  adjustmentValue   Float         @map("adjustment_value")
+  currencyCode      CurrencyCode? @map("currency_code")
+
+  Room    Room           @relation(fields: [roomId], references: [id])
+  Dynamic DynamicPricing @relation(fields: [dynamicId], references: [id])
+
+  @@map("occupancy_based_dynamic_pricing")
+}

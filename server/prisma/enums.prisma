@@ -377,3 +377,13 @@ enum PromotionType {
     offer_for_tonight
     device_specific
 }
+enum SeasonalDynamicPricingEnumType {
+    season
+    holiday
+    weekend
+}
+enum WeekEndDays {
+    friday
+    saturday
+    sunday
+}

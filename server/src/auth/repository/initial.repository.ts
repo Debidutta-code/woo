@@ -6,7 +6,7 @@ export class InitializeDB {
             const password = await createHash("Admin@123")
             const userRes = await prisma.user.create({
                 data: {
-                    email: "superadmin@gmail.com",
+                    email: "superadmin.woohoo@gmail.com",
                     //Admin@123
                     password: password,
                     firstName: "Super",

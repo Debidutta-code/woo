@@ -50,7 +50,7 @@ model Property {
   payments                    Payment[]
   propertyIntegrations        PropertyIntegrations[]
   bookingOffsets              BookingOffset[]
-
+  DynamicPricing              DynamicPricing?
   @@index([createdById])
   @@index([creationId])
   @@index([propertyCode])
