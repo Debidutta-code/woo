@@ -1,5 +1,3 @@
-import {validateGuest} from "./validateGuest.util";
+import { validateGuest } from './validateGuest.util';
 
-export {
-    validateGuest
-}
+export { validateGuest };

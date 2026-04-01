@@ -7,4 +7,5 @@ model AddonVariant {
     addons        Addon[]          @relation("AddonToVariant")
     createdAt     DateTime         @default(now())
     updatedAt     DateTime         @updatedAt
+    @@map("addon_variant")
 }

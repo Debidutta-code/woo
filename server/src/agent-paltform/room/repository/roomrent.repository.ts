@@ -1,8 +1,7 @@
-import { prisma } from "../../../config";
-import { toUTCDate } from "../../../utils";
+import { prisma } from '../../../config';
+import { toUTCDate } from '../../../utils';
 
 export class AgentPricingRepository {
-    
     public static async getRatePlanWithTax(ratePlanCode: string) {
         try {
             return await prisma.ratePlan.findUnique({
@@ -18,32 +17,32 @@ export class AgentPricingRepository {
                     Addons: {
                         include: {
                             addon: true,
-                        }
+                        },
                     },
                 },
             });
         } catch (error) {
-            throw new Error("Failed to fetch rate plan details");
+            throw new Error('Failed to fetch rate plan details');
         }
     }
 
     public static async getAgencyDetails(agencyId: string) {
         try {
             return await prisma.agency.findUnique({
-                where: { 
+                where: {
                     id: agencyId,
-                    isDeleted: false 
+                    isDeleted: false,
                 },
                 select: {
                     id: true,
                     agencyName: true,
                     commissionType: true,
                     commissionValue: true,
-                    commissionCurrency: true
-                }
+                    commissionCurrency: true,
+                },
             });
         } catch (error) {
-            throw new Error("Failed to fetch agency details");
+            throw new Error('Failed to fetch agency details');
         }
     }
 
@@ -62,7 +61,7 @@ export class AgentPricingRepository {
                 },
             });
         } catch (error) {
-            throw new Error("Failed to check inventory availability");
+            throw new Error('Failed to check inventory availability');
         }
     }
 
@@ -83,7 +82,7 @@ export class AgentPricingRepository {
                         gte: startOfDateUTC,
                         lt: endOfDateUTC,
                     },
-                    isSaleStopped: false
+                    isSaleStopped: false,
                 },
                 include: {
                     baseGuestAmounts: true,
@@ -91,7 +90,7 @@ export class AgentPricingRepository {
                 },
             });
         } catch (error) {
-            throw new Error("Failed to fetch charge details");
+            throw new Error('Failed to fetch charge details');
         }
     }
 
@@ -104,27 +103,27 @@ export class AgentPricingRepository {
             return await prisma.addon.findMany({
                 where: {
                     id: {
-                        in: addonIds
+                        in: addonIds,
                     },
-                    isActive: true
+                    isActive: true,
                 },
                 include: {
                     availability: {
                         where: {
                             date: {
                                 gte: checkInDate,
-                                lt: checkOutDate
+                                lt: checkOutDate,
                             },
-                            isAvailable: true
+                            isAvailable: true,
                         },
                         orderBy: {
-                            date: 'asc'
-                        }
-                    }
-                }
+                            date: 'asc',
+                        },
+                    },
+                },
             });
         } catch (error) {
-            throw new Error("Failed to fetch included addons");
+            throw new Error('Failed to fetch included addons');
         }
     }
 }

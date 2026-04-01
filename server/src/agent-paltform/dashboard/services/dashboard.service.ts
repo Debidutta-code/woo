@@ -1,7 +1,7 @@
-import { successResponse, errorResponse } from "../../../utils/return";
-import { IApiResponse } from "../../../utils/return.types";
-import { AgentDashboardRepository } from "../repository";
-import { IAgentDashboardFilters } from "../types";
+import { successResponse, errorResponse } from '../../../utils/return';
+import { IApiResponse } from '../../../utils/return.types';
+import { AgentDashboardRepository } from '../repository';
+import { IAgentDashboardFilters } from '../types';
 
 export class AgentDashboardService {
     private dashboardRepository: AgentDashboardRepository;
@@ -16,21 +16,32 @@ export class AgentDashboardService {
     ): Promise<IApiResponse> {
         try {
             if (!agencyId) {
-                return errorResponse("Agency ID is required", "Missing agency ID");
+                return errorResponse(
+                    'Agency ID is required',
+                    'Missing agency ID'
+                );
             }
 
-            const result = await this.dashboardRepository.getAgencyAnalytics(agencyId, filters);
+            const result = await this.dashboardRepository.getAgencyAnalytics(
+                agencyId,
+                filters
+            );
 
             if (!result.success) {
-                return errorResponse(result.message || "Failed to fetch analytics");
+                return errorResponse(
+                    result.message || 'Failed to fetch analytics'
+                );
             }
 
-            return successResponse("Analytics fetched successfully", result.data);
+            return successResponse(
+                'Analytics fetched successfully',
+                result.data
+            );
         } catch (error) {
-            console.error("Service error:", error);
+            console.error('Service error:', error);
             return errorResponse(
-                "Failed to fetch analytics",
-                error instanceof Error ? error.message : "Unknown error"
+                'Failed to fetch analytics',
+                error instanceof Error ? error.message : 'Unknown error'
             );
         }
     }
@@ -38,20 +49,29 @@ export class AgentDashboardService {
     public async getAgencyProperties(agencyId: string): Promise<IApiResponse> {
         try {
             if (!agencyId) {
-                return errorResponse("Agency ID is required", "Missing agency ID");
+                return errorResponse(
+                    'Agency ID is required',
+                    'Missing agency ID'
+                );
             }
 
-            const result = await this.dashboardRepository.getAgencyProperties(agencyId);
+            const result =
+                await this.dashboardRepository.getAgencyProperties(agencyId);
 
             if (!result.success) {
-                return errorResponse(result.message || "Failed to fetch properties");
+                return errorResponse(
+                    result.message || 'Failed to fetch properties'
+                );
             }
 
-            return successResponse("Properties fetched successfully", result.data);
+            return successResponse(
+                'Properties fetched successfully',
+                result.data
+            );
         } catch (error) {
             return errorResponse(
-                "Failed to fetch properties",
-                error instanceof Error ? error.message : "Unknown error"
+                'Failed to fetch properties',
+                error instanceof Error ? error.message : 'Unknown error'
             );
         }
     }

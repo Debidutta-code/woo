@@ -1,46 +1,55 @@
-import { prisma } from "../../config";
-import {  ICSeasonalDynamicPricing, ISeasonalDynamicPricing,  } from "../types";
+import { prisma } from '../../config';
+import { ICSeasonalDynamicPricing, ISeasonalDynamicPricing } from '../types';
 
 export class SeasonalDynamicPricingRepository {
-    public async createSeasonalDynamicPricing(data: ICSeasonalDynamicPricing): Promise<ISeasonalDynamicPricing> {
+    public async createSeasonalDynamicPricing(
+        data: ICSeasonalDynamicPricing
+    ): Promise<ISeasonalDynamicPricing> {
         try {
             return await prisma.seasonalDynamicPricing.create({
-                data
+                data,
             });
         } catch (error) {
-            throw new Error("Error creating seasonal dynamic pricing");
+            throw new Error('Error creating seasonal dynamic pricing');
         }
     }
-    public async getSeasonalDynamicPricing(id: string): Promise<ISeasonalDynamicPricing | null> {
+    public async getSeasonalDynamicPricing(
+        id: string
+    ): Promise<ISeasonalDynamicPricing | null> {
         try {
             return await prisma.seasonalDynamicPricing.findUnique({
-                where: { id }
+                where: { id },
             });
         } catch (error) {
-            throw new Error("Error fetching seasonal dynamic pricing");
+            throw new Error('Error fetching seasonal dynamic pricing');
         }
     }
-    public async updateSeasonalDynamicPricing(id: string, data: ICSeasonalDynamicPricing): Promise<ISeasonalDynamicPricing | null> {
+    public async updateSeasonalDynamicPricing(
+        id: string,
+        data: ICSeasonalDynamicPricing
+    ): Promise<ISeasonalDynamicPricing | null> {
         try {
             return await prisma.seasonalDynamicPricing.update({
                 where: { id },
-                data
+                data,
             });
         } catch (error) {
-            throw new Error("Error updating seasonal dynamic pricing");
+            throw new Error('Error updating seasonal dynamic pricing');
         }
     }
-    public async deleteSeasonalDynamicPricing(id: string): Promise<ISeasonalDynamicPricing | null> {
+    public async deleteSeasonalDynamicPricing(
+        id: string
+    ): Promise<ISeasonalDynamicPricing | null> {
         try {
             return await prisma.seasonalDynamicPricing.delete({
-                where: { id }
+                where: { id },
             });
         } catch (error) {
-            throw new Error("Error deleting seasonal dynamic pricing");
+            throw new Error('Error deleting seasonal dynamic pricing');
         }
     }
     public async seasonalDynamicPricingByDateRange(
-        ids:string[],
+        ids: string[],
         roomId: string,
         startDate: Date,
         endDate: Date
@@ -50,28 +59,33 @@ export class SeasonalDynamicPricingRepository {
                 where: {
                     roomId,
                     id: {
-                        notIn: ids
+                        notIn: ids,
                     },
                     startDate: {
-                        gte: startDate
+                        gte: startDate,
                     },
                     endDate: {
-                        lte: endDate
-                    }
-                }
+                        lte: endDate,
+                    },
+                },
             });
         } catch (error) {
-            throw new Error("Error fetching seasonal dynamic pricing by date range");
+            throw new Error(
+                'Error fetching seasonal dynamic pricing by date range'
+            );
         }
     }
-    public async getSeasonalDynamicPricingByRoomId(roomId: string): Promise<ISeasonalDynamicPricing[] | null> {
+    public async getSeasonalDynamicPricingByRoomId(
+        roomId: string
+    ): Promise<ISeasonalDynamicPricing[] | null> {
         try {
             return await prisma.seasonalDynamicPricing.findMany({
-                where: { roomId }
+                where: { roomId },
             });
         } catch (error) {
-            throw new Error("Error fetching seasonal dynamic pricing by room ID");
+            throw new Error(
+                'Error fetching seasonal dynamic pricing by room ID'
+            );
         }
     }
 }
-

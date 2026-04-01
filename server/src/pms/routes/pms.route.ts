@@ -1,7 +1,7 @@
-import { Router } from "express";
-import {frontOfficeRoute} from "./front-desk.route";
+import { Router } from 'express';
+import { frontOfficeRoute } from './front-desk.route';
 
-const pmsRoute= Router();
+const pmsRoute = Router();
 
-pmsRoute.use("/front-office",frontOfficeRoute)
-export {pmsRoute}
+pmsRoute.use('/front-office', frontOfficeRoute);
+export { pmsRoute };

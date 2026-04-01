@@ -4,7 +4,7 @@ import {
     IArrivalReportData,
     IDepartureReport,
     IDepartureReportData,
-    IGenerateReportRequest
+    IGenerateReportRequest,
 } from './reports.type';
 export {
     IReservationReportData,
@@ -12,5 +12,5 @@ export {
     IArrivalReportData,
     IDepartureReport,
     IDepartureReportData,
-    IGenerateReportRequest
+    IGenerateReportRequest,
 };

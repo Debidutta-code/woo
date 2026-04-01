@@ -1,85 +1,89 @@
-import { IBookingDetails, IGuestDetail } from "../../pms/frontoffice/reservation/types";
-import { capitalizeFirstLetter } from "../utils/capitalizefirstLetter.util";
+import {
+    IBookingDetails,
+    IGuestDetail,
+} from '../../pms/frontoffice/reservation/types';
+import { capitalizeFirstLetter } from '../utils/capitalizefirstLetter.util';
 
 interface PropertyDetails {
-  propertyName: string;
-  propertyEmail: string;
-  propertyContact: string;
-  description: string;
-  image: string[];
-  propertyCode: string;
+    propertyName: string;
+    propertyEmail: string;
+    propertyContact: string;
+    description: string;
+    image: string[];
+    propertyCode: string;
 }
 
 interface PropertyAddress {
-  addressLine1: string;
-  addressLine2: string | null;
-  country: string;
-  state: string;
-  city: string;
-  location: string;
-  landmark: string;
-  zipCode: string;
-  latitude: number;
-  longitude: number;
+    addressLine1: string;
+    addressLine2: string | null;
+    country: string;
+    state: string;
+    city: string;
+    location: string;
+    landmark: string;
+    zipCode: string;
+    latitude: number;
+    longitude: number;
 }
 
 interface RoomDetails {
-  roomName: string;
-  roomType: string;
-  roomView?: string;
-  maxOccupancy?: number;
+    roomName: string;
+    roomType: string;
+    roomView?: string;
+    maxOccupancy?: number;
 }
 
 interface EmailTemplateProps {
-  reservation: IBookingDetails;
-  property: PropertyDetails;
-  propertyAddress: PropertyAddress;
-  room: RoomDetails;
+    reservation: IBookingDetails;
+    property: PropertyDetails;
+    propertyAddress: PropertyAddress;
+    room: RoomDetails;
 }
 
 // Utility function to format currency
 const formatCurrency = (amount: number, currency: string): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2,
-  }).format(amount);
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 2,
+    }).format(amount);
 };
 
 // Utility function to format date
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+    return new Date(dateString).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
 };
 
 // Utility function to format short date
 const formatShortDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+    return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
 };
 
 const getMapUrl = (latitude: number, longitude: number): string => {
-  return `https://maps.google.com/?q=${latitude},${longitude}&z=15&output=embed`;
+    return `https://maps.google.com/?q=${latitude},${longitude}&z=15&output=embed`;
 };
 
 export const BookingConfirmationEmail = ({
-  reservation,
-  property,
-  propertyAddress,
-  room
+    reservation,
+    property,
+    propertyAddress,
+    room,
 }: EmailTemplateProps): string => {
-  const { finalPrice, guests, guestDetails, startDate, endDate } = reservation;
-  const primaryGuest = guestDetails[0];
-  const numberOfNights = reservation.numberOfNights || 1;
+    const { finalPrice, guests, guestDetails, startDate, endDate } =
+        reservation;
+    const primaryGuest = guestDetails[0];
+    const numberOfNights = reservation.numberOfNights || 1;
 
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -607,7 +611,7 @@ export const BookingConfirmationEmail = ({
         <div class="property-logo">${property.propertyName}</div>
         <h1 class="confirmation-title">Booking Confirmed</h1>
         <p class="confirmation-subtitle">Thank you for your reservation</p>
-        ${reservation.bookingCode ? `<div class="booking-number">Booking #${reservation.bookingCode.split("-")[1]}</div>` : ''}
+        ${reservation.bookingCode ? `<div class="booking-number">Booking #${reservation.bookingCode.split('-')[1]}</div>` : ''}
       </div>
 
       <!-- Content -->
@@ -670,22 +674,31 @@ export const BookingConfirmationEmail = ({
               <div class="guest-name">${primaryGuest.firstName} ${primaryGuest.lastName}</div>
               <span class="guest-badge">Primary Guest</span>
             </div>
-            ${primaryGuest.email || primaryGuest.phone ? `
+            ${
+                primaryGuest.email || primaryGuest.phone
+                    ? `
             <div class="guest-contact">
               ${primaryGuest.email ? `<div class="guest-contact-item">📧 ${primaryGuest.email}</div>` : ''}
               ${primaryGuest.phone ? `<div class="guest-contact-item">📱 ${primaryGuest.phone}</div>` : ''}
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
           </div>
           
-          ${guestDetails.slice(1).map((guest: IGuestDetail) => `
+          ${guestDetails
+              .slice(1)
+              .map(
+                  (guest: IGuestDetail) => `
             <div class="guest-card">
               <div class="guest-header">
                 <div class="guest-name">${guest.firstName} ${guest.lastName}</div>
                 <span class="guest-badge">${guest.type}</span>
               </div>
             </div>
-          `).join('')}
+          `
+              )
+              .join('')}
         </div>
 
         <!-- Property Information -->
@@ -695,11 +708,15 @@ export const BookingConfirmationEmail = ({
             <h2 class="section-title">Property Details</h2>
           </div>
           
-          ${property.image && property.image[0] ? `
+          ${
+              property.image && property.image[0]
+                  ? `
           <div class="property-image-container">
             <img src="${property.image[0]}" alt="${property.propertyName}" class="property-image">
           </div>
-          ` : ''}
+          `
+                  : ''
+          }
           
           <h3 class="property-name">${property.propertyName}</h3>
           ${property.description ? `<p class="property-description">${property.description}</p>` : ''}
@@ -748,44 +765,81 @@ export const BookingConfirmationEmail = ({
                 <span class="price-value">${formatCurrency(finalPrice.amountBeforeTax, reservation.currency)}</span>
               </div>
 
-              ${finalPrice.addonBrakeDown && finalPrice.addonBrakeDown.length > 0 ? finalPrice.addonBrakeDown.map((addon: any) => `
+              ${
+                  finalPrice.addonBrakeDown &&
+                  finalPrice.addonBrakeDown.length > 0
+                      ? finalPrice.addonBrakeDown
+                            .map(
+                                (addon: any) => `
               <div class="price-row">
                 <span class="price-label">🍽 ${addon.name}</span>
                 <span class="price-value">+${formatCurrency(addon.totalAmount, reservation.currency)}</span>
               </div>
-              `).join('') : ''}
+              `
+                            )
+                            .join('')
+                      : ''
+              }
 
-              ${finalPrice.taxBrakeDown && finalPrice.taxBrakeDown.length > 0 ? finalPrice.taxBrakeDown.map((tax: any) => `
+              ${
+                  finalPrice.taxBrakeDown && finalPrice.taxBrakeDown.length > 0
+                      ? finalPrice.taxBrakeDown
+                            .map(
+                                (tax: any) => `
               <div class="price-row">
                 <span class="price-label">🧾 ${tax.name}</span>
                 <span class="price-value">+${formatCurrency(tax.taxedAmount, reservation.currency)}</span>
               </div>
-              `).join('') : ''}
+              `
+                            )
+                            .join('')
+                      : ''
+              }
 
-              ${finalPrice.promotionBrakeDown && finalPrice.promotionBrakeDown.length > 0 ? finalPrice.promotionBrakeDown.map((promo: any) => {
-    const isPayLater = promo.restrictionType === 'payLater';
-    const sign = isPayLater ? '+' : '−';
-    const label = promo.discountType === 'percentage'
-      ? `${promo.discountValue}%`
-      : formatCurrency(promo.discountValue, reservation.currency);
-    return `
+              ${
+                  finalPrice.promotionBrakeDown &&
+                  finalPrice.promotionBrakeDown.length > 0
+                      ? finalPrice.promotionBrakeDown
+                            .map((promo: any) => {
+                                const isPayLater =
+                                    promo.restrictionType === 'payLater';
+                                const sign = isPayLater ? '+' : '−';
+                                const label =
+                                    promo.discountType === 'percentage'
+                                        ? `${promo.discountValue}%`
+                                        : formatCurrency(
+                                              promo.discountValue,
+                                              reservation.currency
+                                          );
+                                return `
                 <div class="price-row ${isPayLater ? 'paylater-row' : 'discount-row'}">
                   <span class="price-label">${isPayLater ? '⏳' : '🏷'} ${promo.name} (${label})</span>
                   <span class="price-value">${sign}${formatCurrency(promo.discountAmount, reservation.currency)}</span>
                 </div>`;
-  }).join('') : ''}
+                            })
+                            .join('')
+                      : ''
+              }
 
-              ${finalPrice.promoCodeDiscount > 0 ? `
+              ${
+                  finalPrice.promoCodeDiscount > 0
+                      ? `
               <div class="price-row discount-row">
                 <span class="price-label">🎟 Promo Code Discount</span>
                 <span class="price-value">−${formatCurrency(finalPrice.promoCodeDiscount, reservation.currency)}</span>
-              </div>` : ''}
+              </div>`
+                      : ''
+              }
 
-              ${finalPrice.loyalityDiscount > 0 ? `
+              ${
+                  finalPrice.loyalityDiscount > 0
+                      ? `
               <div class="price-row discount-row">
                 <span class="price-label">⭐ Loyalty Discount</span>
                 <span class="price-value">−${formatCurrency(finalPrice.loyalityDiscount, reservation.currency)}</span>
-              </div>` : ''}
+              </div>`
+                      : ''
+              }
 
               <hr style="border:none; border-top:2px solid #dee2e6; margin: 6px 0;">
 
@@ -805,11 +859,15 @@ export const BookingConfirmationEmail = ({
               </span>
             </div>
 
-            ${finalPrice.latterpayableAmount > 0 ? `
+            ${
+                finalPrice.latterpayableAmount > 0
+                    ? `
             <div style="background:#fff3e0; display:flex; justify-content:space-between; padding:12px 16px; border-radius:7px; margin-top:8px;">
               <span style="color:#e65100; font-weight:700; font-size:14px;">⏳ Pay Later at Hotel</span>
               <span style="color:#e65100; font-weight:700; font-size:14px;">${formatCurrency(finalPrice.latterpayableAmount, reservation.currency)}</span>
-            </div>` : ''}
+            </div>`
+                    : ''
+            }
 
           </div>
           
@@ -817,7 +875,10 @@ export const BookingConfirmationEmail = ({
             <div class="notes-title">📋 Important Information</div>
             <ul class="notes-list">
               <li>Please bring a valid government-issued photo ID at check-in</li>
-              <li>Payment method: ${reservation.paymentMethod.split("_").map((txt) => capitalizeFirstLetter(txt)).join(" ")}</li>
+              <li>Payment method: ${reservation.paymentMethod
+                  .split('_')
+                  .map(txt => capitalizeFirstLetter(txt))
+                  .join(' ')}</li>
             </ul>
           </div>
         </div>
@@ -851,16 +912,17 @@ export const BookingConfirmationEmail = ({
 
 // ==================== BOOKING AMENDMENT EMAIL ====================
 export const BookingAmendmentEmail = ({
-  reservation,
-  property,
-  propertyAddress,
-  room,
+    reservation,
+    property,
+    propertyAddress,
+    room,
 }: EmailTemplateProps): string => {
-  const { finalPrice, guests, guestDetails, startDate, endDate } = reservation;
-  const primaryGuest = guestDetails[0];
-  const numberOfNights = reservation.numberOfNights || 1;
+    const { finalPrice, guests, guestDetails, startDate, endDate } =
+        reservation;
+    const primaryGuest = guestDetails[0];
+    const numberOfNights = reservation.numberOfNights || 1;
 
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1024,21 +1086,30 @@ export const BookingAmendmentEmail = ({
               <div class="guest-name">${primaryGuest.firstName} ${primaryGuest.lastName}</div>
               <span class="guest-badge">Primary Guest</span>
             </div>
-            ${primaryGuest.email || primaryGuest.phone ? `
+            ${
+                primaryGuest.email || primaryGuest.phone
+                    ? `
             <div class="guest-contact">
               ${primaryGuest.email ? `<div class="guest-contact-item">📧 ${primaryGuest.email}</div>` : ''}
               ${primaryGuest.phone ? `<div class="guest-contact-item">📱 ${primaryGuest.phone}</div>` : ''}
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
           </div>
-          ${guestDetails.slice(1).map((guest: IGuestDetail) => `
+          ${guestDetails
+              .slice(1)
+              .map(
+                  (guest: IGuestDetail) => `
             <div class="guest-card">
               <div class="guest-header">
                 <div class="guest-name">${guest.firstName} ${guest.lastName}</div>
                 <span class="guest-badge">${guest.type}</span>
               </div>
             </div>
-          `).join('')}
+          `
+              )
+              .join('')}
         </div>
 
         <div class="section">
@@ -1046,11 +1117,15 @@ export const BookingAmendmentEmail = ({
             <div class="section-icon">🏨</div>
             <h2 class="section-title">Property Details</h2>
           </div>
-          ${property.image && property.image[0] ? `
+          ${
+              property.image && property.image[0]
+                  ? `
           <div class="property-image-container">
             <img src="${property.image[0]}" alt="${property.propertyName}" class="property-image">
           </div>
-          ` : ''}
+          `
+                  : ''
+          }
           <h3 class="property-name">${property.propertyName}</h3>
           ${property.description ? `<p class="property-description">${property.description}</p>` : ''}
           <div class="address-card">
@@ -1082,40 +1157,69 @@ export const BookingAmendmentEmail = ({
                 <span class="price-value">${formatCurrency(finalPrice.amountBeforeTax, reservation.currency)}</span>
               </div>
               
-              ${finalPrice.addonBrakeDown && finalPrice.addonBrakeDown.length > 0 ? finalPrice.addonBrakeDown.map((addon: any) => `
+              ${
+                  finalPrice.addonBrakeDown &&
+                  finalPrice.addonBrakeDown.length > 0
+                      ? finalPrice.addonBrakeDown
+                            .map(
+                                (addon: any) => `
               <div class="price-row">
                 <span class="price-label">${addon.name}</span>
                 <span class="price-value">${formatCurrency(addon.totalAmount, reservation.currency)}</span>
               </div>
-              `).join('') : ''}
+              `
+                            )
+                            .join('')
+                      : ''
+              }
               
-              ${finalPrice.taxBrakeDown && finalPrice.taxBrakeDown.length > 0 ? finalPrice.taxBrakeDown.map((tax: any) => `
+              ${
+                  finalPrice.taxBrakeDown && finalPrice.taxBrakeDown.length > 0
+                      ? finalPrice.taxBrakeDown
+                            .map(
+                                (tax: any) => `
               <div class="price-row">
                 <span class="price-label">${tax.name}</span>
                 <span class="price-value">${formatCurrency(tax.taxAmount, reservation.currency)}</span>
               </div>
-              `).join('') : ''}
+              `
+                            )
+                            .join('')
+                      : ''
+              }
               
-              ${finalPrice.totalPromotionAmount > 0 ? `
+              ${
+                  finalPrice.totalPromotionAmount > 0
+                      ? `
               <div class="price-row discount-row">
                 <span class="price-label">Discount</span>
                 <span class="price-value">-${formatCurrency(finalPrice.totalPromotionAmount, reservation.currency)}</span>
               </div>
-              ` : ''}
+              `
+                      : ''
+              }
               
-              ${finalPrice.promoCodeDiscount > 0 ? `
+              ${
+                  finalPrice.promoCodeDiscount > 0
+                      ? `
               <div class="price-row discount-row">
                 <span class="price-label">Promo Code Discount</span>
                 <span class="price-value">-${formatCurrency(finalPrice.promoCodeDiscount, reservation.currency)}</span>
               </div>
-              ` : ''}
+              `
+                      : ''
+              }
               
-              ${finalPrice.loyalityDiscount > 0 ? `
+              ${
+                  finalPrice.loyalityDiscount > 0
+                      ? `
               <div class="price-row discount-row">
                 <span class="price-label">Loyalty Discount</span>
                 <span class="price-value">-${formatCurrency(finalPrice.loyalityDiscount, reservation.currency)}</span>
               </div>
-              ` : ''}
+              `
+                      : ''
+              }
             </div>
             <div class="price-row-total">
               <span class="price-label">Total Amount</span>
@@ -1150,16 +1254,17 @@ export const BookingAmendmentEmail = ({
 
 // ==================== BOOKING CANCELLATION EMAIL ====================
 export const BookingCancellationEmail = ({
-  reservation,
-  property,
-  propertyAddress,
-  room,
+    reservation,
+    property,
+    propertyAddress,
+    room,
 }: EmailTemplateProps): string => {
-  const { finalPrice, guests, guestDetails, startDate, endDate } = reservation;
-  const primaryGuest = guestDetails[0];
-  const numberOfNights = reservation.numberOfNights || 1;
+    const { finalPrice, guests, guestDetails, startDate, endDate } =
+        reservation;
+    const primaryGuest = guestDetails[0];
+    const numberOfNights = reservation.numberOfNights || 1;
 
-  return `
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1261,7 +1366,9 @@ export const BookingCancellationEmail = ({
             </div>
           </div>
           
-          ${reservation.refundAmount ? `
+          ${
+              reservation.refundAmount
+                  ? `
           <div class="refund-notice">
             <div class="refund-notice-title">💰 Refund Information</div>
             <div class="cancellation-notice-text">
@@ -1269,7 +1376,9 @@ export const BookingCancellationEmail = ({
             </div>
             <div class="refund-amount">${formatCurrency(reservation.refundAmount, reservation.currency)}</div>
           </div>
-          ` : ''}
+          `
+                  : ''
+          }
           
           <div class="section-header" style="margin-top: 24px;">
             <div class="section-icon">📅</div>
@@ -1321,12 +1430,16 @@ export const BookingCancellationEmail = ({
               <div class="guest-name">${primaryGuest.firstName} ${primaryGuest.lastName}</div>
               <span class="guest-badge">Primary Guest</span>
             </div>
-            ${primaryGuest.email || primaryGuest.phone ? `
+            ${
+                primaryGuest.email || primaryGuest.phone
+                    ? `
             <div class="guest-contact">
               ${primaryGuest.email ? `<div class="guest-contact-item">📧 ${primaryGuest.email}</div>` : ''}
               ${primaryGuest.phone ? `<div class="guest-contact-item">📱 ${primaryGuest.phone}</div>` : ''}
             </div>
-            ` : ''}
+            `
+                    : ''
+            }
           </div>
         </div>
 
@@ -1374,7 +1487,7 @@ export const BookingCancellationEmail = ({
 
 // Export all templates
 export const EmailTemplates = {
-  BookingConfirmation: BookingConfirmationEmail,
-  BookingAmendment: BookingAmendmentEmail,
-  BookingCancellation: BookingCancellationEmail,
+    BookingConfirmation: BookingConfirmationEmail,
+    BookingAmendment: BookingAmendmentEmail,
+    BookingCancellation: BookingCancellationEmail,
 };

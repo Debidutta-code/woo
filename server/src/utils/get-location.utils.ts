@@ -1,23 +1,28 @@
-import axios from "axios";
-import { Request } from "express";
-import { CustomRequest, PropertyCustomRequest, PropertyRequest } from "./customRequest";
+import axios from 'axios';
+import { Request } from 'express';
+import {
+    CustomRequest,
+    PropertyCustomRequest,
+    PropertyRequest,
+} from './customRequest';
 
 export const getGeoLocationDetails = async (
     req: Request | CustomRequest | PropertyCustomRequest | PropertyRequest
 ) => {
-    let ip = (req.headers['x-forwarded-for'] as string || req.ip || "").split(',')[0].trim();
+    let ip = ((req.headers['x-forwarded-for'] as string) || req.ip || '')
+        .split(',')[0]
+        .trim();
 
     if (ip.startsWith('::ffff:')) {
         ip = ip.replace('::ffff:', '');
     }
-
 
     // const isLocal = !ip || ip === '::1' || ip === '127.0.0.1';
 
     // if (isLocal) {
     //     return { success: false, ip: 'localhost', city: 'Unknown', country: 'Unknown', coordinates: [0, 0] };
     // }
-   const isLocal = !ip || ip === '::1' || ip === '127.0.0.1';
+    const isLocal = !ip || ip === '::1' || ip === '127.0.0.1';
 
     // Skip API call in local — return India directly
     if (isLocal) {
@@ -26,7 +31,7 @@ export const getGeoLocationDetails = async (
             ip: '49.36.0.1',
             city: 'Mumbai',
             country: 'IN',
-            coordinates: [19.0760, 72.8777],
+            coordinates: [19.076, 72.8777],
         };
     }
     try {
@@ -40,6 +45,12 @@ export const getGeoLocationDetails = async (
         };
     } catch (e) {
         console.error('Geo lookup failed:', e);
-        return { success: false, ip, city: 'Unknown', country: 'Unknown', coordinates: [0, 0] };
+        return {
+            success: false,
+            ip,
+            city: 'Unknown',
+            country: 'Unknown',
+            coordinates: [0, 0],
+        };
     }
 };

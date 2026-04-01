@@ -5,4 +5,5 @@ model DynamicPricing {
   OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
   SeasonalDynamicPricings      SeasonalDynamicPricing[]
   WeekendDynamicPricing        WeekendDynamicPricing[]
+  @@map("dynamic_pricing")
 }

@@ -1,41 +1,53 @@
-import { prisma } from "../../config";
-import { ICOccupancyBasedDynamicPricing, IOccupancyBasedDynamicPricing } from "../types";
+import { prisma } from '../../config';
+import {
+    ICOccupancyBasedDynamicPricing,
+    IOccupancyBasedDynamicPricing,
+} from '../types';
 export class OccupancyBasedDynamicPricingRepository {
-    public async createOccupancyBasedDynamicPricing(data: ICOccupancyBasedDynamicPricing): Promise<IOccupancyBasedDynamicPricing> {
+    public async createOccupancyBasedDynamicPricing(
+        data: ICOccupancyBasedDynamicPricing
+    ): Promise<IOccupancyBasedDynamicPricing> {
         try {
             return await prisma.occupancyBasedDynamicPricing.create({
-                data
+                data,
             });
         } catch (error) {
-            throw new Error("Error creating occupancy-based dynamic pricing");
+            throw new Error('Error creating occupancy-based dynamic pricing');
         }
     }
-    public async getOccupancyBasedDynamicPricing(id: string): Promise<IOccupancyBasedDynamicPricing | null> {
+    public async getOccupancyBasedDynamicPricing(
+        id: string
+    ): Promise<IOccupancyBasedDynamicPricing[] | null> {
         try {
-            return await prisma.occupancyBasedDynamicPricing.findUnique({
-                where: { id }
+            return await prisma.occupancyBasedDynamicPricing.findMany({
+                where: { id },
             });
         } catch (error) {
-            throw new Error("Error fetching occupancy-based dynamic pricing");
+            throw new Error('Error fetching occupancy-based dynamic pricing');
         }
     }
-    public async updateOccupancyBasedDynamicPricing(id: string, data: ICOccupancyBasedDynamicPricing): Promise<IOccupancyBasedDynamicPricing | null> {
+    public async updateOccupancyBasedDynamicPricing(
+        id: string,
+        data: ICOccupancyBasedDynamicPricing
+    ): Promise<IOccupancyBasedDynamicPricing | null> {
         try {
             return await prisma.occupancyBasedDynamicPricing.update({
                 where: { id },
-                data
+                data,
             });
         } catch (error) {
-            throw new Error("Error updating occupancy-based dynamic pricing");
+            throw new Error('Error updating occupancy-based dynamic pricing');
         }
     }
-    public async deleteOccupancyBasedDynamicPricing(id: string): Promise<IOccupancyBasedDynamicPricing | null> {
+    public async deleteOccupancyBasedDynamicPricing(
+        id: string
+    ): Promise<IOccupancyBasedDynamicPricing | null> {
         try {
             return await prisma.occupancyBasedDynamicPricing.delete({
-                where: { id }
+                where: { id },
             });
         } catch (error) {
-            throw new Error("Error deleting occupancy-based dynamic pricing");
+            throw new Error('Error deleting occupancy-based dynamic pricing');
         }
     }
     public async getOccupancyBasedDPByRange(
@@ -47,19 +59,21 @@ export class OccupancyBasedDynamicPricingRepository {
                 where: {
                     roomId,
                     minInventoryPercentage: {
-                        lte: currentInventoryPercentage
+                        lte: currentInventoryPercentage,
                     },
                     maxInventoryPercentage: {
-                        gte: currentInventoryPercentage
-                    }
-                }
+                        gte: currentInventoryPercentage,
+                    },
+                },
             });
         } catch (error) {
-            throw new Error("Error fetching occupancy-based dynamic pricing by range");
+            throw new Error(
+                'Error fetching occupancy-based dynamic pricing by range'
+            );
         }
     }
     public async checkIfRangeExists(
-        ids:string[],
+        ids: string[],
         roomId: string,
         minInventoryPercentage: number,
         maxInventoryPercentage: number
@@ -68,31 +82,37 @@ export class OccupancyBasedDynamicPricingRepository {
             const result = await prisma.occupancyBasedDynamicPricing.findMany({
                 where: {
                     roomId,
-                    id:{
-                        notIn: ids
+                    id: {
+                        notIn: ids,
                     },
                     minInventoryPercentage: {
-                        lte: maxInventoryPercentage
+                        lte: maxInventoryPercentage,
                     },
                     maxInventoryPercentage: {
-                        gte: minInventoryPercentage
-                    }
-                }
+                        gte: minInventoryPercentage,
+                    },
+                },
             });
             return result.length > 0;
         } catch (error) {
-            throw new Error("Error checking if occupancy-based dynamic pricing range exists");
+            throw new Error(
+                'Error checking if occupancy-based dynamic pricing range exists'
+            );
         }
     }
-    public async getOccupancyBasedDynamicPricingByRoomId(roomId: string): Promise<IOccupancyBasedDynamicPricing[]> {
+    public async getOccupancyBasedDynamicPricingByRoomId(
+        roomId: string
+    ): Promise<IOccupancyBasedDynamicPricing[]> {
         try {
             return await prisma.occupancyBasedDynamicPricing.findMany({
                 where: {
-                    roomId
-                }
+                    roomId,
+                },
             });
         } catch (error) {
-            throw new Error("Error fetching occupancy-based dynamic pricing by room ID");
+            throw new Error(
+                'Error fetching occupancy-based dynamic pricing by room ID'
+            );
         }
     }
 }

@@ -68,15 +68,20 @@ export class ReportsService {
                     description: property.description,
                     image: property.image,
                     // ── Use logo from booking engine config ───────────────────────
-                    logo: property.bookingEngineConfig?.logo ?? property.image?.[0] ?? null,
-                    primaryColor: property.bookingEngineConfig?.primaryColor ?? '#1e293b',
+                    logo:
+                        property.bookingEngineConfig?.logo ??
+                        property.image?.[0] ??
+                        null,
+                    primaryColor:
+                        property.bookingEngineConfig?.primaryColor ?? '#1e293b',
                     starRating: property.starRating,
                     propertyAddress: property.propertyAddress,
                     propertyAmenities: property.propertyAmenities,
                 },
                 room: reservation.room ?? null,
                 // ── Pass ratePlanName ─────────────────────────────────────────────
-                ratePlanName: reservation.ratePlanName ?? reservation.ratePlanCode,
+                ratePlanName:
+                    reservation.ratePlanName ?? reservation.ratePlanCode,
                 reservation: {
                     bookingCode: reservation.bookingCode,
                     checkInDate: reservation.checkInDate,
@@ -94,15 +99,19 @@ export class ReportsService {
                     paymentMethod: reservation.paymentMethod,
                 },
                 reservationGuests: reservation.reservationGuests ?? [],
-                primaryGuest: reservation.primaryGuest ? {
-                    firstName: reservation.primaryGuest.firstName,
-                    lastName: reservation.primaryGuest.lastName,
-                    email: reservation.primaryGuest.email,
-                    phoneNumber: reservation.primaryGuest.phoneNumber,
-                    userType: reservation.primaryGuest.userType,
-                    userIdentityCardType: reservation.primaryGuest.userIdentityCardType,
-                    identityCardNumber: reservation.primaryGuest.identityCardNumber,
-                } : null,
+                primaryGuest: reservation.primaryGuest
+                    ? {
+                          firstName: reservation.primaryGuest.firstName,
+                          lastName: reservation.primaryGuest.lastName,
+                          email: reservation.primaryGuest.email,
+                          phoneNumber: reservation.primaryGuest.phoneNumber,
+                          userType: reservation.primaryGuest.userType,
+                          userIdentityCardType:
+                              reservation.primaryGuest.userIdentityCardType,
+                          identityCardNumber:
+                              reservation.primaryGuest.identityCardNumber,
+                      }
+                    : null,
                 addOns: reservation.addOns.map(addon => ({
                     name: addon.name,
                     quantity: addon.quantity,
@@ -112,16 +121,20 @@ export class ReportsService {
                     type: addon.type,
                     images: addon.addon?.images ?? [],
                 })),
-                priceBreakdown: priceBreakdown ? {
-                    totalAmount: Number(priceBreakdown.totalAmount),
-                    totalTax: Number(priceBreakdown.totalTax),
-                    baseRatePerNight: Number(priceBreakdown.baseRatePerNight),
-                    numberOfNights: priceBreakdown.numberOfNights,
-                    requestedRooms: priceBreakdown.requestedRooms,
-                    dailyBreakdown: priceBreakdown.dailyBreakdown ?? [],
-                    breakdown: priceBreakdown.breakdown,
-                    tax: priceBreakdown.tax ?? [],
-                } : null,
+                priceBreakdown: priceBreakdown
+                    ? {
+                          totalAmount: Number(priceBreakdown.totalAmount),
+                          totalTax: Number(priceBreakdown.totalTax),
+                          baseRatePerNight: Number(
+                              priceBreakdown.baseRatePerNight
+                          ),
+                          numberOfNights: priceBreakdown.numberOfNights,
+                          requestedRooms: priceBreakdown.requestedRooms,
+                          dailyBreakdown: priceBreakdown.dailyBreakdown ?? [],
+                          breakdown: priceBreakdown.breakdown,
+                          tax: priceBreakdown.tax ?? [],
+                      }
+                    : null,
                 finalPrice: reservation.finalPrice,
             };
             // Generate HTML
@@ -224,16 +237,16 @@ export class ReportsService {
                 },
                 primaryGuest: reservation.primaryGuest
                     ? {
-                        firstName: reservation.primaryGuest.firstName,
-                        lastName: reservation.primaryGuest.lastName,
-                        email: reservation.primaryGuest.email,
-                        phoneNumber: reservation.primaryGuest.phoneNumber,
-                        userType: reservation.primaryGuest.userType,
-                        userIdentityCardType:
-                            reservation.primaryGuest.userIdentityCardType,
-                        identityCardNumber:
-                            reservation.primaryGuest.identityCardNumber,
-                    }
+                          firstName: reservation.primaryGuest.firstName,
+                          lastName: reservation.primaryGuest.lastName,
+                          email: reservation.primaryGuest.email,
+                          phoneNumber: reservation.primaryGuest.phoneNumber,
+                          userType: reservation.primaryGuest.userType,
+                          userIdentityCardType:
+                              reservation.primaryGuest.userIdentityCardType,
+                          identityCardNumber:
+                              reservation.primaryGuest.identityCardNumber,
+                      }
                     : null,
                 addOns: reservation.addOns.map(addon => ({
                     name: addon.name,
@@ -242,16 +255,16 @@ export class ReportsService {
                 })),
                 priceBreakdown: priceBreakdown
                     ? {
-                        totalAmount: Number(priceBreakdown.totalAmount),
-                        totalTax: Number(priceBreakdown.totalTax),
-                        baseRatePerNight: Number(
-                            priceBreakdown.baseRatePerNight
-                        ),
-                        numberOfNights: priceBreakdown.numberOfNights,
-                        additionalGuestCharges:
-                            priceBreakdown.additionalGuestCharges,
-                        breakdown: priceBreakdown.breakdown,
-                    }
+                          totalAmount: Number(priceBreakdown.totalAmount),
+                          totalTax: Number(priceBreakdown.totalTax),
+                          baseRatePerNight: Number(
+                              priceBreakdown.baseRatePerNight
+                          ),
+                          numberOfNights: priceBreakdown.numberOfNights,
+                          additionalGuestCharges:
+                              priceBreakdown.additionalGuestCharges,
+                          breakdown: priceBreakdown.breakdown,
+                      }
                     : null,
             };
 
@@ -396,10 +409,10 @@ export class ReportsService {
             const lastVisit =
                 guest.primaryReservations.length > 0
                     ? guest.primaryReservations.sort(
-                        (a, b) =>
-                            new Date(b.checkInDate).getTime() -
-                            new Date(a.checkInDate).getTime()
-                    )[0].checkInDate
+                          (a, b) =>
+                              new Date(b.checkInDate).getTime() -
+                              new Date(a.checkInDate).getTime()
+                      )[0].checkInDate
                     : null;
 
             return {

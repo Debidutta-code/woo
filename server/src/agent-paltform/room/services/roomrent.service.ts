@@ -2,16 +2,15 @@ import { differenceInDays } from 'date-fns';
 import { errorResponse, successResponse } from '../../../utils/return';
 import { IApiResponse, toUTCDate } from '../../../utils';
 import { AgentPricingRepository } from '../repository';
-import { 
-    IAgentPricingRequest, 
-    IAgentPricingResponse, 
+import {
+    IAgentPricingRequest,
+    IAgentPricingResponse,
     IDailyBreakdown,
     IIncludedAddon,
-    ITaxDetail 
+    ITaxDetail,
 } from '../types';
 
 export class AgentPricingService {
-    
     public async getAgentPricing(
         data: IAgentPricingRequest,
         agencyId: string
@@ -25,13 +24,15 @@ export class AgentPricingService {
                 ratePlanCode,
                 noOfChildren,
                 noOfAdults,
-                noOfRooms
+                noOfRooms,
             } = data;
 
             // Validate inputs
             const validationResult = this.validateInputs(data);
             if (!validationResult.isValid) {
-                return errorResponse(validationResult.message || 'Invalid input');
+                return errorResponse(
+                    validationResult.message || 'Invalid input'
+                );
             }
 
             const numberOfNights = differenceInDays(endDate, startDate);
@@ -40,14 +41,16 @@ export class AgentPricingService {
             }
 
             // Get agency details for commission calculation
-            const agency = await AgentPricingRepository.getAgencyDetails(agencyId);
+            const agency =
+                await AgentPricingRepository.getAgencyDetails(agencyId);
             if (!agency) {
                 return errorResponse('Agency not found or has been deleted');
             }
 
             // Get rate plan with tax configuration
-            const ratePlan = await AgentPricingRepository.getRatePlanWithTax(ratePlanCode);
-            
+            const ratePlan =
+                await AgentPricingRepository.getRatePlanWithTax(ratePlanCode);
+
             if (!ratePlan) {
                 return errorResponse('Rate plan not found');
             }
@@ -83,8 +86,10 @@ export class AgentPricingService {
                 return rateCalculation;
             }
 
-            const totalBaseAmount = rateCalculation.data!.breakdown.totalBaseAmount;
-            const totalAdditionalCharges = rateCalculation.data!.breakdown.totalAdditionalCharges;
+            const totalBaseAmount =
+                rateCalculation.data!.breakdown.totalBaseAmount;
+            const totalAdditionalCharges =
+                rateCalculation.data!.breakdown.totalAdditionalCharges;
 
             // Calculate included addons (from rate plan)
             let includedAddons: IIncludedAddon[] = [];
@@ -108,7 +113,8 @@ export class AgentPricingService {
             }
 
             // Calculate subtotal (base + additional charges + included addons)
-            const subtotal = totalBaseAmount + totalAdditionalCharges + totalIncludedAddons;
+            const subtotal =
+                totalBaseAmount + totalAdditionalCharges + totalIncludedAddons;
 
             // Calculate agency commission
             const commissionCalculation = this.calculateAgencyCommission(
@@ -117,12 +123,16 @@ export class AgentPricingService {
                 agency.commissionValue
             );
 
-            const totalBeforeTax = subtotal + commissionCalculation.commissionAmount;
+            const totalBeforeTax =
+                subtotal + commissionCalculation.commissionAmount;
 
             // Calculate tax on base amount
-            const taxCalculation = await this.calculateTax(ratePlan, totalBaseAmount);
+            const taxCalculation = await this.calculateTax(
+                ratePlan,
+                totalBaseAmount
+            );
             const totalTax = taxCalculation.totalTax;
-            
+
             // Final amount = subtotal + commission + tax
             const finalAmount = totalBeforeTax + totalTax;
 
@@ -134,14 +144,20 @@ export class AgentPricingService {
 
                 breakdown: {
                     totalBaseAmount: Number(totalBaseAmount.toFixed(2)),
-                    totalAdditionalCharges: Number(totalAdditionalCharges.toFixed(2)),
+                    totalAdditionalCharges: Number(
+                        totalAdditionalCharges.toFixed(2)
+                    ),
                     totalIncludedAddons: Number(totalIncludedAddons.toFixed(2)),
                     subtotal: Number(subtotal.toFixed(2)),
-                    agencyCommission: Number(commissionCalculation.commissionAmount.toFixed(2)),
+                    agencyCommission: Number(
+                        commissionCalculation.commissionAmount.toFixed(2)
+                    ),
                     totalBeforeTax: Number(totalBeforeTax.toFixed(2)),
                     totalTax: Number(totalTax.toFixed(2)),
                     totalAmount: Number(finalAmount.toFixed(2)),
-                    averagePerNight: Number((finalAmount / numberOfNights).toFixed(2))
+                    averagePerNight: Number(
+                        (finalAmount / numberOfNights).toFixed(2)
+                    ),
                 },
 
                 dailyBreakdown: rateCalculation.data!.dailyBreakdown,
@@ -154,16 +170,17 @@ export class AgentPricingService {
                 agencyCommission: {
                     commissionType: commissionCalculation.commissionType,
                     commissionValue: commissionCalculation.commissionValue,
-                    commissionAmount: Number(commissionCalculation.commissionAmount.toFixed(2)),
-                    commissionCurrency: agency.commissionCurrency || 'INR'
+                    commissionAmount: Number(
+                        commissionCalculation.commissionAmount.toFixed(2)
+                    ),
+                    commissionCurrency: agency.commissionCurrency || 'INR',
                 },
 
                 tax: taxCalculation.taxDetails,
                 totalTax: Number(totalTax.toFixed(2)),
 
-                priceAfterTax: Number(finalAmount.toFixed(2))
+                priceAfterTax: Number(finalAmount.toFixed(2)),
             });
-
         } catch (error) {
             console.error('Error in getAgentPricing:', error);
             return errorResponse('Internal server error');
@@ -192,13 +209,19 @@ export class AgentPricingService {
         return {
             commissionType,
             commissionValue,
-            commissionAmount
+            commissionAmount,
         };
     }
 
-    private validateInputs(data: IAgentPricingRequest): { isValid: boolean; message?: string } {
+    private validateInputs(data: IAgentPricingRequest): {
+        isValid: boolean;
+        message?: string;
+    } {
         if (!data.propertyCode || !data.invTypeCode) {
-            return { isValid: false, message: 'Property and room type required' };
+            return {
+                isValid: false,
+                message: 'Property and room type required',
+            };
         }
         if (!data.ratePlanCode) {
             return { isValid: false, message: 'Rate plan required' };
@@ -216,7 +239,10 @@ export class AgentPricingService {
             return { isValid: false, message: 'At least 1 room required' };
         }
         if (data.startDate >= data.endDate) {
-            return { isValid: false, message: 'End date must be after start date' };
+            return {
+                isValid: false,
+                message: 'End date must be after start date',
+            };
         }
         return { isValid: true };
     }
@@ -240,12 +266,13 @@ export class AgentPricingService {
             current.setUTCDate(current.getUTCDate() + 1);
         }
 
-        const inventories = await AgentPricingRepository.checkInventoryAvailability(
-            propertyCode,
-            roomTypeCode,
-            ratePlanCode,
-            stayDates
-        );
+        const inventories =
+            await AgentPricingRepository.checkInventoryAvailability(
+                propertyCode,
+                roomTypeCode,
+                ratePlanCode,
+                stayDates
+            );
 
         if (inventories.length !== stayDates.length) {
             return errorResponse(
@@ -309,7 +336,9 @@ export class AgentPricingService {
                 const dateStr = date.toISOString().split('T')[0];
 
                 const startOfDateUTC = toUTCDate(dateStr);
-                const endOfDateUTC = new Date(startOfDateUTC.getTime() + 24 * 60 * 60 * 1000);
+                const endOfDateUTC = new Date(
+                    startOfDateUTC.getTime() + 24 * 60 * 60 * 1000
+                );
 
                 const charge = await AgentPricingRepository.getChargeForDate(
                     propertyCode,
@@ -349,16 +378,20 @@ export class AgentPricingService {
                     additionalCharges: rateCalculation.additionalGuestCharges,
                     totalPerRoom: rateCalculation.totalPerRoom,
                     totalForAllRooms: rateCalculation.totalAmountForDay,
-                    currencyCode: "USD",
+                    currencyCode: 'USD',
                     breakdown: rateCalculation.breakdown,
                 });
 
                 totalAmount += rateCalculation.totalAmountForDay;
                 totalBaseAmount += rateCalculation.baseRatePerRoom * noOfRooms;
-                totalAdditionalCharges += rateCalculation.additionalGuestCharges * noOfRooms;
+                totalAdditionalCharges +=
+                    rateCalculation.additionalGuestCharges * noOfRooms;
             }
 
-            const averageBaseRate = numberOfNights > 0 ? totalBaseAmount / numberOfNights / noOfRooms : 0;
+            const averageBaseRate =
+                numberOfNights > 0
+                    ? totalBaseAmount / numberOfNights / noOfRooms
+                    : 0;
 
             return {
                 success: true,
@@ -366,13 +399,19 @@ export class AgentPricingService {
                     totalAmount,
                     numberOfNights,
                     baseRatePerNight: averageBaseRate,
-                    additionalGuestCharges: numberOfNights > 0 ? totalAdditionalCharges / numberOfNights : 0,
+                    additionalGuestCharges:
+                        numberOfNights > 0
+                            ? totalAdditionalCharges / numberOfNights
+                            : 0,
                     breakdown: {
                         totalBaseAmount,
                         totalAdditionalCharges,
                         totalAmount,
                         numberOfNights,
-                        averagePerNight: numberOfNights > 0 ? totalAmount / numberOfNights : 0,
+                        averagePerNight:
+                            numberOfNights > 0
+                                ? totalAmount / numberOfNights
+                                : 0,
                     },
                     dailyBreakdown,
                 },
@@ -414,7 +453,9 @@ export class AgentPricingService {
             const baseGuestAmounts = charge.baseGuestAmounts || [];
 
             if (baseGuestAmounts.length === 0) {
-                return errorResponse('No base guest amounts found for this rate');
+                return errorResponse(
+                    'No base guest amounts found for this rate'
+                );
             }
 
             const sortedBaseRates = baseGuestAmounts.sort(
@@ -434,9 +475,16 @@ export class AgentPricingService {
 
             const totalGuestsCoveredByBase = baseGuestsIncluded * noOfRooms;
 
-            const adultsInBaseRate = Math.min(noOfAdults, totalGuestsCoveredByBase);
-            const remainingBaseCapacity = totalGuestsCoveredByBase - adultsInBaseRate;
-            const childrenInBaseRate = Math.min(noOfChildren, remainingBaseCapacity);
+            const adultsInBaseRate = Math.min(
+                noOfAdults,
+                totalGuestsCoveredByBase
+            );
+            const remainingBaseCapacity =
+                totalGuestsCoveredByBase - adultsInBaseRate;
+            const childrenInBaseRate = Math.min(
+                noOfChildren,
+                remainingBaseCapacity
+            );
 
             const adultsNotInBaseRate = noOfAdults - adultsInBaseRate;
             const childrenNotInBaseRate = noOfChildren - childrenInBaseRate;
@@ -458,12 +506,15 @@ export class AgentPricingService {
             let additionalChildrenCharges = 0;
             if (childrenNotInBaseRate > 0 && childRate) {
                 const chargeAmount = Number(childRate.amount);
-                additionalChildrenCharges = childrenNotInBaseRate * chargeAmount;
+                additionalChildrenCharges =
+                    childrenNotInBaseRate * chargeAmount;
             }
 
             const totalAdditionalChargesPerRoom =
-                (additionalAdultCharges + additionalChildrenCharges) / noOfRooms;
-            const totalPerRoom = baseRatePerRoom + totalAdditionalChargesPerRoom;
+                (additionalAdultCharges + additionalChildrenCharges) /
+                noOfRooms;
+            const totalPerRoom =
+                baseRatePerRoom + totalAdditionalChargesPerRoom;
             const totalAmountForDay = totalPerRoom * noOfRooms;
 
             return {
@@ -476,7 +527,8 @@ export class AgentPricingService {
                     baseAmount: baseRatePerRoom,
                     additionalAdultCharges,
                     additionalChildrenCharges,
-                    totalAdditionalCharges: additionalAdultCharges + additionalChildrenCharges,
+                    totalAdditionalCharges:
+                        additionalAdultCharges + additionalChildrenCharges,
                     baseGuestsIncluded,
                     adultsInBaseRate,
                     childrenInBaseRate,
@@ -497,7 +549,9 @@ export class AgentPricingService {
         noOfAdults: number,
         noOfChildren: number,
         noOfRooms: number
-    ): Promise<IApiResponse<{ addons: IIncludedAddon[], totalAmount: number }>> {
+    ): Promise<
+        IApiResponse<{ addons: IIncludedAddon[]; totalAmount: number }>
+    > {
         try {
             const addons = await AgentPricingRepository.getIncludedAddons(
                 addonIds,
@@ -508,13 +562,15 @@ export class AgentPricingService {
             if (addons.length === 0) {
                 return successResponse('No included addons available', {
                     addons: [],
-                    totalAmount: 0
+                    totalAmount: 0,
                 });
             }
 
             const numberOfNights = differenceInDays(checkOutDate, checkInDate);
             if (numberOfNights <= 0) {
-                return errorResponse('Invalid stay duration for addons calculation');
+                return errorResponse(
+                    'Invalid stay duration for addons calculation'
+                );
             }
 
             let totalAddonAmount = 0;
@@ -531,7 +587,7 @@ export class AgentPricingService {
                 switch (addon.postingRhythm) {
                     case 'per_night':
                         addonAmount = addon.availability.reduce(
-                            (sum: number, avail: any) => sum + avail.price, 
+                            (sum: number, avail: any) => sum + avail.price,
                             0
                         );
                         break;
@@ -541,10 +597,11 @@ export class AgentPricingService {
                         break;
 
                     case 'per_person_per_night':
-                        addonAmount = addon.availability.reduce(
-                            (sum: number, avail: any) => sum + avail.price, 
-                            0
-                        ) * totalGuests;
+                        addonAmount =
+                            addon.availability.reduce(
+                                (sum: number, avail: any) => sum + avail.price,
+                                0
+                            ) * totalGuests;
                         break;
 
                     case 'per_person_per_stay':
@@ -556,14 +613,18 @@ export class AgentPricingService {
                         break;
 
                     case 'per_room_per_night':
-                        addonAmount = addon.availability.reduce(
-                            (sum: number, avail: any) => sum + avail.price, 
-                            0
-                        ) * noOfRooms;
+                        addonAmount =
+                            addon.availability.reduce(
+                                (sum: number, avail: any) => sum + avail.price,
+                                0
+                            ) * noOfRooms;
                         break;
 
                     case 'per_person_per_room':
-                        addonAmount = addon.availability[0].price * totalGuests * noOfRooms;
+                        addonAmount =
+                            addon.availability[0].price *
+                            totalGuests *
+                            noOfRooms;
                         break;
 
                     default:
@@ -579,13 +640,13 @@ export class AgentPricingService {
                     postingRhythm: addon.postingRhythm,
                     amount: Number(addonAmount.toFixed(2)),
                     currencyCode: addon.availability[0].currencyCode,
-                    description: addon.description || ''
+                    description: addon.description || '',
                 });
             }
 
             return successResponse('Included addons calculated successfully', {
                 addons: addonDetails,
-                totalAmount: Number(totalAddonAmount.toFixed(2))
+                totalAmount: Number(totalAddonAmount.toFixed(2)),
             });
         } catch (error) {
             console.error('Error in calculateIncludedAddons:', error);
@@ -593,7 +654,10 @@ export class AgentPricingService {
         }
     }
 
-    private async calculateTax(ratePlan: any, baseAmount: number): Promise<any> {
+    private async calculateTax(
+        ratePlan: any,
+        baseAmount: number
+    ): Promise<any> {
         try {
             const taxDetails: ITaxDetail[] = [];
             let totalTax = 0;

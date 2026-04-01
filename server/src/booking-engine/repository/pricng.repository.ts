@@ -1,13 +1,12 @@
 import { prisma } from '../../config';
-import {
-    IAddOn,
-    IRatePlan,
-    ISelectedAddonsR,
-} from '../types';
+import { IAddOn, IRatePlan, ISelectedAddonsR } from '../types';
 import { IMLOS } from '../../promotions/mlos/interfaces';
 import { ICEbDsOftc } from '../../promotions/eb-ds-oftc/interfaces';
 import { IPromoCode } from '../../ari/types/promoCode.type';
-import { IPropertyLoyaltyConfig, ITCreationLoyality } from '../../loyalty/types';
+import {
+    IPropertyLoyaltyConfig,
+    ITCreationLoyality,
+} from '../../loyalty/types';
 
 export class PricingRepository {
     public async validateRatePlan(
@@ -46,7 +45,6 @@ export class PricingRepository {
                             addonId: {
                                 in: includedAddons,
                             },
-
                         },
                         include: {
                             addon: {
@@ -59,7 +57,7 @@ export class PricingRepository {
                                             },
                                         },
                                     },
-                                    ChildAddons: true
+                                    ChildAddons: true,
                                 },
                             },
                         },
@@ -89,7 +87,7 @@ export class PricingRepository {
                         },
                     },
                     geoRatePlans: true,
-                    
+
                     // customizableDeals:{
                     //     include:{
                     //         CustomizableDealsApplicableAddons:true
@@ -102,7 +100,7 @@ export class PricingRepository {
             throw new Error('Failed to validate rate plan');
         }
     }
-    
+
     public async getMlos(mlosId: string[]): Promise<IMLOS[] | null> {
         try {
             return await prisma.ratePlanRule.findMany({
@@ -144,9 +142,8 @@ export class PricingRepository {
                                     date: { in: singleAdd.dates },
                                 },
                             },
-                            ChildAddons: true
+                            ChildAddons: true,
                         },
-
                     });
                 })
             );

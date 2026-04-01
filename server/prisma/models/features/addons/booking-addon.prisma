@@ -17,4 +17,5 @@ model BookingAddon {
     updatedAt DateTime @updatedAt
 
     addon Addon @relation(fields: [addonId], references: [id])
+    @@map("booking_addon")
 }

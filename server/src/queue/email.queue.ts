@@ -1,7 +1,7 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { config, RedisClient } from '../config';
 import { sendEmail } from '../sms-email-service/utils';
-import { DeadLetterPayload, EmailJobData,EmailJobPriority } from '.';
+import { DeadLetterPayload, EmailJobData, EmailJobPriority } from '.';
 
 export class EmailQueue {
     private emailQueue: Queue;
@@ -21,12 +21,14 @@ export class EmailQueue {
         this.redisClient = RedisClient.getInstance();
 
         this.emailQueue = new Queue(config.emailQueue, { connection });
-        this.emailQueue.on('error', (err) => {
+        this.emailQueue.on('error', err => {
             console.error('❌ Email queue connection error:', err);
         });
 
-        this.deadLetterQueue = new Queue(config.deadLetterQueue, { connection });
-        this.deadLetterQueue.on('error', (err) => {
+        this.deadLetterQueue = new Queue(config.deadLetterQueue, {
+            connection,
+        });
+        this.deadLetterQueue.on('error', err => {
             console.error('❌ Dead-letter queue connection error:', err);
         });
 
@@ -38,11 +40,11 @@ export class EmailQueue {
             { connection, concurrency: 2 } // 2 EMAILS WILL BE PROCESSED AT A TIME
         );
 
-        this.emailWorker.on('error', (err) => {
+        this.emailWorker.on('error', err => {
             console.error('❌ Email worker connection error:', err);
         });
 
-        this.emailWorker.on('completed', (job) => {
+        this.emailWorker.on('completed', job => {
             console.log(`✅ Email job ${job.id} completed at ${new Date()}`);
         });
 
@@ -63,12 +65,14 @@ export class EmailQueue {
             { connection, concurrency: 1 }
         );
 
-        this.deadLetterWorker.on('error', (err) => {
+        this.deadLetterWorker.on('error', err => {
             console.error('❌ Dead-letter worker connection error:', err);
         });
 
-        this.deadLetterWorker.on('completed', (job) => {
-            console.log(`✅ Dead-letter job ${job.id} succeeded on final retry`);
+        this.deadLetterWorker.on('completed', job => {
+            console.log(
+                `✅ Dead-letter job ${job.id} succeeded on final retry`
+            );
         });
 
         this.deadLetterWorker.on('failed', (job, err) => {
@@ -79,7 +83,6 @@ export class EmailQueue {
         });
     }
 
-
     private mapPriority(priority: EmailJobPriority = 'normal'): number {
         const map: Record<EmailJobPriority, number> = {
             critical: 1,
@@ -89,7 +92,6 @@ export class EmailQueue {
         };
         return map[priority] ?? 3;
     }
-
 
     public async enqueueEmail(
         payload: Omit<EmailJobData, 'createdAt'>,
@@ -120,7 +122,12 @@ export class EmailQueue {
             throw new Error('Invalid email job payload');
         }
 
-        const ok = await sendEmail(data.to, data.cc ?? [], data.subject, data.htmlContent);
+        const ok = await sendEmail(
+            data.to,
+            data.cc ?? [],
+            data.subject,
+            data.htmlContent
+        );
         if (!ok) {
             throw new Error('sendEmail returned false');
         }
@@ -128,8 +135,10 @@ export class EmailQueue {
         return { success: true };
     }
 
-
-    private async moveToDeadLetter(job: Job<EmailJobData>, err: Error): Promise<void> {
+    private async moveToDeadLetter(
+        job: Job<EmailJobData>,
+        err: Error
+    ): Promise<void> {
         try {
             const payload: DeadLetterPayload = {
                 originalJobId: job.id,
@@ -146,26 +155,36 @@ export class EmailQueue {
                 removeOnFail: true,
             });
         } catch (dlErr) {
-            console.error(`❌ Failed to move job ${job.id} to dead-letter:`, dlErr);
+            console.error(
+                `❌ Failed to move job ${job.id} to dead-letter:`,
+                dlErr
+            );
         }
     }
 
-
-    private async processDeadLetterJob(job: Job<DeadLetterPayload>): Promise<void> {
+    private async processDeadLetterJob(
+        job: Job<DeadLetterPayload>
+    ): Promise<void> {
         const { data, originalJobId } = job.data;
 
-        console.log(`🔁 Final retry for dead-letter job (original: ${originalJobId})`);
+        console.log(
+            `🔁 Final retry for dead-letter job (original: ${originalJobId})`
+        );
 
         if (!data?.to || !data?.subject || !data?.htmlContent) {
             throw new Error('Invalid dead-letter job payload');
         }
 
-        const ok = await sendEmail(data.to, data.cc ?? [], data.subject, data.htmlContent);
+        const ok = await sendEmail(
+            data.to,
+            data.cc ?? [],
+            data.subject,
+            data.htmlContent
+        );
         if (!ok) {
             throw new Error('Final retry failed — sendEmail returned false');
         }
     }
-
 
     async getEmailQueueStatus() {
         const jobCounts = await this.emailQueue.getJobCounts(
@@ -189,7 +208,6 @@ export class EmailQueue {
         );
         return { queue: config.deadLetterQueue, jobCounts };
     }
-
 
     async cleanup(gracePeriodMs: number = 24 * 60 * 60 * 1000) {
         await this.emailQueue.clean(gracePeriodMs, 1000, 'completed');

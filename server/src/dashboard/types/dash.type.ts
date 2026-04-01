@@ -187,43 +187,43 @@ export interface IAnalyticsData {
 // Add these to your existing types file
 
 export interface IComparisonPeriod {
-  current: {
-    start: Date;
-    end: Date;
-    label: string;
-  };
-  previous: {
-    start: Date;
-    end: Date;
-    label: string;
-  };
+    current: {
+        start: Date;
+        end: Date;
+        label: string;
+    };
+    previous: {
+        start: Date;
+        end: Date;
+        label: string;
+    };
 }
 
 export interface IStatisticsComparison {
-  bookings: {
-    current: number;
-    previous: number;
-    percentageChange: number;
-  };
-  cancelledBookings: {
-    current: number;
-    previous: number;
-    percentageChange: number;
-  };
-  revenue: {
-    current: number;
-    previous: number;
-    percentageChange: number;
-  };
-  averageBookingValue: {
-    current: number;
-    previous: number;
-    percentageChange: number;
-  };
-  roomNights: {
-    current: number;
-    previous: number;
-    percentageChange: number;
-  };
-  period: IComparisonPeriod;
+    bookings: {
+        current: number;
+        previous: number;
+        percentageChange: number;
+    };
+    cancelledBookings: {
+        current: number;
+        previous: number;
+        percentageChange: number;
+    };
+    revenue: {
+        current: number;
+        previous: number;
+        percentageChange: number;
+    };
+    averageBookingValue: {
+        current: number;
+        previous: number;
+        percentageChange: number;
+    };
+    roomNights: {
+        current: number;
+        previous: number;
+        percentageChange: number;
+    };
+    period: IComparisonPeriod;
 }

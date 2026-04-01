@@ -27,7 +27,10 @@ export class ReportsRepository {
                             propertyAmenities: {
                                 include: {
                                     amenity: {
-                                        select: { amenityName: true, icon: true },
+                                        select: {
+                                            amenityName: true,
+                                            icon: true,
+                                        },
                                     },
                                 },
                             },
@@ -44,32 +47,36 @@ export class ReportsRepository {
             // ── Fetch room images ─────────────────────────────────────────────
             const room = reservation.roomTypeCode
                 ? await prisma.room.findFirst({
-                    where: {
-                        propertyId: reservation.propertyId,
-                        roomType: reservation.roomTypeCode,
-                    },
-                    select: {
-                        roomName: true,
-                        roomType: true,
-                        image: true,
-                        description: true,
-                        maxOccupancy: true,
-                        roomSize: true,
-                        roomUnit: true,
-                    },
-                })
+                      where: {
+                          propertyId: reservation.propertyId,
+                          roomType: reservation.roomTypeCode,
+                      },
+                      select: {
+                          roomName: true,
+                          roomType: true,
+                          image: true,
+                          description: true,
+                          maxOccupancy: true,
+                          roomSize: true,
+                          roomUnit: true,
+                      },
+                  })
                 : null;
 
             // ── Fetch rate plan name ──────────────────────────────────────────
             const ratePlan = reservation.ratePlanCode
                 ? await prisma.ratePlan.findUnique({
-                    where: { ratePlanCode: reservation.ratePlanCode },
-                    select: { ratePlanName: true },
-                })
+                      where: { ratePlanCode: reservation.ratePlanCode },
+                      select: { ratePlanName: true },
+                  })
                 : null;
 
-            return { ...reservation, room, ratePlanName: ratePlan?.ratePlanName ?? reservation.ratePlanCode };
-
+            return {
+                ...reservation,
+                room,
+                ratePlanName:
+                    ratePlan?.ratePlanName ?? reservation.ratePlanCode,
+            };
         } catch (error) {
             if (error instanceof Error) throw new Error(error.message);
             throw new Error('Internal Server Error');

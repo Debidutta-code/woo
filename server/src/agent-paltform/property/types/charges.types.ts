@@ -1,31 +1,30 @@
-import { CurrencyCode } from "../../../tax-system/interfaces/tourist-tax.type"
+import { CurrencyCode } from '../../../tax-system/interfaces/tourist-tax.type';
 
 export interface ICharges {
-  propertyCode:string
-  ratePlanName:string
-  ratePlanCode:string
-  roomTypeCode:string
-  roomTypeName:string
-  currencyCode:CurrencyCode
-  date:Date
-  isAvailable:boolean
-  // Days of week applicability
+    propertyCode: string;
+    ratePlanName: string;
+    ratePlanCode: string;
+    roomTypeCode: string;
+    roomTypeName: string;
+    currencyCode: CurrencyCode;
+    date: Date;
+    isAvailable: boolean;
+    // Days of week applicability
 
-  isClosedToArrival:boolean
-  isClosedToDeparture:boolean
-  restrictionNotes:string|null
+    isClosedToArrival: boolean;
+    isClosedToDeparture: boolean;
+    restrictionNotes: string | null;
 
-  // Relations
-  baseGuestAmounts:IBaseByGuest[]
-  additionalGuestAmounts:IChargeAdditionalGuest[]
-
+    // Relations
+    baseGuestAmounts: IBaseByGuest[];
+    additionalGuestAmounts: IChargeAdditionalGuest[];
 }
 
-export interface IBaseByGuest{
-    amountBeforeTax:any
-  numberOfGuests:number
+export interface IBaseByGuest {
+    amountBeforeTax: any;
+    numberOfGuests: number;
 }
-export interface IChargeAdditionalGuest{
-    ageQualifyingCode:string
-  amount:any
+export interface IChargeAdditionalGuest {
+    ageQualifyingCode: string;
+    amount: any;
 }

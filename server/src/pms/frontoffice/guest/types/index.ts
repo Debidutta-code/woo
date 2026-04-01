@@ -1,8 +1,8 @@
-import {GuestType,IAddGuestDocument,ICGuest,IGuests,IdentityType} from "./guest.type";
-export{
+import {
     GuestType,
     IAddGuestDocument,
     ICGuest,
     IGuests,
-    IdentityType
-}
+    IdentityType,
+} from './guest.type';
+export { GuestType, IAddGuestDocument, ICGuest, IGuests, IdentityType };

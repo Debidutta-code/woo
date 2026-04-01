@@ -1,14 +1,20 @@
-export const generateOTPEmailTemplate = (otp: string, purpose: string, email?: string): string => {
-    const purposeText = {
-        email_verification: "Email Verification",
-        password_reset: "Password Reset",
-        login: "Login Verification",
-    }[purpose] || "Verification";
+export const generateOTPEmailTemplate = (
+    otp: string,
+    purpose: string,
+    email?: string
+): string => {
+    const purposeText =
+        {
+            email_verification: 'Email Verification',
+            password_reset: 'Password Reset',
+            login: 'Login Verification',
+        }[purpose] || 'Verification';
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const resetLink = purpose === "password_reset" && email 
-        ? `${frontendUrl}/forgot-password?email=${encodeURIComponent(email)}&otp=${otp}&verified=true`
-        : "";
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetLink =
+        purpose === 'password_reset' && email
+            ? `${frontendUrl}/forgot-password?email=${encodeURIComponent(email)}&otp=${otp}&verified=true`
+            : '';
 
     return `
         <!DOCTYPE html>
@@ -16,7 +22,7 @@ export const generateOTPEmailTemplate = (otp: string, purpose: string, email?: s
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${purposeText} - RevChill </title>
+            <title>${purposeText} - Woohoo Trip </title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -97,7 +103,7 @@ export const generateOTPEmailTemplate = (otp: string, purpose: string, email?: s
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="logo">RevChill</div>
+                    <div class="logo">Woohoo Trip</div>
                     <h2>${purposeText}</h2>
                 </div>
                 
@@ -106,7 +112,9 @@ export const generateOTPEmailTemplate = (otp: string, purpose: string, email?: s
                     <p>You requested a ${purposeText.toLowerCase()}. ${resetLink ? 'Click the button below to reset your password:' : 'Please use the following OTP code:'}</p>
                 </div>
                 
-                ${resetLink ? `
+                ${
+                    resetLink
+                        ? `
                 <div class="button-container">
                     <a href="${resetLink}" class="reset-button">Reset Password</a>
                 </div>
@@ -115,7 +123,9 @@ export const generateOTPEmailTemplate = (otp: string, purpose: string, email?: s
                     <p style="margin: 10px 0;">- OR -</p>
                     <p style="font-size: 14px; color: #666;">Use the OTP code below</p>
                 </div>
-                ` : ''}
+                `
+                        : ''
+                }
                 
                 <div class="otp-box">
                     ${otp}
@@ -127,11 +137,11 @@ export const generateOTPEmailTemplate = (otp: string, purpose: string, email?: s
                 </div>
                 
                 <div class="warning">
-                    <strong>Security Notice:</strong> Never share this OTP with anyone. RevChill staff will never ask for your OTP.
+                    <strong>Security Notice:</strong> Never share this OTP with anyone. Woohoo Trip staff will never ask for your OTP.
                 </div>
                 
                 <div class="footer">
-                    <p>© ${new Date().getFullYear()} RevChill. All rights reserved.</p>
+                    <p>© ${new Date().getFullYear()} Woohoo Trip. All rights reserved.</p>
                     <p>This is an automated email, please do not reply.</p>
                 </div>
             </div>
@@ -147,7 +157,7 @@ export const generateWelcomeEmailTemplate = (name: string): string => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Welcome to RevChill</title>
+            <title>Welcome to Woohoo Trip</title>
             <style>
                 body {
                     font-family: Arial, sans-serif;
@@ -186,20 +196,20 @@ export const generateWelcomeEmailTemplate = (name: string): string => {
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="logo">RevChill</div>
+                    <div class="logo">Woohoo Trip</div>
                     <h2>Welcome Aboard!</h2>
                 </div>
                 
                 <div class="content">
                     <p>Dear ${name},</p>
-                    <p>Welcome to RevChill! We're excited to have you on board.</p>
+                    <p>Welcome to Woohoo Trip! We're excited to have you on board.</p>
                     <p>Your account has been successfully verified and you can now access all features of our property management system.</p>
                     <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-                    <p>Best regards,<br>The RevChill Team</p>
+                    <p>Best regards,<br>The Woohoo Trip Team</p>
                 </div>
                 
                 <div class="footer">
-                    <p>© ${new Date().getFullYear()} RevChill. All rights reserved.</p>
+                    <p>© ${new Date().getFullYear()} Woohoo Trip. All rights reserved.</p>
                 </div>
             </div>
         </body>

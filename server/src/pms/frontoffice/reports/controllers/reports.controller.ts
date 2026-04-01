@@ -124,7 +124,8 @@ export class ReportsController {
                 {
                     type: ReportType.GUEST,
                     name: 'Guest Report',
-                    description: 'List of all guests with their booking history',
+                    description:
+                        'List of all guests with their booking history',
                 },
                 {
                     type: ReportType.RESERVATION,
@@ -175,9 +176,7 @@ export class ReportsController {
                 return;
             }
 
-            if (
-                !Object.values(ReportType).includes(reportType as ReportType)
-            ) {
+            if (!Object.values(ReportType).includes(reportType as ReportType)) {
                 res.status(400).json(errorResponse('Invalid report type'));
                 return;
             }

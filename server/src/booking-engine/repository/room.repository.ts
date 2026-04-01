@@ -21,7 +21,7 @@ export class RoomBookingRepository {
                                 loyaltyConditions: {
                                     where: {
                                         isActive: true,
-                                        isDeleted: false
+                                        isDeleted: false,
                                     },
                                 },
                                 LoyaltyProgramFieldConfig: true,
@@ -32,7 +32,7 @@ export class RoomBookingRepository {
                 },
                 propertyVideos: true,
                 propertyRooms: {
-                    orderBy:[{ priority: 'asc' }],
+                    orderBy: [{ priority: 'asc' }],
                     where: { isDeleted: false, available: true },
                     include: {
                         roomAmenities: { include: { amenity: true } },
@@ -66,7 +66,10 @@ export class RoomBookingRepository {
             },
         });
     }
-    public static async getPromoCodeByPropertyAndCode(propertyId: string, code: string) {
+    public static async getPromoCodeByPropertyAndCode(
+        propertyId: string,
+        code: string
+    ) {
         return prisma.promoCode.findUnique({
             where: { code, propertyId, isDeleted: false },
         });
@@ -173,8 +176,6 @@ export class RoomBookingRepository {
 
         const dayField = dayApplicability[dayOfWeek];
 
-
-
         return prisma.promotion.findMany({
             where: {
                 propertyId,
@@ -280,7 +281,10 @@ export class RoomBookingRepository {
             where: { roomId },
         });
     }
-    public static async getBookingOffset(ratePlanId: string, checkInDate: Date) {
+    public static async getBookingOffset(
+        ratePlanId: string,
+        checkInDate: Date
+    ) {
         return prisma.bookingOffset.findFirst({
             where: {
                 ratePlanId,

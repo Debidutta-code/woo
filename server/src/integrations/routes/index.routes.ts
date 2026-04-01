@@ -5,5 +5,5 @@ import rateTigerRoute from '../rate-tiger/routes/rate-tiger.routes';
 
 const integrationRouter = Router();
 
-integrationRouter.use("/rate-tiger",rateTigerRoute)
+integrationRouter.use('/rate-tiger', rateTigerRoute);
 export default integrationRouter;

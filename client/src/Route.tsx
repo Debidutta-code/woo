@@ -62,6 +62,7 @@ import PropertyAgenciesPage from "./pages/property-agencies/PropertyAgenciesPage
 import AgencyReservationsPage from "./pages/property-agencies/AgencyReservationsPage.tsx";
 import BookingOffset from "./pages/booking-offset/BookingOffset.tsx";
 import CustomId from "./pages/property/custom/Custom.tsx";
+import DynamicPricing from "./pages/dynamic-pricing/Dynamic-Pricing.tsx";
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -133,7 +134,7 @@ export const router = createBrowserRouter(
         <Route path="tax-system/:propertyId" element={<TaxSystem />} />
         <Route path="start-stop-sell/:propertyId" element={<StartStopSell />} />
         <Route path="booking-offset/:propertyId" element={<BookingOffset />} />
-
+        <Route path="dynamic-pricing/:propertyId" element={<DynamicPricing />} />
         <Route
           path="cta-ctd/:propertyId"
           element={<RestrictionsPageWrapper />}

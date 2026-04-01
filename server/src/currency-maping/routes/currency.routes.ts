@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import CurrencyController from '../controllers/currency.controller';
-import { currencyQueue } from '../../index'; 
+import { currencyQueue } from '../../index';
 
 const router = Router();
 
@@ -8,10 +8,25 @@ const router = Router();
 const currencyController = new CurrencyController(currencyQueue);
 
 router.get('/rates', currencyController.getAllRates.bind(currencyController));
-router.get('/rates/:currency', currencyController.getCurrencyRate.bind(currencyController));
-router.get('/rates-hash', currencyController.getAllRatesFromHash.bind(currencyController));
-router.post('/fetch', currencyController.triggerManualFetch.bind(currencyController));
-router.get('/queue-status', currencyController.getQueueStatus.bind(currencyController));
-router.get('/metadata', currencyController.getMetadata.bind(currencyController));
+router.get(
+    '/rates/:currency',
+    currencyController.getCurrencyRate.bind(currencyController)
+);
+router.get(
+    '/rates-hash',
+    currencyController.getAllRatesFromHash.bind(currencyController)
+);
+router.post(
+    '/fetch',
+    currencyController.triggerManualFetch.bind(currencyController)
+);
+router.get(
+    '/queue-status',
+    currencyController.getQueueStatus.bind(currencyController)
+);
+router.get(
+    '/metadata',
+    currencyController.getMetadata.bind(currencyController)
+);
 
 export default router;

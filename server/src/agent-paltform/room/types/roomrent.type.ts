@@ -14,7 +14,7 @@ export interface IAgentPricingResponse {
     numberOfNights: number;
     baseRatePerNight: number;
     additionalGuestCharges: number;
-    
+
     breakdown: {
         totalBaseAmount: number;
         totalAdditionalCharges: number;
@@ -28,22 +28,22 @@ export interface IAgentPricingResponse {
     };
 
     dailyBreakdown: IDailyBreakdown[];
-    
+
     availableRooms: number;
     requestedRooms: number;
-    
+
     includedAddons: IIncludedAddon[];
-    
+
     agencyCommission: {
         commissionType: 'percentage' | 'fixed';
         commissionValue: number;
         commissionAmount: number;
         commissionCurrency: string;
     };
-    
+
     tax: ITaxDetail[];
     totalTax: number;
-    
+
     priceAfterTax: number;
 }
 

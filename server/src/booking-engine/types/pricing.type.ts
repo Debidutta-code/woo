@@ -20,7 +20,6 @@ import { IPromotion, ITouristTax } from './room.type';
 import { IBookingOffset } from '../../ari/types';
 import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
 
-
 export interface ICustomizableDeal {
     id: string;
     propertyId: string;
@@ -181,8 +180,7 @@ export interface ISelectedAddonsS {
     availability: {
         date: Date;
         quantity: number;
-    }[]
-
+    }[];
 }
 export interface ISelectedAddonsR {
     addOnId: string;
@@ -194,8 +192,7 @@ export interface IIncludedAddons {
 }
 export interface ISelectedPromotion {
     id: string;
-    promotionType: "mlos" | "normal"
-
+    promotionType: 'mlos' | 'normal';
 }
 export interface PriceBrakeDown {
     totalAmount: number;
@@ -225,7 +222,6 @@ export interface DailyPriceBrakeDown {
     totalAmount: number;
     currencyCode: CurrencyCode;
     totalDailyTaxedAmount: number;
-
 }
 export interface TaxBrakeDown {
     name: string;
@@ -250,9 +246,8 @@ export interface PromotionBrakeDown {
     discountValue: number;
     currencyCode: CurrencyCode | null;
     discountAmount: number;
-    restrictionType: "increase" | "decrease" | "payLater"
-    type: "user-applied" | "auto-applied"
-
+    restrictionType: 'increase' | 'decrease' | 'payLater';
+    type: 'user-applied' | 'auto-applied';
 }
 export interface IRoomDetails {
     adults: number;
