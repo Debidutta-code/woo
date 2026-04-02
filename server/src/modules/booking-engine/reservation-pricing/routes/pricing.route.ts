@@ -4,7 +4,7 @@ import { attachPropertyDetails } from '../../../../common/middlewares';
 const pricingRouter = Router();
 const pricingController = new PricingController();
 
-pricingRouter.route('/get-price').post(
+pricingRouter.route('/').post(
     attachPropertyDetails({
         identifierType: 'code',
         key: 'propertyCode',

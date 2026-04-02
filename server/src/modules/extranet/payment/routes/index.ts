@@ -2,7 +2,6 @@
 import { Router } from 'express';
 import { NGeniusRoutes } from './ngenius.routes';
 import { WebhookRoutes } from './webhook.routes';
-import { fikafiPaymentRoutes } from './fikafi.routes';
 
 const router = Router();
 

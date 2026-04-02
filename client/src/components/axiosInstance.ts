@@ -9,7 +9,7 @@ const createAxiosInstance = (): AxiosInstance => {
   }
 
   const axiosInstance = axios.create({
-    baseURL: baseUrl,
+    baseURL: `${baseUrl}/extranet`,
     withCredentials: true
   });
   return axiosInstance;

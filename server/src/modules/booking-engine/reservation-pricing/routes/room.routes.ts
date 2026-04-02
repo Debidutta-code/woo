@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { RoomBookingController } from '../controllers';
-import { pricingRouter } from './pricing.route';
 import { attachPropertyDetails } from '../../../../common/middlewares';
-export const BookingEngineRoutes = Router();
+const fetchRooms = Router();
 
-BookingEngineRoutes.post(
-    '/fetch-rooms',
+fetchRooms.post(
+    '/',
     attachPropertyDetails({
         identifierType: 'code',
         key: 'propertyCode',
@@ -13,4 +12,5 @@ BookingEngineRoutes.post(
     }),
     RoomBookingController.fetchRooms
 );
-BookingEngineRoutes.use('/pricing', pricingRouter);
+
+export {fetchRooms}
