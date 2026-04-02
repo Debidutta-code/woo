@@ -1,6 +1,6 @@
 // services/price-update.service.ts
 
-import { CurrencyCode } from '../../../../modules/extranet/tax-system/interfaces/tourist-tax.type';
+import { CurrencyCode } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 import { PriceUpdateDao } from '../dao/price-update.dao';
 import {
     RateTigerPriceUpdateRQ,

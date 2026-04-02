@@ -1,7 +1,7 @@
 // dao/price-update.dao.ts
 
 import { prisma } from '../../../../config';
-import { CurrencyCode } from '../../../../modules/extranet/tax-system/interfaces/tourist-tax.type';
+import { CurrencyCode } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 
 export class PriceUpdateDao {
     public static async propertyExists(propertyCode: string): Promise<boolean> {

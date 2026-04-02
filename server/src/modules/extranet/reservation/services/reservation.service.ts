@@ -23,8 +23,8 @@ import {
     ReservationPromotionRepository,
 } from '../repository/reservation.repository';
 import { LoyaltyGuestRepository } from '../../loyalty/repository';
-import { RTIntegrationDao } from '../../../../infrastructure/integrations/rate-tiger/dao/rt-integration.dao';
-import { RTReservationPushService } from '../../../../infrastructure/integrations/rate-tiger/services/rt-reservation-push.service';
+import { RTIntegrationDao } from '../../../integrations/rate-tiger/dao/rt-integration.dao';
+import { RTReservationPushService } from '../../../integrations/rate-tiger/services/rt-reservation-push.service';
 import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
 import { BookingStatus } from '../types/reservation.type';
 import { ngeniusService } from '../../payment/services/ngenius.service';

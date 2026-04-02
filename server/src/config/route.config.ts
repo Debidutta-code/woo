@@ -7,7 +7,7 @@ import { PaymentRoutes } from '../modules/extranet/payment/routes';
 
 import { loyaltyRouter } from '../modules/extranet/loyalty/routes/loyalty.routes';
 import promotionRouter from '../modules/extranet/promotions/routes';
-import integrationRouter from '../infrastructure/integrations/routes/index.routes';
+import integrationRouter from '../modules/integrations/routes/index.routes';
 import platformRouter from '../platforms/routes/platform.routes';
 import { fikafiPaymentRoutes } from '../modules/extranet/payment/routes/fikafi.routes';
 import { managementRoute } from '../modules/utils-management/routes';
