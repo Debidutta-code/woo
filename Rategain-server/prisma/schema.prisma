@@ -260,3 +260,113 @@ model RateOffer {
   @@index([roomRateId])
   @@map("rate_offers")
 }
+model Reservation {
+  id                 String   @id @default(uuid())
+  demandBookingId    String   @unique @map("demand_booking_id")
+  confirmationNumber String?  @unique @map("confirmation_number")
+  reservationId      String?  @unique @map("reservation_id")
+  cancellationNumber String?  @map("cancellation_number")
+
+  propertyID   String  @map("property_id")
+  propertyCode String  @map("property_code")
+  brandCode    String  @map("brand_code")
+  hotelName    String? @map("hotel_name")
+
+  checkin  String
+  checkout String
+
+  currency      String
+  totalNet      Decimal  @map("total_net")        @db.Decimal(10, 2)
+  msp           Decimal? @map("msp")              @db.Decimal(10, 2)
+  commissionAmt Decimal? @map("commission_amt")   @db.Decimal(10, 2)
+  commissionPct Decimal? @map("commission_pct")   @db.Decimal(6, 2)
+
+  status String @default("PENDING")
+
+  guestFirstName String? @map("guest_first_name")
+  guestLastName  String? @map("guest_last_name")
+  guestEmail     String? @map("guest_email")
+  guestPhone     String? @map("guest_phone")
+
+  canCancel       Boolean? @map("can_cancel")
+  canModify       Boolean? @map("can_modify")
+  isNonRefundable Boolean? @map("is_non_refundable")
+
+  voucherRemark String? @map("voucher_remark")
+
+  preCheckSnapshot Json? @map("pre_check_snapshot")
+  commitSnapshot   Json? @map("commit_snapshot")
+  cancelSnapshot   Json? @map("cancel_snapshot")
+
+  rooms               ReservationRoom[]
+  cancellationPolicies ReservationCancellationPolicy[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@index([confirmationNumber])
+  @@index([reservationId])
+  @@index([demandBookingId])
+  @@index([propertyCode])
+  @@index([status])
+  @@map("reservations")
+}
+
+model ReservationCancellationPolicy {
+  id            String @id @default(uuid())
+  reservationId String @map("reservation_id")
+
+  amount          Decimal   @db.Decimal(10, 2)
+  windowFrom      DateTime  @map("window_from")
+  windowTo        DateTime? @map("window_to")
+  amendCharge     Decimal?  @map("amend_charge")   @db.Decimal(10, 2)
+  amendRestricted Boolean?  @map("amend_restricted")
+  cancelRestricted Boolean? @map("cancel_restricted")
+  noShowPolicy    Boolean?  @map("no_show_policy")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@map("reservation_cancellation_policies")
+}
+
+model ReservationRoom {
+  id            String @id @default(uuid())
+  reservationId String @map("reservation_id")
+
+  roomCode          String  @map("room_code")
+  roomName          String? @map("room_name")
+  roomTypeCode      String  @map("room_type_code")
+  numberOfRooms     Int     @map("number_of_rooms")
+  numberOfAdults    Int     @map("number_of_adults")
+  numberOfChild     Int     @map("number_of_child")
+  boardCode         String? @map("board_code")
+  boardName         String? @map("board_name")
+  roomRate          Decimal @map("room_rate")        @db.Decimal(10, 2)
+  rateKey           String  @map("rate_key")
+  allocationDetails String? @map("allocation_details")
+  status            String?
+
+  paxes ReservationPax[]
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+  @@map("reservation_rooms")
+}
+
+model ReservationPax {
+  id                String @id @default(uuid())
+  reservationRoomId String @map("reservation_room_id")
+
+  roomId  Int
+  type    String
+  name    String?
+  surname String?
+  age     Int?
+
+  reservationRoom ReservationRoom @relation(fields: [reservationRoomId], references: [id], onDelete: Cascade)
+
+  @@index([reservationRoomId])
+  @@map("reservation_paxes")
+}

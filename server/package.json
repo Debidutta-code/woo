@@ -31,6 +31,7 @@
         "@sendgrid/mail": "^8.1.5",
         "@types/html-pdf-node": "^1.0.2",
         "@types/socket.io": "^3.0.1",
+        "axios": "^1.14.0",
         "bcryptjs": "^2.4.3",
         "bullmq": "^5.70.4",
         "cookie-parser": "^1.4.7",

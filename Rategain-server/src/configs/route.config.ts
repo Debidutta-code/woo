@@ -1,5 +1,5 @@
 import { Express, NextFunction, Request, Response, Router } from 'express';
-import { rateGainRouter } from '../rategain/routes';
+import { rateGainRouter, reservationRouter } from '../rategain/routes';
 import { propertyRouter } from '../property/routes';
 
 export async function initializeExpressRoutes({ app }: { app: Express }) {
