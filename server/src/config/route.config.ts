@@ -1,38 +1,31 @@
 import { Express, NextFunction, Request, Response, Router } from 'express';
-import { AppError } from '../utils/error.util';
+import PropertyManagement from '../modules/property-management/routes/index.route';
+import { PolicyRoute } from '../modules/extranet/policies/routes';
+import { TaxSystemRouter } from '../modules/extranet/tax-system/routes';
+import { BookingEngineRoutes } from '../modules/extranet/reservation-pricing/routes';
+import { PaymentRoutes } from '../modules/extranet/payment/routes';
 
-// // Route imports
-import {
-    AuthRouter,
-    CreationRouter,
-    UserRouter,
-    initRouter,
-} from '../auth/routes';
-import { AccessControlRoutes } from '../access-control/routes';
-import PropertyManagement from '../property-management/routes/index.route';
-import { AriRouter } from '../ari/routes';
-import ActivityRouter from '../logs/routes/activity.routes';
-import { PolicyRoute } from '../policies/routes';
-import { promoCodeRoutes } from '../promocode/routes';
-import { TaxSystemRouter } from '../tax-system/routes';
-import { AddonsRoute } from '../add-on/routes';
-import { pmsRoute } from '../pms/routes';
-import { BookingEngineRoutes } from '../booking-engine/routes';
-import { dashboardRouter } from '../dashboard/routes';
-// import EmailService from '../sms-email-service/routes/route';
-import { PaymentRoutes } from '../payment/routes';
-
-import { agencyMainRouter } from '../agency/routes/index.route';
-import { loyaltyRouter } from '../loyalty/routes/loyalty.routes';
-import promotionRouter from '../promotions/routes';
-import { agentPlatformRouter } from '../agent-paltform/routes';
-import integrationRouter from '../integrations/routes/index.routes';
+import { loyaltyRouter } from '../modules/extranet/loyalty/routes/loyalty.routes';
+import promotionRouter from '../modules/extranet/promotions/routes';
+import integrationRouter from '../infrastructure/integrations/routes/index.routes';
 import platformRouter from '../platforms/routes/platform.routes';
-import { currencyRoutes } from '../currency-maping/routes';
-import { fikafiPaymentRoutes } from '../payment/routes/fikafi.routes';
-import { managementRoute } from '../utils-management/routes';
-import { dynamicPricingRouter } from '../dynamic-pricing/routes';
-import { uploadRouter } from '../uploads/routes';
+import { fikafiPaymentRoutes } from '../modules/extranet/payment/routes/fikafi.routes';
+import { managementRoute } from '../modules/utils-management/routes';
+import { uploadRouter } from '../infrastructure/uploads/routes';
+import { AuthRouter, CreationRouter, initRouter, UserRouter } from '../modules/extranet/auth/routes';
+import { dashboardRouter } from '../modules/extranet/dashboard/routes';
+import { AccessControlRoutes } from '../modules/extranet/access-control/routes';
+import { agentPlatformRouter } from '../modules/agent-paltform/routes';
+import { AriRouter } from '../modules/extranet/ari/routes';
+import { dynamicPricingRouter } from '../modules/extranet/dynamic-pricing/routes';
+import { AddonsRoute } from '../modules/extranet/add-on/routes';
+import { agencyMainRouter } from '../modules/extranet/agency/routes/index.route';
+import { AppError } from '../common/utils/error.util';
+import ActivityRouter from '../modules/logs/routes/activity.routes';
+import { currencyRoutes } from '../infrastructure/currency-maping/routes';
+import { promoCodeRoutes } from '../modules/extranet/promocode/routes';
+import { reservationRoute } from '../modules/extranet/reservation/routes';
+import { reportsRouter } from '../modules/extranet/reports/routes/reports.route';
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
     app.head('/status', (_, res: Response) => res.status(200).end());
@@ -67,14 +60,16 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/promo-codes', promoCodeRoutes);
     apiV1Router.use('/tax-system', TaxSystemRouter);
     apiV1Router.use('/addon', AddonsRoute);
-    apiV1Router.use('/pms', pmsRoute);
+    apiV1Router.use('/reservations', reservationRoute);
+apiV1Router.use('/reports', reportsRouter);
+
     apiV1Router.use('/booking-engine', BookingEngineRoutes);
     apiV1Router.use('/agency', agencyMainRouter);
     apiV1Router.use('/promotions', promotionRouter);
     apiV1Router.use('/loyalty', loyaltyRouter);
     apiV1Router.use('/fikafi', fikafiPaymentRoutes);
     apiV1Router.use('/utils-management', managementRoute);
-    apiV1Router.use('/upload', uploadRouter);
+    apiV1Router.use("/upload",uploadRouter)
 
     apiV1Router.use('/payment', PaymentRoutes);
     apiV1Router.use('/integrations', integrationRouter);

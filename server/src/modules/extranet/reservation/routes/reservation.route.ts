@@ -1,0 +1,52 @@
+import { Router } from 'express';
+
+import { ReservationController } from '../controllers';
+import { attachPropertyDetails, protect } from '../../../../common/middlewares';
+
+const reservationRoute = Router();
+const reservationController = new ReservationController();
+
+reservationRoute.route('/').post(
+    attachPropertyDetails({
+        identifierType: 'code',
+        key: 'data.bookingDetails.propertyCode',
+        source: 'body',
+    }),
+    reservationController.createReservation.bind(reservationController)
+);
+
+reservationRoute
+    .route('/date-range')
+    .get(
+        protect,
+        reservationController.getAllReservations.bind(reservationController)
+    );
+reservationRoute
+    .route('/arrivals')
+    .get(
+        protect,
+        reservationController.getArrivalsForADate.bind(reservationController)
+    );
+reservationRoute
+    .route('/departures')
+    .get(
+        protect,
+        reservationController.getDeparturesForADate.bind(reservationController)
+    );
+
+reservationRoute
+    .route('/cancel/:reservationId')
+    .put(reservationController.cancelReservation.bind(reservationController));
+reservationRoute.route('/available-rooms/:bookingCode');
+reservationRoute
+    .route('/:reservationCode')
+    .get(
+        reservationController.getReservationByCode.bind(reservationController)
+    );
+reservationRoute
+    .route('/update/:reservationCode')
+    .patch(reservationController.updateReservation.bind(reservationController));
+reservationRoute
+    .route('/no-show/:reservationId')
+    .patch(reservationController.noShowReservation.bind(reservationController));
+export { reservationRoute };

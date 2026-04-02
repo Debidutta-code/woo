@@ -1,0 +1,14 @@
+import { attachPropertyDetails } from '../../../../common/middlewares';
+import { RoomRentCalculationController } from '../controllers';
+import { Router } from 'express';
+
+export const roomRentPriceRouter = Router();
+
+roomRentPriceRouter.route('/get-price').post(
+    attachPropertyDetails({
+        identifierType: 'code',
+        key: 'propertyCode',
+        source: 'body',
+    }),
+    RoomRentCalculationController.getRoomRentController
+);
