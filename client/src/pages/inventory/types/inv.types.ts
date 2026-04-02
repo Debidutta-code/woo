@@ -19,7 +19,10 @@ export interface SelectedRoom {
     pushFromCalender?: boolean; // Add this
 
 }
-
+export interface IRoomDateAvailability {
+    date: string;
+    availability: number;
+}
 
 export interface Loader {
     isLoading: boolean;

@@ -172,5 +172,33 @@ class InventoryController {
                 .json(errorResponse('Internal Server Error', error?.message));
         }
     }
+    public static async getRoomAvailibility(req: PropertyCustomRequest, res: Response) {
+    try {
+      const { roomType } = req.query;
+
+      if (!roomType) {
+        return res
+          .status(400)
+          .json(errorResponse('roomType is required'));
+      }
+      const propertyCode = req.property?.propertyCode;
+      if (!propertyCode) {
+        return res
+          .status(400)
+          .json(errorResponse('Property Not Found'));
+      }
+
+      const serRes = await InventoryServices.getRoomAvailabilityService(
+        propertyCode,
+        roomType as string,
+      );
+      const resStatus = serRes?.success ? 200 : 400;
+      return res.status(resStatus).json(serRes);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json(errorResponse('Internal Server Error', error?.message));
+    }
+  }
 }
 export { InventoryController };

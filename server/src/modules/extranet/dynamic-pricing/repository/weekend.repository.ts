@@ -1,5 +1,5 @@
 import { prisma } from '../../../../config';
-import { ICWeekendDynamicPricing, IWeekendDynamicPricing } from '../types';
+import { ICWeekendDynamicPricing, IWeekendDynamicPricing, WeekEndDays } from '../types';
 
 export class WeekendDynamicPricingRepository {
     public async createWeekendDynamicPricing(
@@ -50,6 +50,7 @@ export class WeekendDynamicPricingRepository {
     }
     public async weekendDynamicPricingByDateRange(
         ids: string[],
+        weekendDays: WeekEndDays[],
         roomId: string,
         startDate: Date,
         endDate: Date
@@ -58,14 +59,17 @@ export class WeekendDynamicPricingRepository {
             return await prisma.weekendDynamicPricing.findMany({
                 where: {
                     roomId,
+                    weekendDays: {
+                        hasSome: weekendDays,
+                    },
                     id: {
                         notIn: ids,
                     },
                     startDate: {
-                        gte: startDate,
+                        lte: endDate,
                     },
                     endDate: {
-                        lte: endDate,
+                        gte: startDate,
                     },
                 },
             });

@@ -19,6 +19,7 @@ import { getAllRoles, getAccessByRole, createNewRole, modifyStaff, deleteRole } 
 import Loader from '@/components/Loader/Loader';
 import toast from 'react-hot-toast';
 import { capitalizeFirstLetter } from '@/lib/utils';
+// import { useAppSelector } from '@/redux/hooks';
 
 export default function AccessControlPage() {
   const [roles, setRoles] = useState<IAccess[]>([]);

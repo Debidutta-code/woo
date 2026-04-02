@@ -1,5 +1,5 @@
 import { prisma } from '../../../../config';
-import { ICSeasonalDynamicPricing, ISeasonalDynamicPricing } from '../types';
+import { ICSeasonalDynamicPricing, ISeasonalDynamicPricing, SeasonalDynamicPricingEnumType } from '../types';
 
 export class SeasonalDynamicPricingRepository {
     public async createSeasonalDynamicPricing(
@@ -49,7 +49,7 @@ export class SeasonalDynamicPricingRepository {
         }
     }
     public async seasonalDynamicPricingByDateRange(
-        ids: string[],
+        seasonalType: SeasonalDynamicPricingEnumType,
         roomId: string,
         startDate: Date,
         endDate: Date
@@ -58,14 +58,12 @@ export class SeasonalDynamicPricingRepository {
             return await prisma.seasonalDynamicPricing.findMany({
                 where: {
                     roomId,
-                    id: {
-                        notIn: ids,
-                    },
+                    periodType: seasonalType,
                     startDate: {
-                        gte: startDate,
+                        lte: endDate,
                     },
                     endDate: {
-                        lte: endDate,
+                        gte: startDate,
                     },
                 },
             });

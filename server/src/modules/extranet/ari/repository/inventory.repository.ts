@@ -323,6 +323,26 @@ class InventoryRepository {
             throw new Error('Error checking inventory availability');
         }
     }
+    public static async getRoomAvailability(propertyCode: string,
+        roomTypeCode: string
+    ) {
+        try {
+            const inventories = await prisma.inventory.findMany({
+                where: {
+                    propertyCode,
+                    roomTypeCode,
+
+                },
+                select: {
+                    date: true,
+                    availability: true
+                }
+            });
+            return inventories;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
 }
 
 export default InventoryRepository;

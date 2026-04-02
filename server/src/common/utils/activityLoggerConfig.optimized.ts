@@ -29,7 +29,7 @@ interface RoutePattern {
 export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     // ==================== AUTH ====================
     {
-        pattern: /\/api\/v1\/auth\/login$/,
+        pattern: /\/api\/v1\/extranet\/auth\/login$/,
         method: 'POST',
         config: createAuthConfig(
             ActivityAction.LOGIN,
@@ -44,7 +44,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/auth\/logout$/,
+        pattern: /\/api\/v1\/extranet\/auth\/logout$/,
         method: 'POST',
         config: createAuthConfig(
             ActivityAction.LOGOUT,
@@ -55,12 +55,12 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== USER ====================
     {
-        pattern: /\/api\/v1\/auth\/create-user$/,
+        pattern: /\/api\/v1\/extranet\/auth\/create-user$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.USER, 'email')[0],
     },
     {
-        pattern: /\/api\/v1\/user\/forgot-password$/,
+        pattern: /\/api\/v1\/extranet\/user\/forgot-password$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -73,7 +73,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/user\/verify-reset-otp$/,
+        pattern: /\/api\/v1\/extranet\/user\/verify-reset-otp$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -86,7 +86,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/user\/reset-password$/,
+        pattern: /\/api\/v1\/extranet\/user\/reset-password$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -99,7 +99,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/user\/assignUserToProperty$/,
+        pattern: /\/api\/v1\/extranet\/user\/assignUserToProperty$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -112,36 +112,36 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/user\/update\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/user\/update\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(ActivityEntity.USER, 'email')[1],
     },
     {
-        pattern: /\/api\/v1\/user\/delete\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/user\/delete\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.USER, 'email')[2],
     },
 
     // ==================== PROPERTY ====================
     {
-        pattern: /\/api\/v1\/property-management\/property$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.PROPERTY, 'propertyName')[0],
     },
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+$/,
         method: ['PUT', 'PATCH'],
         config: createCRUDConfig(ActivityEntity.PROPERTY, 'propertyName')[1],
     },
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.PROPERTY, 'propertyName')[2],
     },
 
     // Property Address
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/address$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/address$/,
         method: 'POST',
         config: createPropertySubResourceConfig(
             'address',
@@ -149,7 +149,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/address$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/address$/,
         method: 'PUT',
         config: createPropertySubResourceConfig(
             'address',
@@ -157,7 +157,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/address$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/address$/,
         method: 'DELETE',
         config: createPropertySubResourceConfig(
             'address',
@@ -167,7 +167,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // Property Amenity
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/amenity$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/amenity$/,
         method: 'POST',
         config: createPropertySubResourceConfig(
             'amenity',
@@ -175,7 +175,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/amenity$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/amenity$/,
         method: 'PUT',
         config: createPropertySubResourceConfig(
             'amenity',
@@ -183,7 +183,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/amenity$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/amenity$/,
         method: 'DELETE',
         config: createPropertySubResourceConfig(
             'amenity',
@@ -193,7 +193,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // Property Config
     {
-        pattern: /\/api\/v1\/property-management\/config\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/config\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -209,26 +209,26 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     // Property Videos
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/video\/property\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/video\/property\/[^/]+$/,
         method: 'POST',
         config: createVideoConfig('property', ActivityAction.CREATE),
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/video\/property\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/video\/property\/[^/]+$/,
         method: 'DELETE',
         config: createVideoConfig('property', ActivityAction.DELETE),
     },
 
     // ==================== ROOM ====================
     {
-        pattern: /\/api\/v1\/property-management\/property\/[^/]+\/room$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.ROOM, 'roomName')[0],
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/[^/]+\/room\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room\/[^/]+$/,
         method: 'GET',
         config: createSimpleConfig(
             ActivityAction.EXPORT,
@@ -242,13 +242,13 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/[^/]+\/room\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(ActivityEntity.ROOM, 'roomName')[1],
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/[^/]+\/room\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.ROOM, 'roomName')[2],
     },
@@ -256,19 +256,19 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     // Room Amenity
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/[^/]+\/room\/aminity\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room\/aminity\/[^/]+$/,
         method: 'POST',
         config: createRoomSubResourceConfig('amenity', ActivityAction.CREATE),
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/[^/]+\/room\/aminity\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room\/aminity\/[^/]+$/,
         method: 'PUT',
         config: createRoomSubResourceConfig('amenity', ActivityAction.UPDATE),
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/[^/]+\/room\/aminity\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/[^/]+\/room\/aminity\/[^/]+$/,
         method: 'DELETE',
         config: createRoomSubResourceConfig('amenity', ActivityAction.DELETE),
     },
@@ -276,20 +276,20 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     // Room Videos
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/video\/room\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/video\/room\/[^/]+$/,
         method: 'POST',
         config: createVideoConfig('room', ActivityAction.CREATE),
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/video\/room\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/video\/room\/[^/]+$/,
         method: 'DELETE',
         config: createVideoConfig('room', ActivityAction.DELETE),
     },
 
     // ==================== RESERVATION ====================
     {
-        pattern: /\/api\/v1\/reservation$/,
+        pattern: /\/api\/v1\/extranet\/reservation$/,
         method: 'POST',
         config: {
             action: ActivityAction.CREATE,
@@ -308,7 +308,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         },
     },
     {
-        pattern: /\/api\/v1\/reservation\/update\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/reservation\/update\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(
             ActivityEntity.RESERVATION,
@@ -316,7 +316,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         )[1],
     },
     {
-        pattern: /\/api\/v1\/reservation\/cancel\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/reservation\/cancel\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CANCEL,
@@ -329,7 +329,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/reservation\/no-show\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/reservation\/no-show\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -344,7 +344,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== PMS FRONT-OFFICE RESERVATIONS ====================
     {
-        pattern: /\/api\/v1\/pms\/front-office\/reservations$/,
+        pattern: /\/api\/v1\/extranet\/reservations$/,
         method: 'POST',
         config: {
             action: ActivityAction.CREATE,
@@ -363,7 +363,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         },
     },
     {
-        pattern: /\/api\/v1\/pms\/front-office\/reservations\/update\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/\/reservations\/update\/[^/]+$/,
         method: 'PATCH',
         config: createCRUDConfig(
             ActivityEntity.RESERVATION,
@@ -371,7 +371,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         )[1],
     },
     {
-        pattern: /\/api\/v1\/pms\/front-office\/reservations\/cancel\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/\/reservations\/cancel\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.CANCEL,
@@ -384,7 +384,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/pms\/front-office\/reservations\/no-show\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/\/reservations\/no-show\/[^/]+$/,
         method: 'PATCH',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -407,30 +407,21 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         method: 'POST',
         config: createCheckInOutConfig(ActivityAction.CHECKOUT),
     },
-    // {
-    //     pattern: /\/api\/v1\/booking-engine\/fetch-rooms$/,
-    //     method: 'POST',
-    //     config: createSimpleConfig(
-    //         ActivityAction.EXPORT,
-    //         ActivityEntity.ROOM,
-    //         (success) => success ? 'Available rooms fetched successfully' : 'Failed to fetch available rooms',
-    //         ['booking-engine', 'availability', 'export']
-    //     )
-    // },
+
 
     // ==================== PAYMENT ====================
     {
-        pattern: /\/api\/v1\/booking-engine\/payment$/,
+        pattern: /\/api\/v1\/extranet\/booking-engine\/payment$/,
         method: 'POST',
         config: createPaymentConfig(ActivityEntity.PAYMENT),
     },
     {
-        pattern: /\/api\/v1\/booking-engine\/refund$/,
+        pattern: /\/api\/v1\/extranet\/booking-engine\/refund$/,
         method: 'POST',
         config: createPaymentConfig(ActivityEntity.REFUND),
     },
     {
-        pattern: /\/api\/v1\/payment-details$/,
+        pattern: /\/api\/v1\/extranet\/payment-details$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -443,7 +434,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/payment-details$/,
+        pattern: /\/api\/v1\/extranet\/payment-details$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -458,7 +449,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== INVENTORY & PRICING ====================
     {
-        pattern: /\/api\/v1\/property-management\/inventory$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/inventory$/,
         method: ['POST', 'PUT'],
         config: {
             ...createSimpleConfig(
@@ -472,7 +463,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         },
     },
     {
-        pattern: /\/api\/v1\/ari\/inventory\/create\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/inventory\/create\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -485,7 +476,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/inventory\/map\/rateplan\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/inventory\/map\/rateplan\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -498,7 +489,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/inventory\/update\/price$/,
+        pattern: /\/api\/v1\/extranet\/ari\/inventory\/update\/price$/,
         method: 'PUT',
         config: {
             ...createSimpleConfig(
@@ -514,7 +505,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         },
     },
     {
-        pattern: /\/api\/v1\/ari\/inventory\/update-or-create\/charges$/,
+        pattern: /\/api\/v1\/extranet\/ari\/inventory\/update-or-create\/charges$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -527,7 +518,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/analysis\/calendar$/,
+        pattern: /\/api\/v1\/extranet\/ari\/analysis\/calendar$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.EXPORT,
@@ -540,7 +531,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/start-stop-sell\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/start-stop-sell\/[^/]+$/,
         method: 'PATCH',
         config: {
             ...createSimpleConfig(
@@ -558,22 +549,22 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== RATE PLAN ====================
     {
-        pattern: /\/api\/v1\/ari\/rate-plan$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.RATE_PLAN, 'name')[0],
     },
     {
-        pattern: /\/api\/v1\/ari\/rate-plan\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan\/[^/]+$/,
         method: ['PUT', 'PATCH'],
         config: createCRUDConfig(ActivityEntity.RATE_PLAN, 'name')[1],
     },
     {
-        pattern: /\/api\/v1\/ari\/rate-plan\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.RATE_PLAN, 'name')[2],
     },
     {
-        pattern: /\/api\/v1\/ari\/rate-plan\/add\/tax$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan\/add\/tax$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -586,7 +577,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/rate-plan\/remove\/tax$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan\/remove\/tax$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -599,7 +590,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/rate-plan-with-addon$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan-with-addon$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -612,7 +603,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/rate-plan-with-addon$/,
+        pattern: /\/api\/v1\/extranet\/ari\/rate-plan-with-addon$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -625,7 +616,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/cta-ctd\/apply$/,
+        pattern: /\/api\/v1\/extranet\/ari\/cta-ctd\/apply$/,
         method: 'POST',
         config: {
             ...createSimpleConfig(
@@ -641,22 +632,22 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         },
     },
     {
-        pattern: /\/api\/v1\/addon\/addons$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addons$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.ADDON, 'name')[0],
     },
     {
-        pattern: /\/api\/v1\/addon\/addons\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addons\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(ActivityEntity.ADDON, 'name')[1],
     },
     {
-        pattern: /\/api\/v1\/addon\/addons\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addons\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.ADDON, 'name')[2],
     },
     {
-        pattern: /\/api\/v1\/addon\/addon-datewise$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addon-datewise$/,
         method: 'POST',
         config: createCRUDConfig(
             ActivityEntity.ADDON_AVAILABILITY,
@@ -664,7 +655,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         )[0],
     },
     {
-        pattern: /\/api\/v1\/addon\/addon-datewise\/addon\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addon-datewise\/addon\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(
             ActivityEntity.ADDON_AVAILABILITY,
@@ -672,7 +663,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         )[1],
     },
     {
-        pattern: /\/api\/v1\/addon\/addon-datewise\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addon-datewise\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(
             ActivityEntity.ADDON_AVAILABILITY,
@@ -680,7 +671,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         )[1],
     },
     {
-        pattern: /\/api\/v1\/addon\/addon-datewise\/addon\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/addon\/addon-datewise\/addon\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(
             ActivityEntity.ADDON_AVAILABILITY,
@@ -788,7 +779,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== ACCESS CONTROL ====================
     {
-        pattern: /\/api\/v1\/access\/createNewRole$/,
+        pattern: /\/api\/v1\/extranet\/access\/createNewRole$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -801,7 +792,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/access\/modify\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/access\/modify\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -820,7 +811,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/access\/delete\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/access\/delete\/[^/]+$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.DELETE,
@@ -833,27 +824,27 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== TAX SYSTEM ====================
     {
-        pattern: /\/api\/v1\/tax-system\/rules$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/rules$/,
         method: 'POST',
         config: createTaxConfig('tax rule')[0],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/groups$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/groups$/,
         method: 'POST',
         config: createTaxConfig('tax group')[0],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/groups\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/groups\/[^/]+$/,
         method: 'PUT',
         config: createTaxConfig('tax group')[1],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/groups\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/groups\/[^/]+$/,
         method: 'DELETE',
         config: createTaxConfig('tax group')[2],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/groups\/[^/]+\/add-rules$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/groups\/[^/]+\/add-rules$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -866,7 +857,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/tax-system\/groups\/[^/]+\/remove-rules$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/groups\/[^/]+\/remove-rules$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -879,39 +870,39 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/tax-system\/rules$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/rules$/,
         method: 'POST',
         config: createTaxConfig('tax rule')[0],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/rules\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/rules\/[^/]+$/,
         method: 'PUT',
         config: createTaxConfig('tax rule')[1],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/rules\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/rules\/[^/]+$/,
         method: 'DELETE',
         config: createTaxConfig('tax rule')[2],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/tourist-taxes$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/tourist-taxes$/,
         method: 'POST',
         config: createTaxConfig('tourist tax')[0],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/tourist-taxes\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/tourist-taxes\/[^/]+$/,
         method: 'PUT',
         config: createTaxConfig('tourist tax')[1],
     },
     {
-        pattern: /\/api\/v1\/tax-system\/tourist-taxes\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/tax-system\/tourist-taxes\/[^/]+$/,
         method: 'DELETE',
         config: createTaxConfig('tourist tax')[2],
     },
 
     // ==================== LOYALTY ====================
     {
-        pattern: /\/api\/v1\/loyalty\/config$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/config$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -924,7 +915,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/guest$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/guest$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -937,7 +928,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/guest\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/guest\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -950,7 +941,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/guest\/register$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/guest\/register$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -965,61 +956,61 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // Creation Loyalty
     {
-        pattern: /\/api\/v1\/loyalty\/creation$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/creation$/,
         method: 'POST',
         config: createLoyaltyConfig('creation-loyalty')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/creation\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/creation\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('creation-loyalty')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/creation\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/creation\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('creation-loyalty')[2],
     },
 
     // Loyalty Condition
     {
-        pattern: /\/api\/v1\/loyalty\/condition$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/condition$/,
         method: 'POST',
         config: createLoyaltyConfig('condition')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/condition\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/condition\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('condition')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/condition\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/condition\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('condition')[2],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/condition\/special$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/condition\/special$/,
         method: 'POST',
         config: createLoyaltyConfig('special-condition')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/condition\/special\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/condition\/special\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('special-condition')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/condition\/special\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/condition\/special\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('special-condition')[2],
     },
 
     // Loyalty Field
     {
-        pattern: /\/api\/v1\/loyalty\/field$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/field$/,
         method: 'POST',
         config: createLoyaltyConfig('field')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/field\/update-many\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/field\/update-many\/[^/]+$/,
         method: 'PATCH',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1032,24 +1023,24 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/field\/[^/]+\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/field\/[^/]+\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('field')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/field\/[^/]+\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/field\/[^/]+\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('field')[2],
     },
 
     // Loyalty Program
     {
-        pattern: /\/api\/v1\/loyalty\/program$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program$/,
         method: 'POST',
         config: createLoyaltyConfig('program')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/[^/]+$/,
         method: 'GET',
         config: createSimpleConfig(
             ActivityAction.EXPORT,
@@ -1062,17 +1053,17 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('program')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('program')[2],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/creation\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/creation\/[^/]+$/,
         method: 'GET',
         config: createSimpleConfig(
             ActivityAction.EXPORT,
@@ -1085,12 +1076,12 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/advance$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/advance$/,
         method: 'POST',
         config: createLoyaltyConfig('advance-program')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/advance\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/advance\/[^/]+$/,
         method: 'GET',
         config: createSimpleConfig(
             ActivityAction.EXPORT,
@@ -1103,51 +1094,51 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/advance\/update\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/advance\/update\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('advance-program')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/program\/advance\/delete\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/program\/advance\/delete\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('advance-program')[2],
     },
 
     // Property Loyalty
     {
-        pattern: /\/api\/v1\/loyalty\/property$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/property$/,
         method: 'POST',
         config: createLoyaltyConfig('property-loyalty')[0],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/property\/config\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/property\/config\/[^/]+$/,
         method: 'PATCH',
         config: createLoyaltyConfig('property-loyalty')[1],
     },
     {
-        pattern: /\/api\/v1\/loyalty\/property\/config\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/loyalty\/property\/config\/[^/]+$/,
         method: 'DELETE',
         config: createLoyaltyConfig('property-loyalty')[2],
     },
 
     // ==================== PROMO CODE ====================
     {
-        pattern: /\/api\/v1\/promo-code$/,
+        pattern: /\/api\/v1\/extranet\/promo-code$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.PROMO_CODE, 'code')[0],
     },
     {
-        pattern: /\/api\/v1\/promo-code\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promo-code\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(ActivityEntity.PROMO_CODE, 'code')[1],
     },
     {
-        pattern: /\/api\/v1\/promo-code\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promo-code\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.PROMO_CODE, 'code')[2],
     },
     {
-        pattern: /\/api\/v1\/promo-code\/recover\/[^/]+\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promo-code\/recover\/[^/]+\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1162,22 +1153,22 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== POLICY ====================
     {
-        pattern: /\/api\/v1\/policy$/,
+        pattern: /\/api\/v1\/extranet\/policy$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.POLICY, 'name')[0],
     },
     {
-        pattern: /\/api\/v1\/policy\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/policy\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(ActivityEntity.POLICY, 'name')[1],
     },
     {
-        pattern: /\/api\/v1\/policy\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/policy\/[^/]+$/,
         method: 'DELETE',
         config: createCRUDConfig(ActivityEntity.POLICY, 'name')[2],
     },
     {
-        pattern: /\/api\/v1\/policy\/addToRatePlan$/,
+        pattern: /\/api\/v1\/extranet\/policy\/addToRatePlan$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1193,40 +1184,40 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     // ==================== PROMOTIONS ====================
     // Customizable Deal
     {
-        pattern: /\/api\/v1\/promotions\/customizable-deal$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/customizable-deal$/,
         method: 'POST',
         config: createPromotionConfig('customizable-deal')[0],
     },
     {
-        pattern: /\/api\/v1\/promotions\/customizable-deal\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/customizable-deal\/[^/]+$/,
         method: 'PUT',
         config: createPromotionConfig('customizable-deal')[1],
     },
     {
-        pattern: /\/api\/v1\/promotions\/customizable-deal\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/customizable-deal\/[^/]+$/,
         method: 'DELETE',
         config: createPromotionConfig('customizable-deal')[2],
     },
 
     // Device Specific
     {
-        pattern: /\/api\/v1\/promotions\/device-specific$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/device-specific$/,
         method: 'POST',
         config: createPromotionConfig('device-specific')[0],
     },
     {
-        pattern: /\/api\/v1\/promotions\/device-specific\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/device-specific\/[^/]+$/,
         method: 'PUT',
         config: createPromotionConfig('device-specific')[1],
     },
     {
-        pattern: /\/api\/v1\/promotions\/device-specific\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/device-specific\/[^/]+$/,
         method: 'DELETE',
         config: createPromotionConfig('device-specific')[2],
     },
     {
         pattern:
-            /\/api\/v1\/promotions\/device-specific\/[^/]+\/toggle-status$/,
+            /\/api\/v1\/extranet\/promotions\/device-specific\/[^/]+\/toggle-status$/,
         method: 'PATCH',
         config: createToggleStatusConfig(
             ActivityEntity.PROMOTION,
@@ -1236,22 +1227,22 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // Early Bird
     {
-        pattern: /\/api\/v1\/promotions\/early-bird$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/early-bird$/,
         method: 'POST',
         config: createPromotionConfig('early-bird')[0],
     },
     {
-        pattern: /\/api\/v1\/promotions\/early-bird\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/early-bird\/[^/]+$/,
         method: 'PUT',
         config: createPromotionConfig('early-bird')[1],
     },
     {
-        pattern: /\/api\/v1\/promotions\/early-bird\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/early-bird\/[^/]+$/,
         method: 'DELETE',
         config: createPromotionConfig('early-bird')[2],
     },
     {
-        pattern: /\/api\/v1\/promotions\/early-bird\/[^/]+\/toggle-status$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/early-bird\/[^/]+\/toggle-status$/,
         method: 'PATCH',
         config: createToggleStatusConfig(
             ActivityEntity.PROMOTION,
@@ -1261,23 +1252,23 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // Offer for Tonight
     {
-        pattern: /\/api\/v1\/promotions\/offer-for-tonight$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/offer-for-tonight$/,
         method: 'POST',
         config: createPromotionConfig('offer-for-tonight')[0],
     },
     {
-        pattern: /\/api\/v1\/promotions\/offer-for-tonight\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/offer-for-tonight\/[^/]+$/,
         method: 'PUT',
         config: createPromotionConfig('offer-for-tonight')[1],
     },
     {
-        pattern: /\/api\/v1\/promotions\/offer-for-tonight\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/offer-for-tonight\/[^/]+$/,
         method: 'DELETE',
         config: createPromotionConfig('offer-for-tonight')[2],
     },
     {
         pattern:
-            /\/api\/v1\/promotions\/offer-for-tonight\/[^/]+\/toggle-status$/,
+            /\/api\/v1\/extranet\/promotions\/offer-for-tonight\/[^/]+\/toggle-status$/,
         method: 'PATCH',
         config: createToggleStatusConfig(
             ActivityEntity.PROMOTION,
@@ -1287,41 +1278,41 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // Geo Rate Plan
     {
-        pattern: /\/api\/v1\/promotions\/geo-rate-plan$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/geo-rate-plan$/,
         method: 'POST',
         config: createPromotionConfig('geo-rate-plan')[0],
     },
     {
-        pattern: /\/api\/v1\/promotions\/geo-rate-plan\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/geo-rate-plan\/[^/]+$/,
         method: 'PUT',
         config: createPromotionConfig('geo-rate-plan')[1],
     },
     {
-        pattern: /\/api\/v1\/promotions\/geo-rate-plan\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/geo-rate-plan\/[^/]+$/,
         method: 'DELETE',
         config: createPromotionConfig('geo-rate-plan')[2],
     },
 
     // MLOS
     {
-        pattern: /\/api\/v1\/promotions\/mlos$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/mlos$/,
         method: 'POST',
         config: createPromotionConfig('mlos')[0],
     },
     {
-        pattern: /\/api\/v1\/promotions\/mlos\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/mlos\/[^/]+$/,
         method: 'PUT',
         config: createPromotionConfig('mlos')[1],
     },
     {
-        pattern: /\/api\/v1\/promotions\/mlos\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/promotions\/mlos\/[^/]+$/,
         method: 'DELETE',
         config: createPromotionConfig('mlos')[2],
     },
 
     // ==================== BOOKING ENGINE ====================
     {
-        pattern: /\/api\/v1\/booking-engine\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/booking-engine\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -1334,7 +1325,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/booking-engine\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/booking-engine\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1347,7 +1338,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/booking-engine\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/booking-engine\/[^/]+$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.DELETE,
@@ -1363,55 +1354,55 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     // ==================== MANAGEMENT ====================
     // Category
     {
-        pattern: /\/api\/v1\/management\/category\/create$/,
+        pattern: /\/api\/v1\/extranet\/management\/category\/create$/,
         method: 'POST',
         config: createManagementConfig('category', ActivityAction.CREATE),
     },
     {
-        pattern: /\/api\/v1\/management\/category\/delete\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/management\/category\/delete\/[^/]+$/,
         method: 'DELETE',
         config: createManagementConfig('category', ActivityAction.DELETE),
     },
 
     // Type
     {
-        pattern: /\/api\/v1\/management\/type\/create$/,
+        pattern: /\/api\/v1\/extranet\/management\/type\/create$/,
         method: 'POST',
         config: createManagementConfig('type', ActivityAction.CREATE),
     },
     {
-        pattern: /\/api\/v1\/management\/type\/delete\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/management\/type\/delete\/[^/]+$/,
         method: 'DELETE',
         config: createManagementConfig('type', ActivityAction.DELETE),
     },
 
     // Amenity
     {
-        pattern: /\/api\/v1\/management\/amenity\/create$/,
+        pattern: /\/api\/v1\/extranet\/management\/amenity\/create$/,
         method: 'POST',
         config: createManagementConfig('amenity', ActivityAction.CREATE),
     },
     {
-        pattern: /\/api\/v1\/management\/amenity\/update$/,
+        pattern: /\/api\/v1\/extranet\/management\/amenity\/update$/,
         method: 'PUT',
         config: createManagementConfig('amenity', ActivityAction.UPDATE),
     },
 
     // Room Amenity
     {
-        pattern: /\/api\/v1\/management\/amenity\/room\/create$/,
+        pattern: /\/api\/v1\/extranet\/management\/amenity\/room\/create$/,
         method: 'POST',
         config: createManagementConfig('room amenity', ActivityAction.CREATE),
     },
     {
-        pattern: /\/api\/v1\/management\/amenity\/room\/update$/,
+        pattern: /\/api\/v1\/extranet\/management\/amenity\/room\/update$/,
         method: 'PUT',
         config: createManagementConfig('room amenity', ActivityAction.UPDATE),
     },
 
     // Loyalty Guest Field
     {
-        pattern: /\/api\/v1\/management\/loyalty-guest-field$/,
+        pattern: /\/api\/v1\/extranet\/management\/loyalty-guest-field$/,
         method: 'POST',
         config: createManagementConfig(
             'loyalty guest field',
@@ -1419,7 +1410,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/management\/loyalty-guest-field\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/management\/loyalty-guest-field\/[^/]+$/,
         method: 'PUT',
         config: createManagementConfig(
             'loyalty guest field',
@@ -1429,17 +1420,17 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== CREATION ====================
     {
-        pattern: /\/api\/v1\/create$/,
+        pattern: /\/api\/v1\/extranet\/create$/,
         method: 'POST',
         config: createCRUDConfig(ActivityEntity.CREATION, 'name')[0],
     },
     {
-        pattern: /\/api\/v1\/create\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/create\/[^/]+$/,
         method: 'PUT',
         config: createCRUDConfig(ActivityEntity.CREATION, 'name')[1],
     },
     {
-        pattern: /\/api\/v1\/create\/toggleDraft\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/create\/toggleDraft\/[^/]+$/,
         method: 'PUT',
         config: createToggleStatusConfig(
             ActivityEntity.CREATION,
@@ -1449,7 +1440,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== BOOKING OFFSET ====================
     {
-        pattern: /\/api\/v1\/ari\/booking-offset\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/booking-offset\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -1462,7 +1453,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/booking-offset\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/booking-offset\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1475,7 +1466,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/booking-offset\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/booking-offset\/[^/]+$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.DELETE,
@@ -1488,7 +1479,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/booking-offset\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/booking-offset\/[^/]+$/,
         method: 'PATCH',
         config: {
             ...createSimpleConfig(
@@ -1504,7 +1495,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         },
     },
     {
-        pattern: /\/api\/v1\/ari\/booking-offset\/single\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/booking-offset\/single\/[^/]+$/,
         method: 'PUT',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1517,7 +1508,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/ari\/booking-offset\/single\/[^/]+$/,
+        pattern: /\/api\/v1\/extranet\/ari\/booking-offset\/single\/[^/]+$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.DELETE,
@@ -1532,7 +1523,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== PROPERTY INTEGRATION ====================
     {
-        pattern: /\/api\/v1\/property-management\/property\/integration$/,
+        pattern: /\/api\/v1\/extranet\/property-management\/property\/integration$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -1546,7 +1537,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/integration\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/integration\/[^/]+$/,
         method: 'PATCH',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1560,7 +1551,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/integration\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/integration\/[^/]+$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.DELETE,
@@ -1574,7 +1565,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/integration\/field\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/integration\/field\/[^/]+$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.CREATE,
@@ -1588,7 +1579,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/integration\/field\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/integration\/field\/[^/]+$/,
         method: 'PATCH',
         config: createSimpleConfig(
             ActivityAction.UPDATE,
@@ -1602,7 +1593,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
     },
     {
         pattern:
-            /\/api\/v1\/property-management\/property\/integration\/field\/[^/]+$/,
+            /\/api\/v1\/extranet\/property-management\/property\/integration\/field\/[^/]+$/,
         method: 'DELETE',
         config: createSimpleConfig(
             ActivityAction.DELETE,
@@ -1617,7 +1608,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
 
     // ==================== INTEGRATIONS - RATE TIGER ====================
     {
-        pattern: /\/api\/v1\/integrations\/rate-tiger\/authenticate$/,
+        pattern: /\/api\/v1\/extranet\/integrations\/rate-tiger\/authenticate$/,
         method: 'POST',
         config: createSimpleConfig(
             ActivityAction.LOGIN,
@@ -1630,7 +1621,7 @@ export const ACTIVITY_LOGGER_ROUTES: RoutePattern[] = [
         ),
     },
     {
-        pattern: /\/api\/v1\/integrations\/rate-tiger\/ari$/,
+        pattern: /\/api\/v1\/extranet\/integrations\/rate-tiger\/ari$/,
         method: 'POST',
         config: {
             ...createSimpleConfig(

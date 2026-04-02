@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import type { IPropertyAddress, IPropertyDetails } from "../types/types";
-import { MapPin, Trash2, Video } from "lucide-react";
+import type {  IPropertyDetails } from "../types/types";
+// import { MapPin, Trash2, Video } from "lucide-react";
 import toast from "react-hot-toast";
 import PropertyAddress from "@/components/property/show/Address";
 import PropertyDetails from "@/components/property/show/PropertyDetails";
@@ -15,8 +15,8 @@ import {
   addPropertyVideo,
   deletePropertyVideo,
 } from "@/components/property/api/show/propertyDetails";
-import BackButton from "@/components/shared/BackButton";
-import { Button } from "@/components/ui/button";
+// import BackButton from "@/components/shared/BackButton";
+// import { Button } from "@/components/ui/button";
 import VideoUploadModal from "@/components/property/VedioUpload.modal";
 import PropertyMediaGallery from "@/components/property/PropertyMediaGallery";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -27,7 +27,7 @@ export default function PropertyDetailsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
-  const [isDeletingVideo, setIsDeletingVideo] = useState<boolean>(false);
+  const [_isDeletingVideo, setIsDeletingVideo] = useState<boolean>(false);
   const [propertyDetails, setPropertyDetails] = useState<IPropertyDetails>({
     propertyName: "",
     propertyEmail: "",
@@ -56,19 +56,19 @@ export default function PropertyDetailsPage() {
     }
   });
 
-  const [propertyAddress, setPropertyAddress] = useState<IPropertyAddress>({
-    addressLine1: "",
-    addressLine2: "",
-    city: "",
-    country: "",
-    landmark: "",
-    latitude: 0,
-    location: "",
-    longitude: 0,
-    propertyId: "",
-    state: "",
-    zipCode: 0,
-  });
+  // const [_propertyAddress, setPropertyAddress] = useState<IPropertyAddress>({
+  //   addressLine1: "",
+  //   addressLine2: "",
+  //   city: "",
+  //   country: "",
+  //   landmark: "",
+  //   latitude: 0,
+  //   location: "",
+  //   longitude: 0,
+  //   propertyId: "",
+  //   state: "",
+  //   zipCode: 0,
+  // });
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
@@ -94,9 +94,9 @@ export default function PropertyDetailsPage() {
           propertyVideos: data.propertyVideos,
         });
         setPropertyImages(data.image || []);
-        if (data.propertyAddress) {
-          setPropertyAddress(data.propertyAddress);
-        }
+        // if (data.propertyAddress) {
+        //   setPropertyAddress(data.propertyAddress);
+        // }
       }
     } catch (error) {
       console.error(error);
@@ -170,16 +170,16 @@ export default function PropertyDetailsPage() {
     }
   };
 
-  const getFullAddress = () => {
-    const parts = [
-      propertyAddress.city,
-      propertyAddress.state,
-      propertyAddress.country,
-      propertyAddress.zipCode?.toString(),
-    ].filter(Boolean);
+  // const getFullAddress = () => {
+  //   const parts = [
+  //     propertyAddress.city,
+  //     propertyAddress.state,
+  //     propertyAddress.country,
+  //     propertyAddress.zipCode?.toString(),
+  //   ].filter(Boolean);
 
-    return parts.join(", ");
-  };
+  //   return parts.join(", ");
+  // };
 
   if (loading) {
     return (
@@ -192,48 +192,7 @@ export default function PropertyDetailsPage() {
   return (
     <>
       <div className="space-y-6">
-        <BackButton />
-
-        {/* Property Header */}
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between px-6">
-          <div className="w-full">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  {propertyDetails.propertyName}
-                </h1>
-                <p className="text-base text-gray-600 flex items-center">
-                  <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
-                  {getFullAddress()}
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 ml-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsVideoModalOpen(true)}
-                  className="flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <Video className="h-4 w-4" />
-                  {propertyDetails.propertyVideos?.url ? 'Update Video' : 'Add Video'}
-                </Button>
-                {propertyDetails.propertyVideos?.url && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsDeleteDialogOpen(true)} // Changed this line
-                    disabled={isDeletingVideo}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 shadow-sm"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    {isDeletingVideo ? 'Deleting...' : 'Delete'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
         {/* Media Gallery */}
         <PropertyMediaGallery

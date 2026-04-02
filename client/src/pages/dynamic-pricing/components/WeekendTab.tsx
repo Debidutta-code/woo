@@ -128,6 +128,7 @@ export default function WeekendTab({
           currencyCode: data.currencyCode,
           minCap: data.minCap,
           maxCap: data.maxCap,
+          pricingType: data.pricingType,
         };
         res = await updateWeekendBasedDynamicPricing(id, payload);
       } else {

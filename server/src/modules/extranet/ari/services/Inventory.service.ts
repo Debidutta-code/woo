@@ -280,6 +280,18 @@ class InventoryServices {
             return errorResponse('Failed to map room with rate plan');
         }
     }
+        public static async getRoomAvailabilityService(propertyCode: string, roomType: string) {
+        try {
+            const response = await InventoryDao.getRoomAvailability(propertyCode, roomType);
+            if (response) {
+                return successResponse('Date based availability fetched successfully', response);
+            } else {
+                return errorResponse('Failed to fetch date based availability');
+            }
+        } catch (error: any) {
+            return errorResponse('Failed to fetch date based availability', error?.message);
+        }
+    }
 }
 
 export { InventoryServices };

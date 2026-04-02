@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/table";
 import Loader from "@/components/Loader/Loader";
 import { getAllPropertyLoyalityWithLoyality } from "./api/property-loyality.api";
-import BackButton from "@/components/shared/BackButton";
 
 interface ILoader {
   isLoading: boolean;
@@ -91,7 +90,6 @@ export default function PropertyLoyalityManagement() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
-      <BackButton/>
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">Loyalty Programs</h1>
         <p className="text-muted-foreground mt-2">

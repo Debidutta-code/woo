@@ -1,5 +1,6 @@
 import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
 import type { DiscountType } from "@/pages/tax-system/interface";
+import type { DynamicPricingType } from ".";
 
 export type SeasonalDynamicPricingEnumType = "season" | "holiday" | "weekend";
 export interface ICSeasonalDynamicPricing {
@@ -12,6 +13,9 @@ export interface ICSeasonalDynamicPricing {
     adjustmentType: DiscountType;
     adjustmentValue: number;
     currencyCode: CurrencyCode | null;
+    pricingType: DynamicPricingType;
+        minCap: number | null;
+    maxCap: number | null;
 }
 export interface ISeasonalDynamicPricingS extends Omit<ICSeasonalDynamicPricing, "dynamicId"> {
 }

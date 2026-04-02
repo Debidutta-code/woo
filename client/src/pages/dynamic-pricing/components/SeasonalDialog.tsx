@@ -35,6 +35,7 @@ import type {
 import type { DiscountType } from "@/pages/tax-system/interface";
 import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
 import { currencies } from "@/components/currency-code/cuurency";
+import type { DynamicPricingType } from "../interface/occupancy.interface";
 
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -59,6 +60,9 @@ const DEFAULT_FORM: ISeasonalDynamicPricingS = {
   adjustmentType: "percentage",
   adjustmentValue: 0,
   currencyCode: null,
+  maxCap: null,
+  minCap: null,
+  pricingType: "increase",
 };
 
 export default function SeasonalDialog({
@@ -85,6 +89,9 @@ export default function SeasonalDialog({
         adjustmentType: item.adjustmentType,
         adjustmentValue: item.adjustmentValue,
         currencyCode: item.currencyCode,
+        maxCap: item.maxCap,
+        minCap: item.minCap,
+        pricingType: item.pricingType,
       });
     } else {
       setForm(DEFAULT_FORM);
@@ -159,7 +166,7 @@ export default function SeasonalDialog({
               <SelectContent>
                 <SelectItem value="season">Season</SelectItem>
                 <SelectItem value="holiday">Holiday</SelectItem>
-                {/* <SelectItem value="weekend">Weekend</SelectItem> */} //
+                {/* <SelectItem value="weekend">Weekend</SelectItem> */} 
               </SelectContent>
             </Select>
           </div>
@@ -273,17 +280,70 @@ export default function SeasonalDialog({
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectContent>
-                                    {currencies.map((c) => (
-                                      <SelectItem key={c.code} value={c.code}>
-                                        {c.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           )}
+
+          {/* Pricing type */}
+          <div className="space-y-1">
+            <Label htmlFor="sea-pricing-type">Pricing Type *</Label>
+            <Select
+              value={form.pricingType}
+              onValueChange={(v) =>
+                setForm({ ...form, pricingType: v as DynamicPricingType })
+              }
+            >
+              <SelectTrigger id="sea-pricing-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="increase">Increase</SelectItem>
+                <SelectItem value="decrease">Decrease</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Optional caps */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="sea-min-cap">Min Cap (optional)</Label>
+              <Input
+                id="sea-min-cap"
+                type="number"
+                min={0}
+                placeholder="No min cap"
+                value={form.minCap ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    minCap: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="sea-max-cap">Max Cap (optional)</Label>
+              <Input
+                id="sea-max-cap"
+                type="number"
+                min={0}
+                placeholder="No max cap"
+                value={form.maxCap ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    maxCap: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              />
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

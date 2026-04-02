@@ -1,3 +1,4 @@
+import { DynamicPricingType } from '.';
 import { DiscountType } from '../../promocode/types';
 import { CurrencyCode } from '../../tax-system/interfaces';
 
@@ -15,6 +16,8 @@ export interface ICWeekendDynamicPricing {
     currencyCode: CurrencyCode | null;
     minCap: number | null;
     maxCap: number | null;
+        pricingType: DynamicPricingType;
+    
 }
 export interface ICWeekendDynamicPricingS extends Omit<
     ICWeekendDynamicPricing,

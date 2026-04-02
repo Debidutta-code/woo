@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { CreateRatePlan, RatePlan, LoaderProps } from "./interfaces"
-import BackButton from "@/components/shared/BackButton";
+// import BackButton from "@/components/shared/BackButton";
 import Loader from "@/components/Loader/Loader";
 import { createRatePlanService, fetchRatePlansService, removeRatePlanService, updateRatePlanService } from "./services";
 import { toast } from "react-hot-toast";
@@ -250,7 +250,7 @@ export default function RatePlan() {
   return (
     <>
       <div className="container mx-auto px-6 max-w-7xl">
-        <BackButton />
+        {/* <BackButton /> */}
 
         <div className="mt-6 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>

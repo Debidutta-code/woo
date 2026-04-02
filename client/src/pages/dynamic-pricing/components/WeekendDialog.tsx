@@ -67,6 +67,7 @@ const DEFAULT_FORM: ICWeekendDynamicPricingS = {
   currencyCode: null,
   minCap: null,
   maxCap: null,
+  pricingType: "increase",
 };
 
 export default function WeekendDialog({
@@ -95,6 +96,7 @@ export default function WeekendDialog({
         currencyCode: item.currencyCode,
         minCap: item.minCap,
         maxCap: item.maxCap,
+        pricingType: item.pricingType,
       });
     } else {
       setForm(DEFAULT_FORM);

@@ -11,6 +11,7 @@ model WeekendDynamicPricing {
   currencyCode    CurrencyCode? @map("currency_code")
   minCap          Int?          @map("min_capacity")
   maxCap          Int?          @map("max_capacity")
+  pricingType DynamicPricingPricingType @default(increase) @map("pricing_type")
 
   Room    Room           @relation(fields: [roomId], references: [id])
   Dynamic DynamicPricing @relation(fields: [dynamicId], references: [id])

@@ -29,6 +29,7 @@ export class WeekendDynamicPricingService {
                 ),
                 this.weekendRepo.weekendDynamicPricingByDateRange(
                     [],
+                    data.weekendDays,
                     data.roomId,
                     data.startDate,
                     data.endDate
@@ -107,6 +108,7 @@ export class WeekendDynamicPricingService {
                 this.dynamicPricingRepo.getById(data.dynamicId),
                 this.weekendRepo.weekendDynamicPricingByDateRange(
                     [id],
+                    data.weekendDays,
                     data.roomId,
                     data.startDate,
                     data.endDate

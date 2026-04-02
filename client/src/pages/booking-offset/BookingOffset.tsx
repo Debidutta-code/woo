@@ -17,7 +17,6 @@ import { useParams } from "react-router-dom";
 import type { RatePlan } from "../tax-system/interface";
 import { fetchRatePlansService } from "../rate-plan/services";
 import toast from "react-hot-toast";
-import BackButton from "@/components/shared/BackButton";
 import {
   Table,
   TableBody,
@@ -308,8 +307,7 @@ export default function BookingOffset() {
     return `${hours} hour${hours > 1 ? "s" : ""}`;
   };
   return (
-    <div className="space-y-4">
-      <BackButton />
+    <div className="space-y-4 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground">Booking Offsets</h2>
         <button

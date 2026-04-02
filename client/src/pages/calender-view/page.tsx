@@ -545,23 +545,8 @@ export default function InventoryPage() {
             <h1 className="text-base sm:text-xl font-semibold text-gray-800">
               Inventory Calendar
             </h1>
-            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
-              <span>Home</span>
-              <span>/</span>
-              <span className="text-blue-600">Inventory</span>
-            </div>
           </div>
 
-          {/* <div className="flex flex-col items-end gap-1">
-            {hotelName && (
-              <span className="text-xs sm:text-sm font-medium text-gray-700">
-                {hotelName}
-              </span>
-            )}
-            <span className="px-2 py-1 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700 font-mono">
-              {hotelCode || propertyId}
-            </span>
-          </div> */}
         </div>
       </div>
 

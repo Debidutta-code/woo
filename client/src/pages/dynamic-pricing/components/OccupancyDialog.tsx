@@ -25,6 +25,7 @@ import type {
 import type { DiscountType } from "@/pages/tax-system/interface";
 import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
 import { currencies } from "@/components/currency-code/cuurency";
+import type { DynamicPricingType } from "../interface/occupancy.interface";
 
 
 interface OccupancyDialogProps {
@@ -49,6 +50,9 @@ const DEFAULT_FORM: ICOccupancyBasedDynamicPricingS = {
   adjustmentType: "percentage",
   adjustmentValue: 0,
   currencyCode: null,
+  maxCap: null,
+  minCap: null,
+  pricingType: "increase",
 };
 
 export default function OccupancyDialog({
@@ -74,6 +78,9 @@ export default function OccupancyDialog({
         adjustmentType: item.adjustmentType,
         adjustmentValue: item.adjustmentValue,
         currencyCode: item.currencyCode,
+        maxCap: item.maxCap,
+        minCap: item.minCap,
+        pricingType: item.pricingType,
       });
     } else {
       setForm(DEFAULT_FORM);
@@ -224,6 +231,61 @@ export default function OccupancyDialog({
               </Select>
             </div>
           )}
+
+          {/* Pricing type */}
+          <div className="space-y-1">
+            <Label htmlFor="occ-pricing-type">Pricing Type *</Label>
+            <Select
+              value={form.pricingType}
+              onValueChange={(v) =>
+                setForm({ ...form, pricingType: v as DynamicPricingType })
+              }
+            >
+              <SelectTrigger id="occ-pricing-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="increase">Increase</SelectItem>
+                <SelectItem value="decrease">Decrease</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Optional caps */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="occ-min-cap">Min Cap (optional)</Label>
+              <Input
+                id="occ-min-cap"
+                type="number"
+                min={0}
+                placeholder="No min cap"
+                value={form.minCap ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    minCap: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="occ-max-cap">Max Cap (optional)</Label>
+              <Input
+                id="occ-max-cap"
+                type="number"
+                min={0}
+                placeholder="No max cap"
+                value={form.maxCap ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    maxCap: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              />
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

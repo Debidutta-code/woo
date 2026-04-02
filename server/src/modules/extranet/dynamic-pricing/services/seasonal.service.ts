@@ -35,7 +35,7 @@ export class SeasonalDynamicPricingService {
                     data.currencyCode ? data.currencyCode : 'AED'
                 ),
                 this.seasonalRepo.seasonalDynamicPricingByDateRange(
-                    [],
+                    data.periodType,
                     data.roomId,
                     data.startDate,
                     data.endDate
@@ -116,20 +116,21 @@ export class SeasonalDynamicPricingService {
             ] = await Promise.all([
                 this.seasonalRepo.getSeasonalDynamicPricing(id),
                 this.seasonalRepo.seasonalDynamicPricingByDateRange(
-                    [id],
+                    data.periodType,
                     data.roomId,
                     data.startDate,
                     data.endDate
                 ),
                 this.dynamicPricingRepo.getDynamicPricingByIdCO(data.dynamicId),
             ]);
-            if (!existingSeasonalPricing) {
+            if (!existingSeasonalPricing ) {
                 return errorResponse(
                     'Seasonal dynamic pricing not found',
                     'Seasonal dynamic pricing not found'
                 );
             }
-            if (isExistsInDateRange && isExistsInDateRange.length > 0) {
+
+            if (isExistsInDateRange && isExistsInDateRange.length > 0 && isExistsInDateRange.find(item => item.id != id)) {
                 return errorResponse(
                     'Seasonal dynamic pricing already exists for this room in the specified date range',
                     `Seasonal dynamic pricing already exists for this room in the range of ${data.startDate} - ${data.endDate}`

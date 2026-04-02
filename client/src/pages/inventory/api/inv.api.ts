@@ -33,3 +33,16 @@ export const addRoomInventory=async(propertyId:string,payload:SelectedRoom)=>{
         }
     }
 }
+export const getRoomAvailability = async (propertyId: string, roomType: string) => {
+    try {
+        const response = await axiosInstance.get(`/ari/inventory/availability`, {
+            params: { propertyId, roomType }
+        });
+        return response.data;
+    } catch (error: any) {
+        if (!error?.response?.data?.success) {
+            return error.response.data;
+        }
+        return { success: false, message: error?.message, data: [] };
+    }
+};

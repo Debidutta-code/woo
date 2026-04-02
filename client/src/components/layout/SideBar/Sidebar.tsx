@@ -345,6 +345,24 @@ const SidebarContent = memo<SidebarContentProps>(({
   saveScrollPosition,
   handleLogout,
 }) => {
+  const handleGroupToggle = (groupName: string) => {
+    saveScrollPosition();
+    
+    if (groupName !== 'loyalty') setIsLoyaltyOpen(false);
+    if (groupName !== 'agency') setIsAgencyOpen(false);
+    if (groupName !== 'rates') setIsRatesOpen(false);
+    if (groupName !== 'management') setIsManagementOpen(false);
+    if (groupName !== 'promotions') setIsPromotionsOpen(false);
+    if (groupName !== 'restrictions') setIsRestrictionsOpen(false);
+
+    if (groupName === 'loyalty') setIsLoyaltyOpen(!isLoyaltyOpen);
+    else if (groupName === 'agency') setIsAgencyOpen(!isAgencyOpen);
+    else if (groupName === 'rates') setIsRatesOpen(!isRatesOpen);
+    else if (groupName === 'management') setIsManagementOpen(!isManagementOpen);
+    else if (groupName === 'promotions') setIsPromotionsOpen(!isPromotionsOpen);
+    else if (groupName === 'restrictions') setIsRestrictionsOpen(!isRestrictionsOpen);
+  };
+
   return (
     <div className='flex flex-col h-full bg-white border-r w-full '>
       <div className="flex justify-around items-center h-16 px-2 border-b border-gray-200">
@@ -397,10 +415,7 @@ const SidebarContent = memo<SidebarContentProps>(({
         {user?.creation && filteredLoyaltyItems.length > 0 && (
           <div>
             <button
-              onClick={() => {
-                saveScrollPosition();
-                setIsLoyaltyOpen(!isLoyaltyOpen);
-              }}
+              onClick={() => handleGroupToggle('loyalty')}
               title="Loyalty"
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
@@ -447,10 +462,7 @@ const SidebarContent = memo<SidebarContentProps>(({
         {filteredAgencyItems.length > 0 && (
           <div>
             <button
-              onClick={() => {
-                saveScrollPosition();
-                setIsAgencyOpen(!isAgencyOpen);
-              }}
+              onClick={() => handleGroupToggle('agency')}
               title="Agency"
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
@@ -520,10 +532,7 @@ const SidebarContent = memo<SidebarContentProps>(({
         {isPropertyContext && (
           <div>
             <button
-              onClick={() => {
-                saveScrollPosition();
-                setIsRatesOpen(!isRatesOpen);
-              }}
+              onClick={() => handleGroupToggle('rates')}
               title="Rates"
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-50',
@@ -567,10 +576,7 @@ const SidebarContent = memo<SidebarContentProps>(({
         {isPropertyContext && (
           <div>
             <button
-              onClick={() => {
-                saveScrollPosition();
-                setIsManagementOpen(!isManagementOpen);
-              }}
+              onClick={() => handleGroupToggle('management')}
               title="Management"
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-50',
@@ -670,10 +676,7 @@ const SidebarContent = memo<SidebarContentProps>(({
           isPropertyContext && (
             <div>
               <button
-                onClick={() => {
-                  saveScrollPosition();
-                  setIsPromotionsOpen(!isPromotionsOpen);
-                }}
+                onClick={() => handleGroupToggle('promotions')}
                 title="Promotions"
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-50',
@@ -718,10 +721,7 @@ const SidebarContent = memo<SidebarContentProps>(({
         {isPropertyContext && (
           <div>
             <button
-              onClick={() => {
-                saveScrollPosition();
-                setIsRestrictionsOpen(!isRestrictionsOpen);
-              }}
+              onClick={() => handleGroupToggle('restrictions')}
               title="Restrictions"
               className={cn(
                 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 hover:bg-gray-50',
