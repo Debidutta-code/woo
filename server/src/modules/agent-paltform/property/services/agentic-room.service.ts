@@ -20,7 +20,7 @@ import {
     IAppliedDiscount,
     ITouristTax,
     IBaseByGuestAmount,
-} from '../../../extranet/reservation-pricing/types';
+} from '../../../booking-engine/reservation-pricing/types';
 import { CurrencyCode, DiscountType } from '../../../extranet/tax-system/interfaces';
 
 

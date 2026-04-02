@@ -27,7 +27,7 @@ import {
 import {
     CurrencyCode,
     DiscountType,
-} from '../../tax-system/interfaces/tourist-tax.type';
+} from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 import { calculateNights, toUTCDate } from '../../../../common/utils';
 
 export class RoomBookingService {

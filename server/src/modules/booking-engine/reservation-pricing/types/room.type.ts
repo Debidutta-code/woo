@@ -4,10 +4,10 @@ import {
     IPropertyVideo,
     IRoomVideo,
 } from '../../../property-management/types';
-import { DiscountType } from '../../promocode/types';
-import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
+import { DiscountType } from '../../../extranet/promocode/types';
+import { CurrencyCode } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 import { DeviceType } from '../../../agent-paltform/property/types';
-import { ICreationLoyality } from '../../loyalty/types';
+import { ICreationLoyality } from '../../../extranet/loyalty/types';
 
 export interface IBookingSearchPayload {
     startDate: string;

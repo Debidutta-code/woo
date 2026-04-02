@@ -2,7 +2,7 @@ import { Express, NextFunction, Request, Response, Router } from 'express';
 import PropertyManagement from '../modules/property-management/routes/index.route';
 import { PolicyRoute } from '../modules/extranet/policies/routes';
 import { TaxSystemRouter } from '../modules/extranet/tax-system/routes';
-import { BookingEngineRoutes } from '../modules/extranet/reservation-pricing/routes';
+import { BookingEngineRoutes } from '../modules/booking-engine/reservation-pricing/routes';
 import { PaymentRoutes } from '../modules/extranet/payment/routes';
 
 import { loyaltyRouter } from '../modules/extranet/loyalty/routes/loyalty.routes';

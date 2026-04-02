@@ -1,5 +1,5 @@
 import { DeviceType } from "../../../agent-paltform/property/types";
-import { AddOnBrakeDown, DailyPriceBrakeDown, PromotionBrakeDown, TaxBrakeDown } from "../../reservation-pricing/types";
+import { AddOnBrakeDown, DailyPriceBrakeDown, PromotionBrakeDown, TaxBrakeDown } from "../../../booking-engine/reservation-pricing/types";
 import { CurrencyCode, DiscountType } from "../../tax-system/interfaces";
 
 export type BookingSource =

@@ -1,12 +1,12 @@
 import { prisma } from '../../../../config';
 import { IAddOn, IRatePlan, ISelectedAddonsR } from '../types';
-import { IMLOS } from '../../promotions/mlos/interfaces';
-import { ICEbDsOftc } from '../../promotions/eb-ds-oftc/interfaces';
-import { IPromoCode } from '../../ari/types/promoCode.type';
+import { IMLOS } from '../../../extranet/promotions/mlos/interfaces';
+import { ICEbDsOftc } from '../../../extranet/promotions/eb-ds-oftc/interfaces';
+import { IPromoCode } from '../../../extranet/ari/types/promoCode.type';
 import {
     IPropertyLoyaltyConfig,
     ITCreationLoyality,
-} from '../../loyalty/types';
+} from '../../../extranet/loyalty/types';
 
 export class PricingRepository {
     public async validateRatePlan(

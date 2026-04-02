@@ -3,22 +3,22 @@ import {
     IBookingAddon,
     IChildAddon,
     PostingRhythm,
-} from '../../add-on/interfaces';
+} from '../../../extranet/add-on/interfaces';
 import { DeviceType, IPolicy } from '../../../agent-paltform/property/types';
-import { DiscountType } from '../../promocode/types';
+import { DiscountType } from '../../../extranet/promocode/types';
 import {
     IGeoRatePlan,
     IGeoRatePlanWithoutRatePlan,
     restrictionTypeAction,
-} from '../../promotions/geo-rate-plan/interfaces';
-import { IMLOS } from '../../promotions/mlos/interfaces';
+} from '../../../extranet/promotions/geo-rate-plan/interfaces';
+import { IMLOS } from '../../../extranet/promotions/mlos/interfaces';
 import {
     TaxApplicableOn,
     TaxType,
-} from '../../tax-system/interfaces/tax-rule.type';
+} from '../../../extranet/tax-system/interfaces/tax-rule.type';
 import { IPromotion, ITouristTax } from './room.type';
-import { IBookingOffset } from '../../ari/types';
-import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
+import { IBookingOffset } from '../../../extranet/ari/types';
+import { CurrencyCode } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 
 export interface ICustomizableDeal {
     id: string;

@@ -1,5 +1,5 @@
-import { IMLOS } from '../../promotions/mlos/interfaces';
-import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
+import { IMLOS } from '../../../extranet/promotions/mlos/interfaces';
+import { CurrencyCode } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 
 import { PricingRepository } from '../repository';
 import {
@@ -19,9 +19,9 @@ import {
     TaxBrakeDown,
 } from '../types';
 import { DeviceType } from '../../../agent-paltform/property/types';
-import { IGeoRatePlanWithoutRatePlan } from '../../promotions/geo-rate-plan/interfaces';
-import { ICEbDsOftc } from '../../promotions/eb-ds-oftc/interfaces';
-import { IPromoCode } from '../../ari/types/promoCode.type';
+import { IGeoRatePlanWithoutRatePlan } from '../../../extranet/promotions/geo-rate-plan/interfaces';
+import { ICEbDsOftc } from '../../../extranet/promotions/eb-ds-oftc/interfaces';
+import { IPromoCode } from '../../../extranet/ari/types/promoCode.type';
 import { RoomDao } from '../../../property-management/repository';
 import { IRoom } from '../../../property-management/types';
 import { errorResponse,
