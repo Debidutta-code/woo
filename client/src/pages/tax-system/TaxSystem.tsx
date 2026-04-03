@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "@/components/Loader/Loader";
-import BackButton from "@/components/shared/BackButton";
+// import BackButton from "@/components/shared/BackButton";
 import toast from "react-hot-toast";
 import {
     createTaxRuleService,
@@ -644,9 +644,9 @@ export default function TaxSystem() {
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 {/* Header */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                     <BackButton />
-                </div>
+                </div> */}
 
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-2">

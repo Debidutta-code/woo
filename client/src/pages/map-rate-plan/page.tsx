@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
 import Loader from "@/components/Loader/Loader";
-import BackButton from "@/components/shared/BackButton";
+// import BackButton from "@/components/shared/BackButton";
 import { MapPin } from "lucide-react";
 import { FilterSection, MappingsTable, UpdatePriceDialog, CreateMappingDialog } from "./components";
 import { useMapRatePlan } from "./hooks";
@@ -65,9 +65,9 @@ export default function MapRatePlan() {
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
                 {/* Header */}
-                <div className="mb-6">
+                {/* <div className="mb-6">
                     <BackButton />
-                </div>
+                </div> */}
 
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">

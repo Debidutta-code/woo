@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Plus, Pencil, Trash2, Smartphone, Monitor, Tablet } from "lucide-react";
 import Loader from "@/components/Loader/Loader";
-import BackButton from "@/components/shared/BackButton";
+// import BackButton from "@/components/shared/BackButton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -249,7 +249,7 @@ export default function PromoCodePage() {
 
             <div className="flex items-center justify-between">
                 <div>
-                    <BackButton />
+                    {/* <BackButton /> */}
                     <h1 className="text-3xl font-bold mt-2">Promo Codes</h1>
                     <p className="text-muted-foreground">Manage promotional codes for your property</p>
                 </div>

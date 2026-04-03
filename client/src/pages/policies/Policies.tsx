@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Plus, Shield, FileText, CreditCard, AlertCircle, Check, MoreVertical, Trash2, Link2 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import BackButton from "@/components/shared/BackButton";
+// import BackButton from "@/components/shared/BackButton";
 import Loader from "@/components/Loader/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -242,7 +242,7 @@ export default function PoliciesPage() {
         <div className="min-h-screen bg-gray-50/50 px-6 lg:px-10">
             <div className="mx-auto max-w-7xl space-y-8">
                 {/* Header Section */}
-                <BackButton />
+                {/* <BackButton /> */}
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-gray-900">

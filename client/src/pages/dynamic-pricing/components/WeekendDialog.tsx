@@ -36,6 +36,7 @@ import type {
 import type { DiscountType } from "@/pages/tax-system/interface";
 import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
 import { currencies } from "@/components/currency-code/cuurency";
+import type { DynamicPricingType } from "../interface/occupancy.interface";
 
 const WEEKEND_DAYS: { value: WeekEndDays; label: string }[] = [
   { value: "friday", label: "Friday" },
@@ -67,6 +68,7 @@ const DEFAULT_FORM: ICWeekendDynamicPricingS = {
   currencyCode: null,
   minCap: null,
   maxCap: null,
+  pricingType: "increase",
 };
 
 export default function WeekendDialog({
@@ -95,6 +97,7 @@ export default function WeekendDialog({
         currencyCode: item.currencyCode,
         minCap: item.minCap,
         maxCap: item.maxCap,
+        pricingType: item.pricingType,
       });
     } else {
       setForm(DEFAULT_FORM);
@@ -312,6 +315,25 @@ export default function WeekendDialog({
               </Select>
             </div>
           )}
+
+          {/* Pricing type */}
+          <div className="space-y-1">
+            <Label htmlFor="wk-pricing-type">Pricing Type *</Label>
+            <Select
+              value={form.pricingType}
+              onValueChange={(v) =>
+                setForm({ ...form, pricingType: v as DynamicPricingType })
+              }
+            >
+              <SelectTrigger id="wk-pricing-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="increase">Increase</SelectItem>
+                <SelectItem value="decrease">Decrease</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Optional caps */}
           <div className="grid grid-cols-2 gap-4">

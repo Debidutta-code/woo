@@ -128,6 +128,7 @@ export default function WeekendTab({
           currencyCode: data.currencyCode,
           minCap: data.minCap,
           maxCap: data.maxCap,
+          pricingType: data.pricingType,
         };
         res = await updateWeekendBasedDynamicPricing(id, payload);
       } else {
@@ -210,19 +211,6 @@ export default function WeekendTab({
         </div>
       )}
 
-      {/* Empty: no room */}
-      {/* {!loader.isLoading  && rules.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <Moon className="w-12 h-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-1">Select a Room</h3>
-            <p className="text-sm text-muted-foreground">
-              Choose a room above to view or manage its weekend pricing rules.
-            </p>
-          </CardContent>
-        </Card>
-      )} */}
-
       {/* Empty: room selected, no rules */}
       {!loader.isLoading  && rules.length === 0 && (
         <Card>
@@ -264,6 +252,7 @@ export default function WeekendTab({
                   <TableHead>Rule Name</TableHead>
                   <TableHead>Days</TableHead>
                   <TableHead>Date Range</TableHead>
+                  <TableHead>Pricing Type</TableHead>
                   <TableHead>Adjustment</TableHead>
                   <TableHead>Cap</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -293,6 +282,14 @@ export default function WeekendTab({
                           {formatDate(rule.startDate)} → {formatDate(rule.endDate)}
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={rule.pricingType === "increase" ? "default" : "secondary"}
+                        className="capitalize"
+                      >
+                        {rule.pricingType}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

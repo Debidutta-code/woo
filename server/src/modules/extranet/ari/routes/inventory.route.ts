@@ -63,3 +63,14 @@ inventoryRouter.route('/update-or-create/charges').post(
     }),
     RatePlanController.updateOrCreateRatePlanCharges
 );
+inventoryRouter.route('/availability')
+  .get(
+    protect,
+    checkRoleBased('canUpdateRoomPrice'),
+    attachPropertyDetails({
+      identifierType: "id",
+      key: "propertyId",
+      source: "query"
+    }),
+    InventoryController.getRoomAvailibility
+  );

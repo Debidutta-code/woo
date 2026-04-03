@@ -123,6 +123,9 @@ export default function SeasonalTab({
           adjustmentType: data.adjustmentType,
           adjustmentValue: data.adjustmentValue,
           currencyCode: data.currencyCode,
+          maxCap: data.maxCap,
+          minCap: data.minCap,
+          pricingType: data.pricingType,
         };
         res = await updateSeasonalBasedDynamicPricing(id, updatePayload);
       } else {
@@ -236,7 +239,9 @@ export default function SeasonalTab({
                   <TableHead>Rule Name</TableHead>
                   <TableHead>Period</TableHead>
                   <TableHead>Date Range</TableHead>
+                  <TableHead>Pricing Type</TableHead>
                   <TableHead>Adjustment</TableHead>
+                  <TableHead>Cap</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -261,6 +266,25 @@ export default function SeasonalTab({
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{formatAdjustment(rule)}</span>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={rule.pricingType === "increase" ? "default" : "secondary"}
+                        className="capitalize"
+                      >
+                        {rule.pricingType}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {(rule.minCap !== null || rule.maxCap !== null) ? (
+                        <div className="text-xs text-muted-foreground">
+                          {rule.minCap !== null ? `Min: ${rule.minCap}` : ""}
+                          {rule.minCap !== null && rule.maxCap !== null ? <br /> : ""}
+                          {rule.maxCap !== null ? `Max: ${rule.maxCap}` : ""}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

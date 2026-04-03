@@ -150,7 +150,7 @@ export const CustomizableDealList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Customizable Deals</h2>

@@ -19,7 +19,6 @@ import { getRatePlanRulesByPropertyIdService } from './services';
 import { deleteRatePlanRule } from '@/pages/rate-plan/api/api';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Check, Edit, MoreVertical, Trash2, X } from 'lucide-react';
-import BackButton from '@/components/shared/BackButton';
 import type { ILoader } from '@/pages/dashboard/interface';
 
 interface RatePlanRuleWithRatePlan extends RatePlanRule {
@@ -211,8 +210,8 @@ export const MLOSRuleList: React.FC = () => {
 
 
   return (
-    <div className="space-y-4">
-        <BackButton/>
+    <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+        {/* <BackButton/> */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground">MLOS Rules</h2>
         <button

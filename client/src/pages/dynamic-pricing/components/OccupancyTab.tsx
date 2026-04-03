@@ -111,6 +111,9 @@ export default function OccupancyTab({
           adjustmentType: data.adjustmentType,
           adjustmentValue: data.adjustmentValue,
           currencyCode: data.currencyCode,
+          pricingType: data.pricingType,
+          minCap: data.minCap,
+          maxCap: data.maxCap,
         };
         res = await updateOccupancyBasedDynamicPricing(id, updatePayload);
       } else {
@@ -220,8 +223,10 @@ export default function OccupancyTab({
               <TableHeader>
                 <TableRow>
                   <TableHead>Occupancy Range</TableHead>
+                  <TableHead>Pricing Type</TableHead>
                   <TableHead>Adjustment Type</TableHead>
                   <TableHead>Adjustment Value</TableHead>
+                  <TableHead>Cap</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -233,8 +238,27 @@ export default function OccupancyTab({
                         {rule.minInventoryPercentage}% – {rule.maxInventoryPercentage}%
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={rule.pricingType === "increase" ? "default" : "secondary"}
+                        className="capitalize"
+                      >
+                        {rule.pricingType}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="capitalize">{rule.adjustmentType}</TableCell>
                     <TableCell className="font-medium">{formatAdjustment(rule)}</TableCell>
+                    <TableCell>
+                      {(rule.minCap !== null || rule.maxCap !== null) ? (
+                        <div className="text-xs text-muted-foreground">
+                          {rule.minCap !== null ? `Min: ${rule.minCap}` : ""}
+                          {rule.minCap !== null && rule.maxCap !== null ? <br /> : ""}
+                          {rule.maxCap !== null ? `Max: ${rule.maxCap}` : ""}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">-</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

@@ -12,7 +12,7 @@ import Dashboard from "./pages/dashboard/page.tsx";
 import Property from "@/pages/property/Super.tsx";
 import MembersPage from "./pages/members/Members.tsx";
 import LogsPage from "./pages/logs/page.tsx";
-import Inventory from "./pages/inventory/page.tsx";
+import Inventory from "./pages/inventory/Inventory.tsx";
 import PropertyById from "./pages/property/id/page.tsx";
 import RatePlan from "./pages/rate-plan/RatePlan.tsx";
 import CreateProperty from "./pages/property/create/page.tsx";

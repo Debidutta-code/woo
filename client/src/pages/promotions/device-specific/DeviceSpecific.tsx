@@ -26,7 +26,6 @@ import toast from 'react-hot-toast';
 import { Smartphone, Tablet, Monitor, MoreVertical, Edit, Trash2, Check, X } from 'lucide-react';
 import { convertBackendToApplicableDays } from './interfaces/mobilePromotion.type';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import BackButton from '@/components/shared/BackButton';
 import type { ILoader } from '@/pages/dashboard/interface';
 
 export const DeviceSpecificPromotionList: React.FC = () => {
@@ -261,8 +260,8 @@ export const DeviceSpecificPromotionList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <BackButton/>
+    <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+      {/* <BackButton/> */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Device-Specific Promotions</h2>

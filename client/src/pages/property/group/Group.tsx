@@ -108,6 +108,12 @@ export default function page() {
           setCurrentTab("property");
         }
         setCreations(response.data);
+        if(response.data.brands.length > 0 ){
+          setCurrentTab("brand");
+        }
+        if(response.data.properties.length > 0){
+          setCurrentTab("property");
+        }
       } else {
         toast.error(response.message || "Failed to fetch");
       }

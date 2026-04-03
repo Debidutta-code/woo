@@ -7,6 +7,9 @@ model OccupancyBasedDynamicPricing {
   adjustmentType    DiscountType  @map("adjustment_type")
   adjustmentValue   Float         @map("adjustment_value")
   currencyCode      CurrencyCode? @map("currency_code")
+  pricingType DynamicPricingPricingType @default(increase) @map("pricing_type")
+    minCap          Int?          @map("min_capacity")
+  maxCap          Int?          @map("max_capacity")
 
   Room    Room           @relation(fields: [roomId], references: [id])
   Dynamic DynamicPricing @relation(fields: [dynamicId], references: [id])

@@ -1,5 +1,6 @@
 import type { CurrencyCode } from "@/components/currency-code/currency-code.type";
 import type { DiscountType } from "@/pages/tax-system/interface";
+import type { DynamicPricingType } from ".";
 
 export type WeekEndDays = "friday" | "saturday" | "sunday";
 
@@ -15,6 +16,7 @@ export interface ICWeekendDynamicPricing {
   currencyCode: CurrencyCode | null;
   minCap: number | null;
   maxCap: number | null;
+  pricingType: DynamicPricingType;
 }
 export interface ICWeekendDynamicPricingS extends Omit<ICWeekendDynamicPricing, "dynamicId"> {
 

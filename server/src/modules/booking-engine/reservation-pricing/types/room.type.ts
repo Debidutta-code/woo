@@ -348,3 +348,11 @@ export interface IPropertyData {
     propertyRooms: IPropertyRoom[];
     ratePlans: IPropertyRatePlan[];
 }
+export interface IRoomInventory {
+    id: string;
+    propertyCode: string;
+    roomTypeCode: string;
+    date: Date;
+    availability: number;
+    ratePlans: string[];
+}
