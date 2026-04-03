@@ -23,12 +23,14 @@ import {
     IRatePlanAddon,
     IAddonWithRelations,
     IAddonAvailability,
+    IRoomInventory,
 } from '../types';
 import {
     CurrencyCode,
     DiscountType,
 } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
 import { calculateNights, toUTCDate } from '../../../../common/utils';
+import { DynamicPricingCalculator } from '../../../extranet/dynamic-pricing/utils';
 
 export class RoomBookingService {
     public static async fetchRooms(payload: IBookingSearchPayload) {
@@ -143,6 +145,7 @@ export class RoomBookingService {
                     numberOfNights,
                     guests,
                     payload,
+                    inventory,
                     countryCode,
                     deviceType,
                     promoCodeData
@@ -180,6 +183,7 @@ export class RoomBookingService {
         numberOfNights: number,
         guests: IBookingSearchPayload['guests'],
         payload: IBookingSearchPayload,
+        inventory: IRoomInventory[],
         countryCode?: string,
         deviceType?: string,
         promoCodeData?: IRoomPromoCode | null
@@ -224,12 +228,12 @@ export class RoomBookingService {
             ) as Promise<IRoomRatePlanRule | null>,
             deviceType
                 ? (RoomBookingRepository.getDeviceSpecificPromotion(
-                      property.id,
-                      room.id,
-                      ratePlan.id,
-                      checkInDate,
-                      deviceType
-                  ) as Promise<IRoomPromotionData | null>)
+                    property.id,
+                    room.id,
+                    ratePlan.id,
+                    checkInDate,
+                    deviceType
+                ) as Promise<IRoomPromotionData | null>)
                 : Promise.resolve(null),
             RoomBookingRepository.getTouristTax(
                 ratePlan.id
@@ -268,21 +272,56 @@ export class RoomBookingService {
 
         let baseAmount = 0;
         let sortedBaseAmounts: IRoomChargeBaseByGuest[] = [];
+        const perDateBaseAmounts: { date: Date; amount: number }[] = [];
 
-        for (const roomConfig of roomsArray) {
-            const perRoomGuests = {
-                ...guests,
-                adults: roomConfig.adults,
-                children: roomConfig.children,
-            };
-            const calc = new RoomBasePriceCalculator(charges[0], perRoomGuests);
-            const result = calc.calculate();
-            if (result === null) return null;
-            baseAmount += result.baseAmount * numberOfNights;
-            sortedBaseAmounts = result.sortedBaseAmounts;
+        for (let i = 0; i < dates.length; i++) {
+            const date = dates[i];
+            const charge = charges[i];
+            let dateBaseAmount = 0;
+
+            for (const roomConfig of roomsArray) {
+                const perRoomGuests = {
+                    ...guests,
+                    adults: roomConfig.adults,
+                    children: roomConfig.children,
+                };
+                const calc = new RoomBasePriceCalculator(charge, perRoomGuests);
+                const result = calc.calculate();
+                if (result === null) return null;
+                dateBaseAmount += result.baseAmount;
+                sortedBaseAmounts = result.sortedBaseAmounts;
+            }
+
+            perDateBaseAmounts.push({ date, amount: dateBaseAmount });
+            baseAmount += dateBaseAmount;
         }
+
+        const dynamicPricingObj = new DynamicPricingCalculator();
+        const dynamicPricingResults = (
+            await Promise.all(
+                perDateBaseAmounts.map((entry, i) => {
+                    const nextDay = new Date(entry.date);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    return dynamicPricingObj.calculateDynamicPricingForDateRange(
+                        property.id,
+                        room.id,
+                        entry.date,
+                        nextDay,
+                        room.totalRoom,
+                        inventory[i]?.availability,  // per-date inventory
+                        entry.amount                  // per-date base amount
+                    );
+                })
+            )
+        ).flat();
+
+        const totalDynamicAdjustment = dynamicPricingResults.reduce(
+            (sum, r) => sum + r.totalDynamicDiscount,
+            0
+        );
+        const adjustedBaseAmount = baseAmount + totalDynamicAdjustment;
         const discountCalc = new RoomDiscountCalculator(
-            baseAmount,
+            adjustedBaseAmount,
             devicePromotion,
             geoRatePlan,
             filteredPromotions,
@@ -299,7 +338,7 @@ export class RoomBookingService {
 
         const touristTax = RoomTouristTaxCalculator.calculate(
             touristTaxData,
-            baseAmount,
+            adjustedBaseAmount,
             numberOfNights,
             roomsArray.length
         );
@@ -339,7 +378,7 @@ export class RoomBookingService {
                 ...sharedFields,
                 comboLabel: `Room Only`,
                 addons: [],
-                totalAmount: baseAmount - totalAutoDiscount,
+                totalAmount: adjustedBaseAmount - totalAutoDiscount,
             });
         }
 
@@ -348,7 +387,7 @@ export class RoomBookingService {
                 ...sharedFields,
                 comboLabel: `${addon.name}`,
                 addons: [addon],
-                totalAmount: baseAmount - totalAutoDiscount + addon.price,
+                totalAmount: adjustedBaseAmount - totalAutoDiscount + addon.price,
             });
         }
 
@@ -971,8 +1010,8 @@ class RoomTouristTaxCalculator {
             touristTaxData.discountType === 'percentage'
                 ? baseAmount * (Number(touristTaxData.discountValue) / 100)
                 : Number(touristTaxData.discountValue) *
-                  numberOfNights *
-                  numberOfRooms; // ✅
+                numberOfNights *
+                numberOfRooms; // ✅
 
         return {
             id: touristTaxData.id,
@@ -1045,24 +1084,24 @@ class RoomAddonCalculator {
                 images: addon.images || [],
                 category: addon.category
                     ? {
-                          id: addon.category.id,
-                          name: addon.category.name,
-                          code: addon.category.code,
-                      }
+                        id: addon.category.id,
+                        name: addon.category.name,
+                        code: addon.category.code,
+                    }
                     : null,
                 subCategory: addon.subCategory
                     ? {
-                          id: addon.subCategory.id,
-                          name: addon.subCategory.name,
-                          code: addon.subCategory.code,
-                      }
+                        id: addon.subCategory.id,
+                        name: addon.subCategory.name,
+                        code: addon.subCategory.code,
+                    }
                     : null,
                 addonVariant: addon.addonVariant
                     ? {
-                          id: addon.addonVariant.id,
-                          name: addon.addonVariant.name,
-                          code: addon.addonVariant.code,
-                      }
+                        id: addon.addonVariant.id,
+                        name: addon.addonVariant.name,
+                        code: addon.addonVariant.code,
+                    }
                     : null,
             });
         }
