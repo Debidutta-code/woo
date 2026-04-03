@@ -329,6 +329,7 @@ export interface CancelRequest {
   PropertyId: string;
   TimeStamp: string;
   PropertyCode: string;
+  BrandCode?:string;
 }
 
 export interface CancelGuestResponse {
@@ -380,6 +381,7 @@ export interface PreCheckDto {
 }
 
 export interface CommitDto {
+  DemandBookingId:string;
   propertyID: string;
   PropertyCode: string;
   BrandCode: string;
@@ -399,6 +401,7 @@ export interface CancelDto {
   PropertyId?: string;    
   PropertyCode?: string;  
   EchoToken?: string;
+  BrandCode?:string;
 }
 
 export interface CancellationPolicyRow {

@@ -109,14 +109,12 @@ export const preCheckReservation = async (
             RoomSelection: dto.RoomSelection,
         },
     };
-    console.log('Commit Payload:', JSON.stringify(payload, null, 2));
 
     const response = await axios.post<PreCheckApiResponse>(
         `${BASE}/api/SmartDistribution/PreCheckReservation`,
         payload,
         { headers: getHeaders() },
     );
-
     const data = response.data;
 
     if (!data.status || !data.body?.preCheckResponse) {
@@ -137,102 +135,101 @@ export const preCheckReservation = async (
 };
 
 export const commitReservation = async (dto: CommitDto): Promise<CommitBookingResult> => {
-    const demandBookingId = `ORD-${Date.now()}-${crypto.randomUUID()}`;
-    const sessionId = dto.Session ?? `SESSION-${Date.now()}`;
-    const bookingId = `BOOKING-${Date.now()}`;
+  const sessionId  = dto.Session   ?? `SESSION-${Date.now()}`;
+  const preCheckEcho = `PRECHECK-${Date.now()}-${crypto.randomUUID()}`;
+  const commitEcho   = `COMMIT-${Date.now()}-${crypto.randomUUID()}`;
 
+  const { preCheck, cancelSummary } = await preCheckReservation({
+    propertyID:    dto.propertyID,
+    PropertyCode:  dto.PropertyCode,
+    BrandCode:     dto.BrandCode,
+    checkin:       dto.checkin,
+    checkout:      dto.checkout,
+    CurrencyCode:  dto.CurrencyCode,
+    CountryCode:   dto.CountryCode,
+    Session:       sessionId,
+    EchoToken:     preCheckEcho,   
+    RoomSelection: dto.RoomSelection,
+  });
 
-    const { preCheck, cancelSummary } = await preCheckReservation({
-        propertyID: dto.propertyID,
-        PropertyCode: dto.PropertyCode,
-        BrandCode: dto.BrandCode,
-        checkin: dto.checkin,
-        checkout: dto.checkout,
-        CurrencyCode: dto.CurrencyCode,
-        CountryCode: dto.CountryCode,
-        Session: sessionId,
-        EchoToken: bookingId,
-        RoomSelection: dto.RoomSelection,
-    });
+  if (preCheck.paymentDataRequired && !dto.CreditCard) {
+    throw new Error(
+      'This rate requires credit card payment (paymentDataRequired is true). Please provide CreditCard details.',
+    );
+  }
 
-    if (preCheck.paymentDataRequired && !dto.CreditCard) {
-        throw new Error(
-            'This rate requires credit card payment (paymentDataRequired is true). Please provide CreditCard details.',
-        );
+  // DemandBookingId comes from the DTO — caller owns it, not the service
+  await createPendingReservation(dto.DemandBookingId, dto, preCheck, cancelSummary);
+
+  const preCheckRateMap = new Map<string, string>();
+  for (const room of preCheck.rooms) {
+    for (const rate of room.rates) {
+      if (rate.allocationDetails) preCheckRateMap.set(rate.rateKey, rate.allocationDetails);
     }
+  }
 
-    await createPendingReservation(demandBookingId, dto, preCheck, cancelSummary);
-
-    const preCheckRateMap = new Map<string, string>();
-    for (const room of preCheck.rooms) {
-        for (const rate of room.rates) {
-            if (rate.allocationDetails) preCheckRateMap.set(rate.rateKey, rate.allocationDetails);
-        }
-    }
-
-const mergedRoomSelection = dto.RoomSelection.map((room) => {
+  const mergedRoomSelection = dto.RoomSelection.map((room) => {
     const allocation = preCheckRateMap.get(room.RoomSelectionKey);
-
     return {
-        ...room,
-        ...(allocation ? { allocationDetails: allocation } : {}), // ✅ only if exists
-        RoomRate: parseFloat(preCheck.totalNet),
+      ...room,
+      ...(allocation ? { allocationDetails: allocation } : {}),
+      RoomRate: parseFloat(preCheck.totalNet),
     };
-});
+  });
 
-    const now = new Date().toISOString();
-    console.log('Commsdfs:', now);
-    const payload: CommitRequest = {
-        BookReservation: {
-            ResStatus: 1,
-            DemandBookingId: demandBookingId,
-            CurrencyCode: dto.CurrencyCode ?? 'USD',
-            GuaranteeMethod: 'CreditCard',
-            GuaranteeType: 'Guarantee',
-            TimeStamp: now,
-            checkin: dto.checkin,
-            checkout: dto.checkout,
-            ReservationDate: now,
-            propertyID: dto.propertyID,
-            PropertyCode: dto.PropertyCode,
-            BrandCode: dto.BrandCode,
-            EchoToken: bookingId,
-            BookingRate: parseFloat(preCheck.totalNet),
-            Session: sessionId, CountryCode: dto.CountryCode ?? 'US',
-            Currency: dto.CurrencyCode ?? 'USD',
-            ...(dto.CreditCard ? { CreditCard: dto.CreditCard } : {}),
-            RoomSelection: mergedRoomSelection,
-        },
-    };
-    console.log('Commit Payload:', JSON.stringify(payload, null, 2));
+  const now = new Date().toISOString();
 
-    try {
-        const response = await axios.post<CommitApiResponse>(
-            `${BASE}/api/SmartDistribution/CommitReservation`,
-            payload,
-            { headers: getHeaders() },
-        );
+  const payload: CommitRequest = {
+    BookReservation: {
+      ResStatus:       1,
+      DemandBookingId: dto.DemandBookingId,  
+      CurrencyCode:    dto.CurrencyCode ?? 'USD',
+      GuaranteeMethod: 'CreditCard',
+      GuaranteeType:   'Guarantee',
+      TimeStamp:       now,
+      checkin:         dto.checkin,
+      checkout:        dto.checkout,
+      ReservationDate: now,
+      propertyID:      dto.propertyID,
+      PropertyCode:    dto.PropertyCode,
+      BrandCode:       dto.BrandCode,
+      EchoToken:       commitEcho,           // different echo from preCheck
+      BookingRate:     parseFloat(preCheck.totalNet),
+      Session:         sessionId,
+      CountryCode:     dto.CountryCode ?? 'US',
+      Currency:        dto.CurrencyCode ?? 'USD',
+      ...(dto.CreditCard ? { CreditCard: dto.CreditCard } : {}),
+      RoomSelection:   mergedRoomSelection,
+    },
+  };
 
-        const data = response.data;
+  try {
+    const response = await axios.post<CommitApiResponse>(
+      `${BASE}/api/SmartDistribution/CommitReservation`,
+      payload,
+      { headers: getHeaders() },
+    );
 
-        if (!data.status || !data.body?.booking) {
-            const reason = data.description ?? 'Commit returned no booking object';
-            await failReservation(demandBookingId, reason);
-            throw new Error(`CommitReservation failed: ${reason} (statusCode: ${data.statusCode})`);
-        }
+    const data = response.data;
 
-        await confirmReservation(demandBookingId, data.body.booking);
-
-        return data.body.booking;
-    } catch (err: any) {
-        if (!err.message?.startsWith('CommitReservation failed')) {
-            await failReservation(
-                demandBookingId,
-                err?.response?.data?.description ?? err.message,
-            ).catch(() => { });
-        }
-        throw err;
+    if (!data.status || !data.body?.booking) {
+      const reason = data.description ?? 'Commit returned no booking object';
+      await failReservation(dto.DemandBookingId, reason);
+      throw new Error(`CommitReservation failed: ${reason} (statusCode: ${data.statusCode})`);
     }
+
+    await confirmReservation(dto.DemandBookingId, data.body.booking);
+    return data.body.booking;
+
+  } catch (err: any) {
+    if (!err.message?.startsWith('CommitReservation failed')) {
+      await failReservation(
+        dto.DemandBookingId,
+        err?.response?.data?.description ?? err.message,
+      ).catch(() => {});
+    }
+    throw err;
+  }
 };
 
 export const cancelReservation = async (dto: CancelDto) => {
@@ -260,6 +257,7 @@ export const cancelReservation = async (dto: CancelDto) => {
         PropertyId: dto.PropertyId || existing.propertyID,
         TimeStamp: new Date().toISOString(),
         PropertyCode: dto.PropertyCode || existing.propertyCode,
+        BrandCode: dto.BrandCode || existing.brandCode,
     };
 
     const response = await axios.post<CancelApiResponse>(
