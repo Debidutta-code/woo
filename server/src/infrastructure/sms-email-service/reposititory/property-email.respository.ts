@@ -1,0 +1,18 @@
+import { prisma } from '../../../config';
+import { IPropertyEmails } from '../../../modules/extranet/reservation/types';
+export class PropertyEmailRepository {
+    public async getPropertyEmails(
+        propertyId: string
+    ): Promise<IPropertyEmails[]> {
+        try {
+            return await prisma.propertyEmails.findMany({
+                where: { propertyId },
+                select: {
+                    email: true,
+                },
+            });
+        } catch (error) {
+            throw new Error(`Error fetching property emails`);
+        }
+    }
+}

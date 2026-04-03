@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 
 import { config } from './config/index';
-import { globalActivityLogger } from './middlewares/globalActivityLogger.middleware';
+import { globalActivityLogger } from './common/middlewares';
 export const app = express();
 
 app.use(

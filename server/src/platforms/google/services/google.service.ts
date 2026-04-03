@@ -7,7 +7,7 @@ import {
 } from '../interfaces';
 import { GOOGLE_FEED_CONFIG } from '../config/google.config';
 import { GoogleFeedsRepository } from '../dao';
-import { RoomBookingService } from '../../../booking-engine/service';
+import { RoomBookingService } from '../../../modules/booking-engine/reservation-pricing/service';
 
 export class GoogleFeedsService {
     /**
