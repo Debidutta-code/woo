@@ -87,12 +87,6 @@ export class PricingRepository {
                         },
                     },
                     geoRatePlans: true,
-
-                    // customizableDeals:{
-                    //     include:{
-                    //         CustomizableDealsApplicableAddons:true
-                    //     }
-                    // }
                 },
             });
         } catch (error) {

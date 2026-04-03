@@ -12,15 +12,15 @@ export interface ICSeasonalDynamicPricing {
     adjustmentType: DiscountType;
     adjustmentValue: number;
     currencyCode: CurrencyCode | null;
-        pricingType: DynamicPricingType;
-        minCap: number | null;
+    pricingType: DynamicPricingType;
+    minCap: number | null;
     maxCap: number | null;
 
 }
 export interface ISeasonalDynamicPricingS extends Omit<
     ICSeasonalDynamicPricing,
     'dynamicId'
-> {}
+> { }
 export interface ISeasonalDynamicPricing extends ICSeasonalDynamicPricing {
     id: string;
 }

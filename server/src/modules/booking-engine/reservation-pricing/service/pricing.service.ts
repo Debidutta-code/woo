@@ -24,14 +24,18 @@ import { ICEbDsOftc } from '../../../extranet/promotions/eb-ds-oftc/interfaces';
 import { IPromoCode } from '../../../extranet/ari/types/promoCode.type';
 import { RoomDao } from '../../../property-management/repository';
 import { IRoom } from '../../../property-management/types';
-import { errorResponse,
+import {
+    errorResponse,
     IApiResponse,
     nowUTC,
     successResponse,
-    toUTC, } from '../../../../common/utils';
+    toUTC,
+} from '../../../../common/utils';
+import { DynamicPricingCalculator } from '../../../extranet/dynamic-pricing/utils';
 export class PricingService {
     private pricingRepository: PricingRepository;
     private roomRepo: RoomDao;
+
     constructor() {
         this.pricingRepository = new PricingRepository();
         this.roomRepo = new RoomDao();
@@ -95,6 +99,24 @@ export class PricingService {
                 selectedRoom
             );
             let priceBrakedowns = basePrice.calculateTotalPrice();
+            const dynamicPricingObj = new DynamicPricingCalculator();
+            const dynamicPricing = await dynamicPricingObj.calculateDynamicPricingForDateRange(
+                propertyId,
+                selectedRoom.id,
+                startDate,
+                endDate,
+                selectedRoom.totalRoom,
+                9,
+                priceBrakedowns.totalAmount
+            );
+            priceBrakedowns.dynamicPricing = dynamicPricing;
+            
+            priceBrakedowns.totalAmount += dynamicPricing.reduce((acc, curr) => acc + curr.totalDynamicDiscount, 0);
+            priceBrakedowns.amountBeforeTax += dynamicPricing.reduce((acc, curr) => acc + curr.totalDynamicDiscount, 0);
+
+            priceBrakedowns.currentChargeableAmount += dynamicPricing.reduce((acc, curr) => acc + curr.totalDynamicDiscount, 0);
+
+
             const addOnPrice = new AddOnPriceClass(
                 selectedAddons,
                 ratePlan.Addons,
@@ -102,7 +124,7 @@ export class PricingService {
                 rooms,
                 Math.ceil(
                     (endDate.getTime() - startDate.getTime()) /
-                        (1000 * 60 * 60 * 24)
+                    (1000 * 60 * 60 * 24)
                 ),
                 adults,
                 startDate,
@@ -158,7 +180,6 @@ export class PricingService {
                 );
                 priceBrakedowns =
                     await deviceDiscountClass.findPromoCodeDiscount();
-                // console.log("priceBrakedowns device discount price", priceBrakedowns);
             }
             return successResponse('Rate plan found', priceBrakedowns);
         } catch (error) {
@@ -306,8 +327,6 @@ class BasePriceClass {
         this.checkIsSaleStopped();
         let { dailyPriceBrakeDown } = this.calculateBasePrice();
         dailyPriceBrakeDown = this.addTax(dailyPriceBrakeDown);
-
-        // Compute global totals from daily breakdowns
         let totalAmount = 0;
         let amountBeforeTax = 0;
         let taxedAmount = 0;
@@ -361,6 +380,7 @@ class BasePriceClass {
             taxBrakeDown,
             addonBrakeDown: [],
             promotionBrakeDown: [],
+            dynamicPricing: []
         };
     }
     private checkCTA() {
@@ -659,10 +679,10 @@ class AddOnPriceClass {
                 // if user provided parsedAddons, use its per-date quantity, otherwise default to 1
                 const quantityForDate = userSelectedAddon
                     ? userSelectedAddon.availability.find(
-                          a =>
-                              new Date(a.date).toISOString() ===
-                              new Date(avail.date).toISOString()
-                      )?.quantity || 1
+                        a =>
+                            new Date(a.date).toISOString() ===
+                            new Date(avail.date).toISOString()
+                    )?.quantity || 1
                     : 1;
                 const totalAmount = amount * quantityForDate;
 
@@ -1132,7 +1152,7 @@ class PromotionClass {
         const todayDate = nowUTC();
         const advanceBookingDays = Math.ceil(
             (this.startDate.getTime() - todayDate.getTime()) /
-                (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24)
         );
         if (advanceBookingDays >= promotion.advanceBookingDays) {
             if (promotion.discountType == 'percentage') {
@@ -1180,7 +1200,7 @@ class PromotionClass {
         const todayDate = nowUTC();
         const isOfferForTonightApplicable =
             this.startDate.getTime() - todayDate.getTime() <=
-                1000 * 60 * 60 * 24 &&
+            1000 * 60 * 60 * 24 &&
             this.startDate.getTime() - todayDate.getTime() > 0;
         if (isOfferForTonightApplicable) {
             if (promotion.discountType == 'percentage') {
@@ -1472,7 +1492,7 @@ class PromoCodeDiscountClass {
         if (
             checkIfPromoCodeIsValid.minBookingAmount && //chck for minimum booking amount
             checkIfPromoCodeIsValid.minBookingAmount >
-                this.priceBrakedown.amountBeforeTax
+            this.priceBrakedown.amountBeforeTax
         ) {
             return this.priceBrakedown;
         }
@@ -1484,7 +1504,7 @@ class PromoCodeDiscountClass {
             if (
                 checkIfPromoCodeIsValid.maxDiscountAmount &&
                 promoCodeDiscountAmount >
-                    checkIfPromoCodeIsValid.maxDiscountAmount
+                checkIfPromoCodeIsValid.maxDiscountAmount
             ) {
                 promoCodeDiscountAmount =
                     checkIfPromoCodeIsValid.maxDiscountAmount;
@@ -1500,7 +1520,7 @@ class PromoCodeDiscountClass {
             if (
                 checkIfPromoCodeIsValid.maxDiscountAmount &&
                 promoCodeDiscountAmount >
-                    checkIfPromoCodeIsValid.maxDiscountAmount
+                checkIfPromoCodeIsValid.maxDiscountAmount
             ) {
                 promoCodeDiscountAmount =
                     checkIfPromoCodeIsValid.maxDiscountAmount;

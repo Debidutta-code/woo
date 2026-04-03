@@ -19,6 +19,7 @@ import {
 import { IPromotion, ITouristTax } from './room.type';
 import { IBookingOffset } from '../../../extranet/ari/types';
 import { CurrencyCode } from '../../../extranet/tax-system/interfaces/tourist-tax.type';
+import { IDynamicPricingResult } from '../../../extranet/dynamic-pricing/types';
 
 export interface ICustomizableDeal {
     id: string;
@@ -209,6 +210,7 @@ export interface PriceBrakeDown {
     addonBrakeDown: AddOnBrakeDown[];
     promotionBrakeDown: PromotionBrakeDown[];
     loyalityDiscount: number;
+    dynamicPricing:IDynamicPricingResult[];
 }
 
 export interface DailyPriceBrakeDown {
