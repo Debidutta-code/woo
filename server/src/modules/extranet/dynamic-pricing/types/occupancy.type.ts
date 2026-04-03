@@ -10,7 +10,6 @@ export interface ICOccupancyBasedDynamicPricingS {
     pricingType: DynamicPricingType;
     minCap: number | null;
     maxCap: number | null;
-
 }
 export interface ICOccupancyBasedDynamicPricing {
     dynamicId: string;
@@ -23,7 +22,6 @@ export interface ICOccupancyBasedDynamicPricing {
     pricingType: DynamicPricingType;
     minCap: number | null;
     maxCap: number | null;
-
 }
 export interface IOccupancyBasedDynamicPricing extends ICOccupancyBasedDynamicPricing {
     id: string;
