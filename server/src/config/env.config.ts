@@ -15,6 +15,9 @@ const config = {
     agencyJWTSecret: process.env.AGENT_JWT_SECRET,
     agencyJWTExpiresIn: process.env.AGENT_JWT_EXPIRES_IN,
 
+    customerJWTSecret: process.env.CUSTOMER_JWT_SECRET,
+    customerJWTExpiresIn: process.env.CUSTOMER_JWT_EXPIRES_IN,
+
     cloudinaryUrl: process.env.CLOUDINARY_URL,
 
     frontendUrl: process.env.FRONTEND_URL,

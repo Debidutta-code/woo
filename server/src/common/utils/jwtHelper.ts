@@ -15,7 +15,11 @@ export type Payload = {
     email?: string;
     role?: Role;
 };
-
+export interface customerPayload{
+    id:string;
+    email:string;
+    phoneNo:string;
+}
 const expiresInSeconds = (days: number) => days * 24 * 60 * 60;
 
 const assignToken = (payload: Payload, secret: string, expiresIn: string) => {
@@ -23,7 +27,11 @@ const assignToken = (payload: Payload, secret: string, expiresIn: string) => {
         expiresIn: expiresInSeconds(parseInt(expiresIn?.split('d')[0]!)),
     });
 };
-
+const assignCustomerToken = (payload: customerPayload, secret: string, expiresIn: string) => {
+    return jwt.sign(payload, secret, {
+        expiresIn: expiresInSeconds(parseInt(expiresIn?.split('d')[0]!)),
+    });
+};
 const decodeToken = async (
     token: string,
     secret: string
@@ -37,4 +45,4 @@ const decodeToken = async (
     });
 };
 
-export { assignToken, decodeToken };
+export { assignToken, decodeToken ,assignCustomerToken};
