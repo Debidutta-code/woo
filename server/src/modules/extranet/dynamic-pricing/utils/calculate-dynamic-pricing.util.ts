@@ -1,4 +1,4 @@
-import { prisma } from "../../../../config";
+import { prisma } from '../../../../config';
 import {
     IDynamicPricing,
     IDynamicPricingBrakedown,
@@ -6,7 +6,7 @@ import {
     IOccupancyBasedDynamicPricing,
     ISeasonalDynamicPricing,
     IWeekendDynamicPricing,
-} from "../types";
+} from '../types';
 
 export class DynamicPricingCalculator {
     public async calculateDynamicPricingForDateRange(
@@ -15,19 +15,19 @@ export class DynamicPricingCalculator {
         startDate: Date,
         endDate: Date,
         maxRoom: number,
-        currentAvailableRoom: number,
+        // currentAvailableRoom: number,
         finalBaseAmount: number
     ): Promise<IDynamicPricingResult[]> {
         const results: IDynamicPricingResult[] = [];
         const currentDate = new Date(startDate);
 
-    // Pricing charges in the booking engine exclude checkout date; match that behavior.
-    while (currentDate < endDate) {
+        // Pricing charges in the booking engine exclude checkout date; match that behavior.
+        while (currentDate < endDate) {
             const result = await this.calculateDynamicPricing(
                 propertyId,
                 roomId,
                 currentDate,
-        (currentAvailableRoom / maxRoom) * 100,
+                (currentAvailableRoom / maxRoom) * 100,
                 finalBaseAmount
             );
             results.push(result);
@@ -36,6 +36,7 @@ export class DynamicPricingCalculator {
 
         return results;
     }
+    private async get
 
     private async calculateDynamicPricing(
         propertyId: string,
@@ -45,48 +46,47 @@ export class DynamicPricingCalculator {
         finalBaseAmount: number
     ): Promise<IDynamicPricingResult> {
         try {
-            const pricing: IDynamicPricing | null = await prisma.dynamicPricing.findFirst({
-                where: {
-                    propertyId,
-
-                },
-                include: {
-                    OccupancyBasedDynamicPricing: {
-                        where: {
-                            roomId,
-                            minInventoryPercentage: {
-                                lte: currentInventoryPercent,
-                            },
-                            maxInventoryPercentage: {
-                                gte: currentInventoryPercent,
-                            },
-                        }
+            const pricing: IDynamicPricing | null =
+                await prisma.dynamicPricing.findFirst({
+                    where: {
+                        propertyId,
                     },
-                    SeasonalDynamicPricings: {
-                        where: {
-                            roomId,
-                            startDate: {
-                                lte: date,
+                    include: {
+                        OccupancyBasedDynamicPricing: {
+                            where: {
+                                roomId,
+                                minInventoryPercentage: {
+                                    lte: currentInventoryPercent,
+                                },
+                                maxInventoryPercentage: {
+                                    gte: currentInventoryPercent,
+                                },
                             },
-                            endDate: {
-                                gte: date,
+                        },
+                        SeasonalDynamicPricings: {
+                            where: {
+                                roomId,
+                                startDate: {
+                                    lte: date,
+                                },
+                                endDate: {
+                                    gte: date,
+                                },
                             },
-                        }
+                        },
+                        WeekendDynamicPricing: {
+                            where: {
+                                roomId,
+                                startDate: {
+                                    lte: date,
+                                },
+                                endDate: {
+                                    gte: date,
+                                },
+                            },
+                        },
                     },
-                    WeekendDynamicPricing: {
-                        where: {
-                            roomId,
-                            startDate: {
-                                lte: date,
-                            },
-                            endDate: {
-                                gte: date,
-                            },
-                        }
-                    }
-                }
-
-            });
+                });
             if (!pricing) {
                 return {
                     roomId,
@@ -94,7 +94,7 @@ export class DynamicPricingCalculator {
                     currentInventoryPercent,
                     pricing: [],
                     totalDynamicDiscount: 0,
-                    currencyCode: "AED",
+                    currencyCode: 'AED',
                 };
             }
 
@@ -115,24 +115,33 @@ export class DynamicPricingCalculator {
             const seasonalRules = pricing.SeasonalDynamicPricings || [];
             if (seasonalRules.length) {
                 breakdown.push(
-                    ...(await this.calculateSeasonalBasedPricing(seasonalRules, finalBaseAmount))
+                    ...(await this.calculateSeasonalBasedPricing(
+                        seasonalRules,
+                        finalBaseAmount
+                    ))
                 );
             }
 
             const weekendRules = pricing.WeekendDynamicPricing || [];
             if (weekendRules.length) {
                 breakdown.push(
-                    ...(await this.calculateWeekendBasedPricing(weekendRules, date, finalBaseAmount))
+                    ...(await this.calculateWeekendBasedPricing(
+                        weekendRules,
+                        date,
+                        finalBaseAmount
+                    ))
                 );
             }
 
             // Positive total means increase in price; negative total means decrease in price.
             const totalDynamicDiscount = breakdown.reduce((sum, b) => {
-                const delta = Number.isFinite(b.discountedPrice) ? b.discountedPrice : 0;
-                return b.pricingType === "decrease" ? sum - delta : sum + delta;
+                const delta = Number.isFinite(b.discountedPrice)
+                    ? b.discountedPrice
+                    : 0;
+                return b.pricingType === 'decrease' ? sum - delta : sum + delta;
             }, 0);
             const currencyCode =
-                breakdown.find((b) => b.currencyCode)?.currencyCode || "AED";
+                breakdown.find(b => b.currencyCode)?.currencyCode || 'AED';
 
             return {
                 roomId,
@@ -143,7 +152,9 @@ export class DynamicPricingCalculator {
                 currencyCode,
             };
         } catch (error) {
-            throw new Error(`Failed to calculate dynamic pricing for room ${roomId} on ${date}`);
+            throw new Error(
+                `Failed to calculate dynamic pricing for room ${roomId} on ${date}`
+            );
         }
     }
 
@@ -159,47 +170,50 @@ export class DynamicPricingCalculator {
     }
     private async calculateOccupancyBasedPricing(
         occupancyBasedPricing: IOccupancyBasedDynamicPricing,
-        finalBaseAmount: number,
+        finalBaseAmount: number
     ): Promise<IDynamicPricingBrakedown> {
-
-
-        if (occupancyBasedPricing.adjustmentType === "percentage") {
+        if (occupancyBasedPricing.adjustmentType === 'percentage') {
             const discountedAmount =
                 finalBaseAmount * (occupancyBasedPricing.adjustmentValue / 100);
             return {
-                currencyCode: occupancyBasedPricing.currencyCode || "AED",
-                discountedPrice: this.clampToCapsOccupancyPricing(occupancyBasedPricing, discountedAmount),
-                reason: "occupancy",
+                currencyCode: occupancyBasedPricing.currencyCode || 'AED',
+                discountedPrice: this.clampToCapsOccupancyPricing(
+                    occupancyBasedPricing,
+                    discountedAmount
+                ),
+                reason: 'occupancy',
                 seasonalType: null,
                 weekDays: null,
-                pricingType: occupancyBasedPricing.pricingType
-            }
+                pricingType: occupancyBasedPricing.pricingType,
+            };
         } else {
             return {
-                currencyCode: occupancyBasedPricing.currencyCode || "AED",
-                discountedPrice: this.clampToCapsOccupancyPricing(occupancyBasedPricing, occupancyBasedPricing.adjustmentValue),
-                reason: "occupancy",
+                currencyCode: occupancyBasedPricing.currencyCode || 'AED',
+                discountedPrice: this.clampToCapsOccupancyPricing(
+                    occupancyBasedPricing,
+                    occupancyBasedPricing.adjustmentValue
+                ),
+                reason: 'occupancy',
                 seasonalType: null,
                 weekDays: null,
-                pricingType: occupancyBasedPricing.pricingType
-            }
+                pricingType: occupancyBasedPricing.pricingType,
+            };
         }
     }
     private async calculateSeasonalBasedPricing(
         seasonalPricing: ISeasonalDynamicPricing[],
         finalBaseAmount: number
-
     ): Promise<IDynamicPricingBrakedown[]> {
         if (!seasonalPricing?.length) return [];
-        return seasonalPricing.map((rule) => {
+        return seasonalPricing.map(rule => {
             const delta =
-                rule.adjustmentType === "percentage"
+                rule.adjustmentType === 'percentage'
                     ? finalBaseAmount * (rule.adjustmentValue / 100)
                     : rule.adjustmentValue;
             return {
-                currencyCode: rule.currencyCode || "AED",
+                currencyCode: rule.currencyCode || 'AED',
                 discountedPrice: this.clampToCapsSeasonalPricing(rule, delta),
-                reason: "seasonal",
+                reason: 'seasonal',
                 seasonalType: rule.periodType,
                 weekDays: null,
                 pricingType: rule.pricingType,
@@ -216,45 +230,50 @@ export class DynamicPricingCalculator {
         const day = this.getWeekEndDay(date);
         if (!day) return [];
 
-        const applicable = weekendPricing.filter((w) =>
+        const applicable = weekendPricing.filter(w =>
             (w.weekendDays || []).includes(day)
         );
         if (!applicable.length) return [];
 
-        return applicable.map((rule) => {
+        return applicable.map(rule => {
             const delta =
-                rule.adjustmentType === "percentage"
+                rule.adjustmentType === 'percentage'
                     ? finalBaseAmount * (rule.adjustmentValue / 100)
                     : rule.adjustmentValue;
             return {
-                currencyCode: rule.currencyCode || "AED",
+                currencyCode: rule.currencyCode || 'AED',
                 discountedPrice: this.clampToCapsWeekendPricing(rule, delta),
-                reason: "weekend",
+                reason: 'weekend',
                 seasonalType: null,
                 weekDays: day,
                 pricingType: rule.pricingType,
             } satisfies IDynamicPricingBrakedown;
         });
-    };
+    }
 
-    private getWeekEndDay(
-        date: Date
-    ): "friday" | "saturday" | "sunday" | null {
+    private getWeekEndDay(date: Date): 'friday' | 'saturday' | 'sunday' | null {
         const weekday = date.getDay();
-        if (weekday === 5) return "friday";
-        if (weekday === 6) return "saturday";
-        if (weekday === 0) return "sunday";
+        if (weekday === 5) return 'friday';
+        if (weekday === 6) return 'saturday';
+        if (weekday === 0) return 'sunday';
         return null;
     }
     //clamps
     private clampToCapsOccupancyPricing(
         occupancyBasedPricing: IOccupancyBasedDynamicPricing,
-        value: number): number {
+        value: number
+    ): number {
         let result = value;
-        if (occupancyBasedPricing.minCap && typeof occupancyBasedPricing.minCap === "number") {
+        if (
+            occupancyBasedPricing.minCap &&
+            typeof occupancyBasedPricing.minCap === 'number'
+        ) {
             result = Math.max(result, occupancyBasedPricing.minCap);
         }
-        if (occupancyBasedPricing.maxCap && typeof occupancyBasedPricing.maxCap === "number") {
+        if (
+            occupancyBasedPricing.maxCap &&
+            typeof occupancyBasedPricing.maxCap === 'number'
+        ) {
             result = Math.min(result, occupancyBasedPricing.maxCap);
         }
         return result;
@@ -264,10 +283,16 @@ export class DynamicPricingCalculator {
         value: number
     ): number {
         let result = value;
-        if (seasonalPricing.minCap && typeof seasonalPricing.minCap === "number") {
+        if (
+            seasonalPricing.minCap &&
+            typeof seasonalPricing.minCap === 'number'
+        ) {
             result = Math.max(result, seasonalPricing.minCap);
         }
-        if (seasonalPricing.maxCap && typeof seasonalPricing.maxCap === "number") {
+        if (
+            seasonalPricing.maxCap &&
+            typeof seasonalPricing.maxCap === 'number'
+        ) {
             result = Math.min(result, seasonalPricing.maxCap);
         }
         return result;
@@ -277,15 +302,18 @@ export class DynamicPricingCalculator {
         value: number
     ): number {
         let result = value;
-        if (weekendPricing.minCap && typeof weekendPricing.minCap === "number") {
+        if (
+            weekendPricing.minCap &&
+            typeof weekendPricing.minCap === 'number'
+        ) {
             result = Math.max(result, weekendPricing.minCap);
         }
-        if (weekendPricing.maxCap && typeof weekendPricing.maxCap === "number") {
+        if (
+            weekendPricing.maxCap &&
+            typeof weekendPricing.maxCap === 'number'
+        ) {
             result = Math.min(result, weekendPricing.maxCap);
         }
         return result;
     }
-
-
 }
-
