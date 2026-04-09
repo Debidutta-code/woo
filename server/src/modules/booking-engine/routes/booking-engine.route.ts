@@ -9,8 +9,8 @@ import {
     reviewRouter,
     wishListRouter
 } from "../customers/routes";
-import { searchRouter } from "../filters/routes/search.routes";
-bookingEngineRouter.use('/search', searchRouter);
+import { filterRouter } from "../filters/routes";
+bookingEngineRouter.use('/filters', filterRouter);
 bookingEngineRouter.use('/fetch-rooms', fetchRooms);
 bookingEngineRouter.use('/get-price', pricingRouter);
 bookingEngineRouter.use('/customer', customerRouter);
