@@ -1,0 +1,44 @@
+import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
+// import 'react-phone-number-input/style.css';
+import "./globals.css";
+import { Toaster } from "react-hot-toast";
+import { Providers } from "./provider";
+import Script from "next/script";
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import FCMInitializer from "../components/fcmInitializer/FCMInitializer";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-nunito",
+});
+
+export const metadata: Metadata = {
+  title: "Woohoo-Trip",
+  description: "Woohoo-Trip",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      {/* <head>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
+      </head> */}
+      <body className={nunito.className}>
+        <Providers>
+          <FCMInitializer />
+          {/* <Navbar /> */}
+          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+            {children}
+          </GoogleOAuthProvider>
+          {/* <Footer /> */}
+          <Toaster position="top-right" />
+        </Providers>
+      </body>
+    </html>
+  );
+}

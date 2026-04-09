@@ -1,0 +1,415 @@
+/* Updated font import to include semibold (600) weight */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* TripSwift Brand Colors */
+  --color-primary-blue: #076DB3; /* Matches style guide */
+  --color-primary-off-white: #FFFDFF; /* Matches style guide */
+  --color-primary-black: #000000; /* Matches style guide */
+  --color-secondary-off-white: #FFFDFF; /* Matches style guide */
+  --color-secondary-black: #000000; /* Matches style guide */
+  --color-gray-800: #1f2937; /* Added for text-gray-800 */
+  
+  /* Typography */
+  --font-primary: 'Noto Sans', sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 400;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 800;
+  
+  /* Legacy variables for compatibility */
+  --main-color: var(--color-primary-off-white);
+  --second-color: var(--color-secondary-black);
+  --font-color: var(--color-secondary-black);
+  --second-font-color: var(--color-primary-blue);
+  --gradient: linear-gradient(163.95deg, var(--color-primary-blue) 4.74%, #054B8F 88.83%);
+  --font-family: var(--font-primary);
+  --shadow: 0px 39px 60px 0px #00000024;
+}
+
+::-webkit-scrollbar {
+  height: 1px;
+  width: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #999595;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b3b1b1;
+  cursor: pointer;
+}
+
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.App {
+  height: 100vh;
+}
+
+/* Updated Typography */
+html {
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-regular);
+}
+
+/* Updated h1 style to match your preferred style */
+h1 {
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: 1.125rem; /* text-lg */
+  line-height: 1.5;
+  letter-spacing: normal; /* tracking-normal */
+  color: var(--color-gray-800);
+}
+
+h2 {
+  font-size: 12px;
+  line-height: 15px;
+  letter-spacing: normal;
+  color: var(--color-primary-off-white);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+input:placeholder-shown {
+  font-size: 16px;
+  line-height: 23px;
+  letter-spacing: normal;
+  text-indent: 16px;
+  font-family: var(--font-primary);
+}
+
+label {
+  font-size: 12px;
+  line-height: 15px;
+  letter-spacing: normal;
+  color: var(--color-secondary-black);
+  text-transform: uppercase;
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: 9px;
+}
+
+header h1 {
+  font-size: 18px;
+  line-height: 23px;
+  letter-spacing: normal;
+  color: var(--color-primary-off-white);
+}
+
+.header--white-bg h1 {
+  color: var(--color-primary-black); /* Use black for better contrast */
+}
+
+header p {
+  font-size: 9px;
+  line-height: 11px;
+  letter-spacing: normal;
+  color: var(--color-primary-off-white);
+}
+
+/* Typography media query */
+@media (min-width: 1000px) {
+  h2 {
+    font-size: 18px;
+    line-height: 23px;
+    letter-spacing: normal;
+  }
+
+  header h1 {
+    font-size: 28px;
+    line-height: 36px;
+    letter-spacing: normal;
+  }
+
+  header p {
+    font-size: 14px;
+    line-height: 18px;
+    letter-spacing: normal;
+  }
+}
+
+/* Head styles */
+.header--image_container_front {
+  box-shadow: var(--shadow);
+}
+
+@layer base {
+  :root {
+    /* Base colors in HSL format for Tailwind */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    
+    /* Primary is mapped to TripSwift blue */
+    --primary: 216 43% 46%; /* HSL for #076DB3 */
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary is mapped to TripSwift black */
+    --secondary: 0 0% 0%;
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Other UI colors */
+    --muted: 216 20% 90%;
+    --muted-foreground: 216 20% 30%;
+    --accent: 216 40% 87%;
+    --accent-foreground: 216 43% 46%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 216 20% 85%;
+    --input: 216 20% 85%;
+    --ring: 216 43% 46%;
+    
+    /* Chart colors */
+    --chart-1: 216 43% 46%;
+    --chart-2: 0 0% 0%;
+    --chart-3: 216 70% 35%;
+    --chart-4: 216 50% 45%;
+    --chart-5: 216 30% 55%;
+    
+    --radius: 0.5rem;
+  }
+  
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 60 2% 99%;
+    --card: 0 0% 0%;
+    --card-foreground: 60 2% 99%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 60 2% 99%;
+    --primary: 216 43% 46%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 60 2% 99%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 216 20% 20%;
+    --muted-foreground: 216 20% 70%;
+    --accent: 216 40% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 2% 99%;
+    --border: 216 20% 30%;
+    --input: 216 20% 30%;
+    --ring: 216 43% 70%;
+    --chart-1: 216 43% 50%;
+    --chart-2: 216 70% 60%;
+    --chart-3: 216 50% 50%;
+    --chart-4: 216 30% 60%;
+    --chart-5: 216 10% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-noto-sans; 
+  }
+}
+
+@layer components {
+  .text-property-title {
+    @apply font-noto-sans font-medium text-lg text-gray-800 tracking-normal; 
+  }
+  
+  .text-room-title {
+    @apply font-noto-sans font-medium text-base text-gray-800 tracking-normal; 
+  }
+  
+  .text-section-heading {
+    @apply font-noto-sans font-medium text-base text-gray-800 tracking-normal; 
+  }
+  
+  .text-price {
+    @apply font-noto-sans font-bold text-lg text-tripswift-blue; 
+  }
+  
+  .text-description {
+    @apply font-noto-sans text-sm text-gray-600 tracking-normal;
+  }
+}
+
+/* Create utility classes specifically for TripSwift colors */
+@layer utilities {
+  /* Text colors */
+  .text-tripswift-blue {
+    color: var(--color-primary-blue);
+  }
+  .text-tripswift-black {
+    color: var(--color-primary-black);
+  }
+  .text-tripswift-off-white {
+    color: var(--color-primary-off-white);
+  }
+  
+  /* Background colors */
+  .bg-tripswift-blue {
+    background-color: var(--color-primary-blue);
+  }
+  .bg-tripswift-black {
+    background-color: var(--color-primary-black);
+  }
+  .bg-tripswift-off-white {
+    background-color: var(--color-primary-off-white);
+  }
+  
+  /* Border colors */
+  .border-tripswift-blue {
+    border-color: var(--color-primary-blue);
+  }
+  .border-tripswift-black {
+    border-color: var(--color-primary-black);
+  }
+  .border-tripswift-off-white {
+    border-color: var(--color-primary-off-white);
+  }
+  
+  /* Hover states */
+  .hover\:text-tripswift-blue:hover {
+    color: var(--color-primary-blue);
+  }
+  .hover\:text-tripswift-black:hover {
+    color: var(--color-primary-black);
+  }
+  .hover\:text-tripswift-off-white:hover {
+    color: var(--color-primary-off-white);
+  }
+  
+  .hover\:bg-tripswift-blue:hover {
+    background-color: var(--color-primary-blue);
+  }
+  .hover\:bg-tripswift-black:hover {
+    background-color: var(--color-primary-black);
+  }
+  .hover\:bg-tripswift-off-white:hover {
+    background-color: var(--color-primary-off-white);
+  }
+  
+  .hover\:border-tripswift-blue:hover {
+    border-color: var(--color-primary-blue);
+  }
+  .hover\:border-tripswift-black:hover {
+    border-color: var(--color-primary-black);
+  }
+  .hover\:border-tripswift-off-white:hover {
+    border-color: var(--color-primary-off-white);
+  }
+  
+  /* Font weights */
+  .font-tripswift-regular {
+    font-weight: var(--font-weight-regular);
+  }
+  .font-tripswift-medium {
+    font-weight: var(--font-weight-medium);
+  }
+  .font-tripswift-semibold {
+    font-weight: var(--font-weight-semibold);
+  }
+  .font-tripswift-bold {
+    font-weight: var(--font-weight-bold);
+  }
+  .font-tripswift-extrabold {
+    font-weight: var(--font-weight-extrabold);
+  }
+}
+
+/* Button styling */
+.btn-tripswift-primary {
+  background-color: var(--color-primary-blue);
+  color: var(--color-primary-off-white);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-tripswift-primary:hover {
+  background-color: #054B8F;
+}
+
+.btn-tripswift-secondary {
+  background-color: var(--color-primary-off-white);
+  color: var(--color-primary-blue);
+  border: 1px solid var(--color-primary-blue);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-tripswift-secondary:hover {
+  background-color: var(--color-primary-blue);
+  color: var(--color-primary-off-white);
+}
+
+/* Added book now button for OTA look */
+.btn-book-now {
+  background-color: #0C8046;
+  color: white;
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-book-now:hover {
+  background-color: #0A6A3A;
+}
+
+/* Override NextUI styles for consistency */
+.nextui-button {
+  background-color: var(--color-primary-blue) !important;
+  color: var(--color-primary-off-white) !important;
+}
+
+.nextui-card {
+  background-color: var(--color-primary-off-white) !important;
+  color: var(--color-secondary-black) !important;
+}
+/* Remove all borders and outlines from the inner input field of PhoneInput */
+.PhoneInputInput:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+/* This sets overall RTL direction */
+[dir="rtl"] .PhoneInput {
+  direction: rtl;
+}
+
+/* This aligns text to the right inside the input */
+[dir="rtl"] .PhoneInputInput {
+  text-align: right;
+}
+
+/* Optional: shift flag spacing */
+[dir="rtl"] .PhoneInputCountry {
+  margin-left: 1rem;
+}
+
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem; /* Adjust spacing */
+}
+[dir="rtl"] .PhoneInputCountrySelectArrow{
+  margin-right: 8px;
+}

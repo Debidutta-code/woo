@@ -1,0 +1,1713 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setGuestDetails,
+  setAmount,
+  setTotalTax,
+  setRatePlanCode,
+  setRoomId,
+} from "../../Redux/slices/pmsHotelCard.slice";
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  CreditCard,
+  X,
+  Loader2,
+} from "lucide-react";
+import { formatDate, calculateNights } from "../../utils/dateUtils";
+import { useTranslation } from "react-i18next";
+import { verifyApi } from "../../api/verify";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { ConvertedRoom } from "../../types/room.types";
+
+// Interfaces remain unchanged
+export interface Guest {
+  firstName: string;
+  lastName: string;
+  dob?: string;
+  type?: "adult" | "child" | "infant";
+}
+
+interface UserType {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  _id?: string;
+}
+
+interface RootState {
+  auth: {
+    user: UserType | null;
+    token?: string;
+  };
+}
+
+interface GuestInformationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedRoom: ConvertedRoom | null;
+  selectedRateplan:string;
+  checkInDate: string;
+  checkOutDate: string;
+  onConfirmBooking: (formData: {
+    email: string;
+    phone: string;
+    propertyId: string;
+    roomId: string;
+    checkIn: string;
+    checkOut: string;
+    amount: number;
+    userId?: string;
+    rooms?: number;
+    adults?: number;
+    children?: number;
+    infants?: number;
+    guests?: Guest[];
+    hotelName: string;
+    ratePlanCode: string;
+    roomType: string;
+    currency?: string;
+  }) => void;
+  guestData?: {
+    rooms?: number;
+    guests?: number;
+    children?: number;
+    infants?: number;
+    childAges?: number[];
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    hotelName?: string;
+  };
+}
+
+interface DailyBreakDown {
+  date: string;
+  dayOfWeek: string;
+  ratePlanCode: string;
+  baseRate: number;
+  additionalCharges: number;
+  totalPerRoom: number;
+  totalForAllRooms: number;
+  currencyCode: string;
+  childrenChargesBreakdown: number[];
+}
+
+interface TaxInfo {
+  name: string;
+  percentage?: number;
+  amount: number;
+  type?: string;
+}
+
+interface FinalPrice {
+  totalAmount: number;
+  numberOfNights: number;
+  baseRatePerNight: number;
+  additionalGuestCharges: number;
+  breakdown: {
+    totalBaseAmount: number;
+    totalAdditionalCharges: number;
+    totalAmount: number;
+    numberOfNights: number;
+    averagePerNight: number;
+  };
+  dailyBreakdown: DailyBreakDown[] | null;
+  availableRooms: number;
+  requestedRooms: number;
+  // Add these new tax-related fields
+  tax?: TaxInfo[];
+  totalTax?: number;
+  priceAfterTax?: number;
+}
+
+const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
+  isOpen,
+  onClose,
+  selectedRoom,
+  selectedRateplan,
+  checkInDate,
+  checkOutDate,
+  onConfirmBooking,
+  guestData
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEmailVerifying, setIsEmailVerifying] = useState(false);
+  const [isPhoneVerifying, setIsPhoneVerifying] = useState(false);
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const totalGuests =
+    (guestData?.guests || 1) +
+    (guestData?.children || 0) +
+    (guestData?.infants || 0);
+  const getFormattedDate = (date: Date) => date.toISOString().split("T")[0];
+  const [guests, setGuests] = useState<Guest[]>(() => {
+    return Array.from({ length: totalGuests }, (_, i) => {
+      let type: Guest["type"] =
+        i < (guestData?.guests || 1)
+          ? "adult"
+          : i < (guestData?.guests || 1) + (guestData?.children || 0)
+          ? "child"
+          : "infant";
+
+      const today = new Date();
+      let defaultDOB = "";
+      if (type === "child") {
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(today.getFullYear() - 2);
+        defaultDOB = getFormattedDate(twoYearsAgo);
+      } else if (type === "adult") {
+        const thirteenYearsAgo = new Date();
+        thirteenYearsAgo.setFullYear(today.getFullYear() - 13);
+        defaultDOB = getFormattedDate(thirteenYearsAgo);
+      }
+
+      return {
+        firstName: "",
+        lastName: "",
+        dob: defaultDOB,
+        type,
+      };
+    });
+  });
+
+  const [email, setEmail] = useState<string>(authUser?.email || "");
+  const [phone, setPhone] = useState<string>("");
+  const [isFormUpdated, setIsFormUpdated] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailCountdown, setEmailCountdown] = useState(0);
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [phoneCountdown, setPhoneCountdown] = useState(0);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [emailAlreadyVerified, setEmailAlreadyVerified] = useState(false);
+  const hotelCode = useSelector((state: any) => state.pmsHotelCard.hotelCode);
+
+  const [activeSection, setActiveSection] = useState<"details" | "review">(
+    "details"
+  );
+  const [finalPrice, setFinalPrice] = useState<FinalPrice | null>({
+    totalAmount: 0,
+    numberOfNights: 0,
+    baseRatePerNight: 0,
+    additionalGuestCharges: 0,
+    breakdown: {
+      totalBaseAmount: 0,
+      totalAdditionalCharges: 0,
+      totalAmount: 0,
+      numberOfNights: 0,
+      averagePerNight: 0,
+    },
+    dailyBreakdown: null,
+    availableRooms: 0,
+    requestedRooms: 0,
+  });
+
+  const dispatch = useDispatch();
+  const { t, i18n } = useTranslation();
+
+  const getFinalPrice = async (
+    selectedRoom: any,
+    checkInDate: string,
+    checkOutDate: string,
+    guestData: any
+  ) => {
+    try {
+      // //console.log("selected room",selectedRoom)
+      // //console.log("guest data", guestData);
+      const finalPriceResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/rate-plan/getRoomRentPrice`,
+        {
+          hotelCode: hotelCode,
+          invTypeCode: selectedRoom?.room_type,
+          startDate: checkInDate,
+          endDate: checkOutDate,
+          ratePlanCode:selectedRateplan,
+          noOfChildrens: guestData?.children,
+          noOfAdults: guestData?.guests,
+          noOfRooms: guestData?.rooms,
+          noOfInfants: guestData?.infants,
+        },
+        { withCredentials: true }
+      );
+      if (finalPriceResponse.data.success) {
+        setFinalPrice(finalPriceResponse.data.data);
+      } else {
+        // setErrorMessage(finalPriceResponse.data.message);
+        toast.error(finalPriceResponse.data.message);
+      }
+    } catch (error: any) {
+      // setErrorMessage(error.message);
+      toast.error(error.message);
+    }
+  };
+
+  const getDefaultDOBByType = (type: "adult" | "child" | "infant") => {
+    const today = new Date();
+    if (type === "infant") {
+      return getFormattedDate(today);
+    }
+    if (type === "child") {
+      const twoYearsAgo = new Date();
+      twoYearsAgo.setFullYear(today.getFullYear() - 2);
+      return getFormattedDate(twoYearsAgo);
+    }
+    if (type === "adult") {
+      const thirteenYearsAgo = new Date();
+      thirteenYearsAgo.setFullYear(today.getFullYear() - 13);
+      return getFormattedDate(thirteenYearsAgo);
+    }
+    return "";
+  };
+
+  useEffect(() => {
+    if (guestData) {
+      const newTotalGuests =
+        (guestData.guests || 1) +
+        (guestData.children || 0) +
+        (guestData.infants || 0);
+      setGuests(
+        Array.from({ length: newTotalGuests }, (_, i) => {
+          const type: Guest["type"] =
+            i < (guestData?.guests || 1)
+              ? "adult"
+              : i < (guestData?.guests || 1) + (guestData?.children || 0)
+              ? "child"
+              : "infant";
+          const guest = guests[i];
+          return {
+            firstName: guestData.firstName || guest?.firstName || "",
+            lastName: guestData.lastName || guest?.lastName || "",
+            dob: guest?.dob || getDefaultDOBByType(type),
+            type,
+          };
+        })
+      );
+      setEmail(guestData.email || "");
+    } else if (authUser) {
+      setEmail(authUser.email);
+    }
+  }, [authUser, guestData]);
+
+  useEffect(() => {
+    if (isOpen && selectedRoom && checkInDate && checkOutDate && guestData) {
+      getFinalPrice(selectedRoom, checkInDate, checkOutDate, guestData);
+    }
+  }, [isOpen, selectedRoom, checkInDate, checkOutDate, guestData]);
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+  useEffect(() => {
+    if (emailOtpSent && emailCountdown > 0) {
+      const interval = setInterval(() => {
+        setEmailCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [emailOtpSent, emailCountdown]);
+
+  useEffect(() => {
+    if (phoneOtpSent && phoneCountdown > 0) {
+      const interval = setInterval(() => {
+        setPhoneCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [phoneOtpSent, phoneCountdown]);
+
+  useEffect(() => {
+    if (updateMessage) {
+      const timer = setTimeout(() => {
+        setUpdateMessage(null);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [updateMessage]);
+
+  const handleGuestChange = (
+    index: number,
+    field: keyof Guest,
+    value: string
+  ) => {
+    const updatedGuests = [...guests];
+    updatedGuests[index] = { ...updatedGuests[index], [field]: value };
+    setGuests(updatedGuests);
+  };
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const validateGuestNames = () => {
+    return guests.every(
+      (guest) =>
+        guest.firstName.trim() &&
+        guest.lastName.trim() &&
+        /^[A-Za-z\s]+$/.test(guest.firstName) &&
+        /^[A-Za-z\s]+$/.test(guest.lastName)
+    );
+  };
+  const handleVerifyEmail = async () => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrors((prev) => ({
+        ...prev,
+        email: t("BookingComponents.GuestInformationModal.emailInvalidError"),
+      }));
+      return;
+    }
+
+    setIsEmailVerifying(true);
+    try {
+      const response = await verifyApi.sendEmailOtp(email);
+
+      // Check if email is already verified
+      if (response.status === "verified") {
+        toast.success(
+          t("BookingComponents.GuestInformationModal.emailAlreadyVerified")
+        );
+        setEmailVerified(true);
+        setEmailAlreadyVerified(true); // Set this flag for already verified emails
+        setEmailOtpSent(false);
+        setEmailCountdown(0);
+        setEmailOtp("");
+      } else if (response.status === "pending") {
+        toast.success(t("BookingComponents.GuestInformationModal.otpSent"));
+        setEmailOtpSent(true);
+        setEmailCountdown(300);
+        setEmailVerified(false);
+        setEmailAlreadyVerified(false); // Reset this flag for new verifications
+      }
+    } catch (err: any) {
+      toast.error(
+        err.message ||
+          t("BookingComponents.GuestInformationModal.otpSendFailed")
+      );
+    } finally {
+      setIsEmailVerifying(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!emailOtp.trim()) {
+      toast.error(t("BookingComponents.GuestInformationModal.otpEmptyError"));
+      return;
+    }
+
+    try {
+      const response = await verifyApi.verifyEmailOtp(email, emailOtp);
+      toast.success(t("BookingComponents.GuestInformationModal.emailVerified"));
+      setEmailVerified(true);
+      setEmailAlreadyVerified(false); // This was verified through OTP, not already verified
+      setEmailOtpSent(false);
+      setEmailCountdown(0);
+      setEmailOtp("");
+      setErrorMessage(null);
+    } catch (err: any) {
+      toast.error(t("BookingComponents.GuestInformationModal.otpInvalidError"));
+    }
+  };
+
+  const validatePhoneNumber = () => {
+    if (!phone) return false;
+    // Remove all non-digit characters and check length
+    const phoneDigits = phone.replace(/\D/g, "");
+    // For international numbers, ensure we have at least 10 digits (excluding country code if needed)
+    return phoneDigits.length >= 10;
+  };
+
+  // const handleVerifyPhone = async () => {
+  //   setIsPhoneVerifying(true);
+  //   try {
+  //     const response = await verifyApi.sendPhoneOtp(phone);
+  //     setUpdateMessage(
+  //       response.message || t("BookingComponents.GuestInformationModal.otpSent")
+  //     );
+  //     setPhoneOtpSent(true);
+  //     setPhoneCountdown(300);
+  //     setPhoneVerified(false);
+  //     setErrors(prev => ({ ...prev, phone: '' }));
+  //   } catch (err: any) {
+  //     setErrorMessage(
+  //       err.message || t("BookingComponents.GuestInformationModal.otpSendFailed")
+  //     );
+  //   } finally {
+  //     setIsPhoneVerifying(false);
+  //   }
+  // };
+
+  // const handleVerifyPhoneOtp = async () => {
+  //   if (!phoneOtp.trim()) {
+  //     setErrorMessage(t("BookingComponents.GuestInformationModal.otpEmptyError"));
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await verifyApi.verifyPhoneOtp(phone || "", phoneOtp);
+  //     setUpdateMessage(t("BookingComponents.GuestInformationModal.phoneVerified"));
+  //     setPhoneVerified(true);
+  //     setPhoneOtpSent(false);
+  //     setPhoneCountdown(0);
+  //     setPhoneOtp("");
+  //     setErrorMessage(null);
+  //   } catch (err: any) {
+  //     setErrorMessage(
+  //       err.message || t("BookingComponents.GuestInformationModal.otpInvalidError")
+  //     );
+  //   }
+  // };
+
+  const handleUpdate = async () => {
+    let valid = true;
+    const newErrors: { [key: string]: string } = {};
+
+    for (let i = 0; i < guests.length; i++) {
+      const guest = guests[i];
+      if (!guest.firstName || !/^[A-Za-z\s]+$/.test(guest.firstName)) {
+        newErrors[`firstName-${i}`] = t(
+          "BookingComponents.GuestInformationModal.firstNameError"
+        );
+        valid = false;
+      }
+      if (!guest.lastName || !/^[A-Za-z\s]+$/.test(guest.lastName)) {
+        newErrors[`lastName-${i}`] = t(
+          "BookingComponents.GuestInformationModal.lastNameError"
+        );
+        valid = false;
+      }
+      if (!guest.dob) {
+        newErrors[`dob-${i}`] = t(
+          "BookingComponents.GuestInformationModal.dobError"
+        );
+        valid = false;
+      }
+    }
+
+    if (!email) {
+      newErrors["email"] = t(
+        "BookingComponents.GuestInformationModal.emailError"
+      );
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors["email"] = t(
+        "BookingComponents.GuestInformationModal.emailInvalidError"
+      );
+      valid = false;
+    }
+
+    if (!emailVerified) {
+      newErrors["email"] = t(
+        "BookingComponents.GuestInformationModal.emailNotVerified"
+      );
+      valid = false;
+    }
+
+    // if (!phoneVerified) {
+    //   newErrors["phone"] = t(
+    //     "BookingComponents.GuestInformationModal.phoneNotVerified"
+    //   );
+    //   valid = false;
+    // }
+    setErrors(newErrors);
+    if (!valid) return;
+
+    setIsLoading(true); // Set loading state to show loader
+    try {
+      // setUpdateMessage(
+      //   t("BookingComponents.GuestInformationModal.informationVerified")
+      // );
+      toast.success(
+        t("BookingComponents.GuestInformationModal.informationVerified")
+      );
+      dispatch(
+        setGuestDetails({
+          guests,
+          email,
+          phone,
+          rooms: guestData?.rooms || 1,
+          adults: guestData?.guests || 1,
+          children: guestData?.children || 0,
+          infants: guestData?.infants || 0,
+          childAges: guestData?.childAges || [],
+        })
+      );
+      setIsFormUpdated(true);
+      await getFinalPrice(selectedRoom, checkInDate, checkOutDate, guestData); // Await async call
+      setActiveSection("review");
+    } catch (error) {
+      // setErrorMessage(t("BookingComponents.GuestInformationModal.updateError"));\
+      toast.error(t("BookingComponents.GuestInformationModal.updateError"));
+    } finally {
+      setIsLoading(false); // Reset loading state
+    }
+  };
+        //console.log("selected rateplan",selectedRateplan)
+
+  const handleConfirmBooking = async () => {
+    if (isFormUpdated && selectedRoom) {
+      //console.log("selected rateplan",selectedRateplan)
+      const propertyId =
+        selectedRoom.propertyInfo_id ||
+        selectedRoom.property_id ||
+        selectedRoom.propertyId ||
+        "";
+      if (!propertyId) {
+        toast.error(
+          t("BookingComponents.GuestInformationModal.propertyInfoMissing")
+        );
+        return;
+      }
+      if (!finalPrice || !finalPrice.totalAmount) {
+        toast.error(
+          t("BookingComponents.GuestInformationModal.priceFetchError")
+        );
+        return;
+      }
+      const totalPrice = parseFloat(
+        (finalPrice.priceAfterTax ?? finalPrice.totalAmount ?? 0).toFixed(2)
+      );
+      dispatch(setAmount(totalPrice));
+      dispatch(setRoomId(selectedRoom._id))
+      dispatch(setTotalTax(finalPrice.totalTax ?? null));
+      dispatch(setRatePlanCode(selectedRateplan));
+      setIsLoading(true);
+      try {
+        const minLoadingTime = new Promise((resolve) =>
+          setTimeout(resolve, 500)
+        );
+        await Promise.all([
+          onConfirmBooking({
+            email,
+            phone: phone || "",
+            propertyId,
+            roomId: selectedRoom._id,
+            checkIn: checkInDate,
+            checkOut: checkOutDate,
+            amount: totalPrice, // ← number, not string
+            userId: authUser?._id,
+            rooms: guestData?.rooms || 1,
+            adults: guestData?.guests || 1,
+            children: guestData?.children || 0,
+            infants: guestData?.infants || 0,
+            guests,
+            hotelName: guestData?.hotelName || "",
+            ratePlanCode: selectedRateplan,
+            roomType: selectedRoom.room_type || "",
+            currency: finalPrice.dailyBreakdown?.[0]?.currencyCode || "",
+          }),
+          minLoadingTime,
+        ]);
+      } catch (error) {
+        toast.error(t("BookingComponents.GuestInformationModal.bookingError"));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  if (!isOpen || !selectedRoom) return null;
+
+  const nightsCount = calculateNights(checkInDate, checkOutDate);
+  const nightsText =
+    nightsCount === 1
+      ? t("BookingComponents.GuestInformationModal.nights")
+      : t("BookingComponents.GuestInformationModal.nightsPlural");
+
+  const getGuestCountDisplay = () => {
+    const rooms = guestData?.rooms || 1;
+    const adults = guestData?.guests || 1;
+    const children = guestData?.children || 0;
+    const infants = guestData?.infants || 0;
+    const roomText =
+      rooms === 1
+        ? t("BookingComponents.GuestInformationModal.roomSingular")
+        : t("BookingComponents.GuestInformationModal.roomsPlural");
+    const adultText =
+      adults === 1
+        ? t("BookingComponents.GuestInformationModal.adultSingular")
+        : t("BookingComponents.GuestInformationModal.adultsPlural");
+    const childText =
+      children === 1
+        ? t("BookingComponents.GuestInformationModal.childSingular")
+        : t("BookingComponents.GuestInformationModal.childrenPlural");
+    const infantText =
+      infants === 1
+        ? t("BookingComponents.GuestInformationModal.infantSingular")
+        : t("BookingComponents.GuestInformationModal.infantsPlural");
+
+    let display = `${rooms} ${roomText} · ${adults} ${adultText}`;
+    if (children > 0) {
+      display += ` · ${children} ${childText}`;
+    }
+    if (infants > 0) {
+      display += ` · ${infants} ${infantText}`;
+    }
+    return display;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    if (errors.phone) {
+      setErrors((prev) => ({ ...prev, phone: "" }));
+    }
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-60 z-40 transition-opacity duration-300"
+        onClick={onClose}
+      ></div>
+
+      {/* Modal */}
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all duration-300">
+          {/* Header */}
+          <div className="flex items-center justify-between bg-tripswift-blue text-tripswift-off-white px-4 py-3">
+            <h2 className="text-xl font-tripswift-bold tracking-tight">
+              {t("BookingComponents.GuestInformationModal.completeYourBooking")}
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-white/10 transition-colors"
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="bg-tripswift-off-white px-4 py-2 border-b border-tripswift-black/10">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col items-center">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-tripswift-bold ${
+                    activeSection === "details" || isFormUpdated
+                      ? "bg-tripswift-blue text-tripswift-off-white"
+                      : "bg-tripswift-black/10 text-tripswift-black/60"
+                  }`}
+                >
+                  1
+                </div>
+                <span className="text-xs mt-1 font-tripswift-medium text-tripswift-black/80">
+                  {t(
+                    "BookingComponents.GuestInformationModal.guestDetailsStep"
+                  )}
+                </span>
+              </div>
+              <div className="flex-1 mx-4">
+                <div
+                  className={`h-1 rounded-full ${
+                    isFormUpdated
+                      ? "bg-tripswift-blue"
+                      : "bg-tripswift-black/20"
+                  } transition-all duration-300`}
+                ></div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-tripswift-bold ${
+                    activeSection === "review" && isFormUpdated
+                      ? "bg-tripswift-blue text-tripswift-off-white"
+                      : "bg-tripswift-black/10 text-tripswift-black/60"
+                  }`}
+                >
+                  2
+                </div>
+                <span className="text-xs mt-1 font-tripswift-medium text-tripswift-black/80">
+                  {t(
+                    "BookingComponents.GuestInformationModal.reviewAndPayStep"
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {errorMessage && (
+              <div className="bg-red-50 text-red-600 p-2 rounded-lg text-sm font-tripswift-medium">
+                {errorMessage}
+              </div>
+            )}
+            {updateMessage && (
+              <div className="bg-green-50 text-green-600 p-2 rounded-lg text-sm font-tripswift-medium">
+                {updateMessage}
+              </div>
+            )}
+
+            {activeSection === "details" ? (
+              <div className="space-y-3">
+                {/* Room Summary Card */}
+                <div className="bg-tripswift-off-white rounded-xl px-4 py-2 shadow-sm border border-tripswift-black/10">
+                  <h3 className="text-lg font-tripswift-bold text-tripswift-black mb-2">
+                    {selectedRoom.room_name}
+                  </h3>
+                  <div className="flex items-center py-1">
+                    <Calendar className="text-tripswift-blue h-5 w-5" />
+                    <div
+                      className={`flex flex-wrap ${
+                        i18n.language === "ar" ? "mr-3" : "ml-3"
+                      }`}
+                    >
+                      <span
+                        className={`text-sm bg-tripswift-blue/10 px-3 rounded-full font-tripswift-medium text-tripswift-black/80 ${
+                          i18n.language === "ar"
+                            ? "text-right ml-2"
+                            : "text-left mr-2"
+                        }`}
+                      >
+                        {i18n.language === "ar" ? (
+                          <>
+                            {formatDate(checkOutDate)} -{" "}
+                            {formatDate(checkInDate)}
+                          </>
+                        ) : (
+                          <>
+                            {formatDate(checkInDate)} -{" "}
+                            {formatDate(checkOutDate)}
+                          </>
+                        )}
+                      </span>
+                      <span className="text-sm bg-tripswift-blue/10 px-3 rounded-full font-tripswift-medium text-tripswift-black/80">
+                        {nightsCount} {nightsText}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Guest Information Form */}
+                <div className="bg-white rounded-xl px-4 py-2 shadow-sm border border-tripswift-black/10">
+                  <h3 className="text-lg font-tripswift-bold text-tripswift-black mb-2">
+                    {t(
+                      "BookingComponents.GuestInformationModal.guestInformation"
+                    )}
+                  </h3>
+                  <div className="space-y-3">
+                    {guests.map((guest, index) => (
+                      <div key={`${guest.type}-${index}`} className="space-y-2">
+                        <h4 className="text-base font-tripswift-bold text-tripswift-black capitalize">
+                          {t(
+                            `BookingComponents.GuestInformationModal.${guest.type}Singular`
+                          )}{" "}
+                          {index -
+                            (guest.type === "child"
+                              ? guestData?.guests || 1
+                              : guest.type === "infant"
+                              ? (guestData?.guests || 1) +
+                                (guestData?.children || 0)
+                              : 0) +
+                            1}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label
+                              htmlFor={`firstName-${guest.type}-${index}`}
+                              className="text-sm font-tripswift-medium text-tripswift-black/80 flex items-center mb-1"
+                            >
+                              <User
+                                size={16}
+                                className={`text-tripswift-blue  ${
+                                  i18n.language === "ar" ? "ml-2" : "mr-2"
+                                }`}
+                              />
+                              {t(
+                                "BookingComponents.GuestInformationModal.firstNameLabel"
+                              )}
+                            </label>
+                            <input
+                              type="text"
+                              id={`firstName-${guest.type}-${index}`}
+                              value={guest.firstName}
+                              onChange={(e) =>
+                                handleGuestChange(
+                                  index,
+                                  "firstName",
+                                  e.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "BookingComponents.GuestInformationModal.firstNamePlaceholder"
+                              )}
+                              className="w-full px-3 py-2 border border-tripswift-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-tripswift-blue/30 text-sm transition-all duration-200"
+                              required
+                            />
+                            {errors[`firstName-${index}`] && (
+                              <p className="text-xs text-red-600 mt-1">
+                                {errors[`firstName-${index}`]}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <label
+                              htmlFor={`lastName-${guest.type}-${index}`}
+                              className="text-sm font-tripswift-medium text-tripswift-black/80 flex items-center mb-1"
+                            >
+                              <User
+                                size={16}
+                                className={`text-tripswift-blue  ${
+                                  i18n.language === "ar" ? "ml-2" : "mr-2"
+                                }`}
+                              />
+                              {t(
+                                "BookingComponents.GuestInformationModal.lastNameLabel"
+                              )}
+                            </label>
+                            <input
+                              type="text"
+                              id={`lastName-${guest.type}-${index}`}
+                              value={guest.lastName}
+                              onChange={(e) =>
+                                handleGuestChange(
+                                  index,
+                                  "lastName",
+                                  e.target.value
+                                )
+                              }
+                              placeholder={t(
+                                "BookingComponents.GuestInformationModal.lastNamePlaceholder"
+                              )}
+                              className="w-full px-3 py-2 border border-tripswift-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-tripswift-blue/30 text-sm transition-all duration-200"
+                              required
+                            />
+                            {errors[`lastName-${index}`] && (
+                              <p className="text-xs text-red-600 mt-1">
+                                {errors[`lastName-${index}`]}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <label
+                              htmlFor={`dob-${guest.type}-${index}`}
+                              className="text-sm font-tripswift-medium text-tripswift-black/80 flex  items-center mb-1"
+                            >
+                              <Calendar
+                                size={16}
+                                className={`text-tripswift-blue  ${
+                                  i18n.language === "ar" ? "ml-2" : "mr-2"
+                                }`}
+                              />
+                              {t("BookingComponents.GuestInformationModal.dob")}
+                            </label>
+                            <input
+                              type="date"
+                              id={`dob-${guest.type}-${index}`}
+                              value={guest.dob}
+                              onChange={(e) =>
+                                handleGuestChange(index, "dob", e.target.value)
+                              }
+                              max={
+                                guest.type === "adult"
+                                  ? getFormattedDate(
+                                      new Date(
+                                        new Date().setFullYear(
+                                          new Date().getFullYear() - 13
+                                        )
+                                      )
+                                    )
+                                  : guest.type === "child"
+                                  ? getFormattedDate(
+                                      new Date(
+                                        new Date().setFullYear(
+                                          new Date().getFullYear() - 2
+                                        )
+                                      )
+                                    )
+                                  : getFormattedDate(new Date())
+                              }
+                              min={
+                                guest.type === "child"
+                                  ? getFormattedDate(
+                                      new Date(
+                                        new Date().setFullYear(
+                                          new Date().getFullYear() - 13
+                                        )
+                                      )
+                                    )
+                                  : guest.type === "infant"
+                                  ? getFormattedDate(
+                                      new Date(
+                                        new Date().setFullYear(
+                                          new Date().getFullYear() - 2
+                                        )
+                                      )
+                                    )
+                                  : undefined
+                              }
+                              className={`w-full px-3 py-2 border border-tripswift-black/20 rounded-lg focus:outline-none 
+      focus:ring-2 focus:ring-tripswift-blue/30 text-sm transition-all duration-200 
+      ${i18n.language === "ar" ? "text-right" : ""}`}
+                              required
+                            />
+                            {errors[`dob-${index}`] && (
+                              <p className="text-xs text-red-600 mt-1">
+                                {errors[`dob-${index}`]}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div>
+                      <label
+                        htmlFor="email"
+                        className="text-sm font-tripswift-medium text-tripswift-black/80 flex items-center mb-1"
+                      >
+                        <Mail
+                          size={16}
+                          className={`text-tripswift-blue ${
+                            i18n.language === "ar" ? "ml-2" : "mr-2"
+                          }`}
+                        />
+                        {t(
+                          "BookingComponents.GuestInformationModal.emailLabel"
+                        )}
+                      </label>
+                      <div className="flex flex-col md:flex-row md:items-center gap-2">
+                        <input
+                          type="email"
+                          id="email"
+                          value={email}
+                          onChange={(e) => {
+                            const newEmail = e.target.value;
+                            // Clear email error when typing
+                            if (
+                              errors.email &&
+                              /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)
+                            ) {
+                              setErrors((prev) => ({ ...prev, email: "" }));
+                            }
+                            if (emailVerified && newEmail !== email) {
+                              setEmailVerified(false);
+                              setEmailAlreadyVerified(false);
+                              setEmailOtpSent(false);
+                              setEmailOtp("");
+                              setEmailCountdown(0);
+                            }
+                            setEmail(newEmail);
+                          }}
+                          placeholder={t(
+                            "BookingComponents.GuestInformationModal.emailPlaceholder"
+                          )}
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-tripswift-blue/30 text-sm transition-all duration-200 ${
+                            errors.email
+                              ? "border-red-600"
+                              : "border-tripswift-black/20"
+                          }`}
+                          required
+                        />
+                        {!emailVerified && (
+                          <button
+                            onClick={() => {
+                              if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                                setErrors((prev) => ({ ...prev, email: "" }));
+                              }
+                              handleVerifyEmail();
+                            }}
+                            type="button"
+                            disabled={
+                              isEmailVerifying ||
+                              !email ||
+                              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                            }
+                            className={`px-4 py-2 rounded-lg text-sm transition whitespace-nowrap ${
+                              isEmailVerifying ||
+                              !email ||
+                              !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                                ? "bg-gray-300 text-black cursor-not-allowed"
+                                : "bg-tripswift-blue text-tripswift-off-white hover:bg-tripswift-blue/90"
+                            }`}
+                          >
+                            {isEmailVerifying ? (
+                              <>
+                                {/* <Loader2 className="w-4 h-4 animate-spin text-tripswift-off-white" /> */}
+                                <span>
+                                  {t(
+                                    "BookingComponents.GuestInformationModal.verifying"
+                                  )}
+                                </span>
+                              </>
+                            ) : (
+                              t(
+                                "BookingComponents.GuestInformationModal.verifyEmail"
+                              )
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      {emailOtpSent && emailCountdown > 0 && !emailVerified && (
+                        <div className="mt-3 flex flex-col md:flex-row md:items-center gap-2">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            placeholder={t(
+                              "BookingComponents.GuestInformationModal.otpPlaceholder"
+                            )}
+                            value={emailOtp}
+                            maxLength={6}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "");
+                              setEmailOtp(value);
+                              setErrorMessage(null);
+                            }}
+                            onKeyPress={(e) => {
+                              if (
+                                !/[0-9]/.test(e.key) &&
+                                e.key !== "Backspace" &&
+                                e.key !== "Delete" &&
+                                e.key !== "Tab"
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-tripswift-black/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-tripswift-blue/30 text-sm transition-all duration-200"
+                          />
+                          <button
+                            onClick={handleVerifyEmailOtp}
+                            disabled={emailOtp.trim().length !== 6}
+                            className={`px-4 py-2 rounded-lg text-sm transition whitespace-nowrap ${
+                              emailOtp.trim().length !== 6
+                                ? "bg-gray-300 text-black cursor-not-allowed"
+                                : "bg-green-600 text-white hover:bg-green-700"
+                            }`}
+                          >
+                            {t(
+                              "BookingComponents.GuestInformationModal.verifyOtp"
+                            )}
+                          </button>
+                          <p className="text-xs text-tripswift-black/60 sm:ml-2 mt-1 sm:mt-0">
+                            {t(
+                              "BookingComponents.GuestInformationModal.otpExpiresIn"
+                            )}{" "}
+                            {Math.floor(emailCountdown / 60)}:
+                            {String(emailCountdown % 60).padStart(2, "0")}
+                          </p>
+                        </div>
+                      )}
+                      {emailVerified && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✅{" "}
+                          {emailAlreadyVerified
+                            ? t(
+                                "BookingComponents.GuestInformationModal.emailAlreadyVerified"
+                              )
+                            : t(
+                                "BookingComponents.GuestInformationModal.emailVerified"
+                              )}
+                        </p>
+                      )}
+                      {errors.email && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {errors.email}
+                        </p>
+                      )}
+                      <p className="text-xs text-tripswift-black/50 mt-1">
+                        {t("BookingComponents.GuestInformationModal.emailInfo")}
+                      </p>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="phone"
+                        className="text-sm font-tripswift-medium text-tripswift-black/80 flex items-center mb-1"
+                      >
+                        <Phone
+                          size={16}
+                          className={`text-tripswift-blue ${
+                            i18n.language === "ar" ? "ml-2" : "mr-2"
+                          }`}
+                        />
+                        {t(
+                          "BookingComponents.GuestInformationModal.phoneLabel"
+                        )}
+                      </label>
+                      <div
+                        dir={i18n.language === "ar" ? "rtl" : "ltr"}
+                        className="flex flex-col md:flex-row md:items-center gap-2"
+                      >
+                        <PhoneInput
+                          country={"in"}
+                          value={phone}
+                          onChange={handlePhoneChange}
+                          placeholder={t(
+                            "BookingComponents.GuestInformationModal.phonePlaceholder"
+                          )}
+                          inputProps={{
+                            name: "phone",
+                            id: "phone",
+                            className: `w-full px-14 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-tripswift-blue/20 focus:border-tripswift-blue text-xs sm:text-sm font-tripswift-regular ${
+                              errors.phone
+                                ? "border-red-600"
+                                : "border-tripswift-black/20"
+                            }`,
+                          }}
+                          containerClass="w-full"
+                          // inputClass={`w-full px-3 py-2 h-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-tripswift-blue/20 focus:border-tripswift-blue text-xs sm:text-sm font-tripswift-regular ${errors.phone ? "border-red-600" : "border-tripswift-black/20"}`}
+                          buttonClass="!border-tripswift-black/20 !bg-white !hover:bg-gray-50 !rounded-l-lg !h-10 !px-1"
+                          dropdownClass="text-sm !absolute !bottom-full !mb-1 !top-auto"
+                          dropdownStyle={{
+                            position: "absolute",
+                            bottom: "100%",
+                            top: "auto",
+                            marginBottom: "4px",
+                            zIndex: 9999,
+                            backgroundColor: "white",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "8px",
+                          }}
+                          countryCodeEditable={false}
+                          enableSearch={true}
+                          disableSearchIcon={true}
+                        />
+                      </div>
+                      {/* {!phoneVerified && (
+  <button
+    onClick={() => {
+      if (phone && phone.replace(/\D/g, '').replace(/^91/, '').length >= 10) {
+        setErrors(prev => ({ ...prev, phone: '' }));
+      }
+      handleVerifyPhone();
+    }}
+    type="button"
+    disabled={isPhoneVerifying || !phone || phone.replace(/\D/g, '').replace(/^91/, '').length < 10}
+    className={`px-4 py-2 rounded-lg text-sm transition whitespace-nowrap ${isPhoneVerifying || !phone || phone.replace(/\D/g, '').replace(/^91/, '').length < 10
+      ? 'bg-gray-300 text-black cursor-not-allowed'
+      : 'bg-tripswift-blue text-tripswift-off-white hover:bg-tripswift-blue/90'
+      }`}
+  >
+    {isPhoneVerifying ? (
+      <>
+        <span>{t("BookingComponents.GuestInformationModal.verifying")}</span>
+      </>
+    ) : (
+      t("BookingComponents.GuestInformationModal.verifyPhone")
+    )}
+  </button>
+)} */}
+
+                      {/* {phoneOtpSent && phoneCountdown > 0 && !phoneVerified && (
+  <div className="mt-3 flex flex-col md:flex-row md:items-center gap-2">
+    <input
+      type="text"
+      placeholder={t("BookingComponents.GuestInformationModal.otpPlaceholder")}
+      value={phoneOtp}
+      maxLength={6}
+      onChange={(e) => {
+        setPhoneOtp(e.target.value);
+        if (errorMessage && errorMessage.includes("OTP")) {
+          setErrorMessage(null);
+        }
+      }}
+      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-tripswift-blue/30 text-sm transition-all duration-200 ${errorMessage && errorMessage.includes("OTP") ? "border-red-600" : "border-tripswift-black/20"
+        }`}
+    />
+    <p className="text-xs text-tripswift-black/60 sm:ml-2 mt-1 sm:mt-0">
+      {t("BookingComponents.GuestInformationModal.otpExpiresIn")} {Math.floor(phoneCountdown / 60)}:{String(phoneCountdown % 60).padStart(2, "0")}
+    </p>
+  </div>
+)} */}
+                      {/* {phoneVerified && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✅ {t("BookingComponents.GuestInformationModal.phoneVerified")}
+                        </p>
+                      )} */}
+                      {errors.phone && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {errors.phone}
+                        </p>
+                      )}
+                      <p className="text-xs text-tripswift-black/50 mt-1">
+                        {t("BookingComponents.GuestInformationModal.phoneInfo")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Booking Summary Card */}
+                <div className="bg-tripswift-off-white rounded-xl shadow-sm border border-tripswift-black/10 overflow-hidden">
+                  <div className="bg-tripswift-blue/10 px-4 py-2 rounded-t-xl">
+                    <h3 className="text-lg font-tripswift-bold text-tripswift-black">
+                      {t(
+                        "BookingComponents.GuestInformationModal.bookingSummary"
+                      )}
+                    </h3>
+                  </div>
+                  <div className="px-4 pb-3 grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-x-6 text-sm">
+                    {/* Stay Details */}
+                    <div>
+                      <h4 className="text-base font-tripswift-medium text-tripswift-black mb-1 flex items-center">
+                        <Calendar
+                          size={16}
+                          className={`text-tripswift-blue ${
+                            i18n.language === "ar" ? "ml-2" : "mr-2"
+                          }`}
+                        />
+                        {t(
+                          "BookingComponents.GuestInformationModal.stayDetails"
+                        )}
+                      </h4>
+                      <div className="space-y-2 ml-6 mt-1">
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t(
+                              "BookingComponents.GuestInformationModal.roomType"
+                            )}
+                          </p>
+                          <p className="text-sm font-tripswift-medium break-words max-w-[280px]">
+                            {selectedRoom.room_name} ({selectedRoom.room_type})
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t(
+                              "BookingComponents.GuestInformationModal.checkIn"
+                            )}
+                          </p>
+                          <p className="text-sm font-tripswift-medium">
+                            {formatDate(checkInDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t(
+                              "BookingComponents.GuestInformationModal.checkOut"
+                            )}
+                          </p>
+                          <p className="text-sm font-tripswift-medium">
+                            {formatDate(checkOutDate)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t(
+                              "BookingComponents.GuestInformationModal.nightsPlural"
+                            )}
+                          </p>
+                          <p className="text-sm font-tripswift-medium">
+                            {nightsCount} {nightsText}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t(
+                              "BookingComponents.GuestInformationModal.guests"
+                            )}
+                          </p>
+                          <p className="text-sm font-tripswift-medium">
+                            {getGuestCountDisplay()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Guest Information */}
+                    <div>
+                      <h4 className="text-base font-tripswift-medium text-tripswift-black mb-1 flex items-center">
+                        <User
+                          size={16}
+                          className={`text-tripswift-blue ${
+                            i18n.language === "ar" ? "ml-2" : "mr-2"
+                          }`}
+                        />
+                        {t(
+                          "BookingComponents.GuestInformationModal.guestInformation"
+                        )}
+                      </h4>
+                      <div className="space-y-2 ml-6 mt-1">
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t(
+                              "BookingComponents.GuestInformationModal.primaryGuest"
+                            )}
+                          </p>
+                          <p className="text-sm font-tripswift-medium break-words max-w-[280px]">
+                            {guests[0]?.firstName} {guests[0]?.lastName}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t("BookingComponents.GuestInformationModal.email")}
+                          </p>
+                          <p className="text-sm font-tripswift-medium break-words max-w-[280px]">
+                            {email}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-tripswift-black/60">
+                            {t("BookingComponents.GuestInformationModal.phone")}
+                          </p>
+                          <p
+                            className={`text-sm font-tripswift-medium ${
+                              i18n.language === "ar" ? "text-right" : ""
+                            }`}
+                            dir="ltr"
+                          >
+                            {phone
+                              ? phone.startsWith("+")
+                                ? phone
+                                : `+${phone}`
+                              : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price Summary Card */}
+                {/* Price Summary Card - Fixed with Null Checks */}
+                {finalPrice && finalPrice.totalAmount ? (
+                  <div className="bg-tripswift-off-white rounded-xl shadow-sm border border-tripswift-black/10 overflow-hidden">
+                    <div className="bg-tripswift-blue/10 px-4 py-2 rounded-t-xl">
+                      <h3 className="text-lg font-tripswift-bold text-tripswift-black">
+                        {t(
+                          "BookingComponents.GuestInformationModal.priceDetails"
+                        )}
+                      </h3>
+                    </div>
+                    <div className="px-4 pb-3 space-y-2 text-sm">
+                      {/* Base Rate */}
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-sm text-tripswift-black/70">
+                          {t(
+                            "BookingComponents.GuestInformationModal.baseRatePerRoomPerNight"
+                          )}
+                          :
+                        </span>
+                        <span className="text-sm font-tripswift-medium tabular-nums">
+                          {finalPrice.dailyBreakdown?.[0]?.currencyCode ||
+                            "USD"}{" "}
+                          {(
+                            finalPrice.breakdown?.totalBaseAmount || 0
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+
+                      {/* Additional Charges */}
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-sm text-tripswift-black/70">
+                          {t(
+                            "BookingComponents.GuestInformationModal.additionalGuestCharges"
+                          )}
+                          :
+                        </span>
+                        <span className="text-sm font-tripswift-medium tabular-nums">
+                          {finalPrice.dailyBreakdown?.[0]?.currencyCode ||
+                            "USD"}{" "}
+                          {(
+                            finalPrice.breakdown?.totalAdditionalCharges || 0
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+
+                      {/* Subtotal (before tax) - Only show if tax data exists */}
+                      {finalPrice.tax &&
+                        Array.isArray(finalPrice.tax) &&
+                        finalPrice.tax.length > 0 && (
+                          <div className="flex justify-between items-center py-1 border-t border-tripswift-black/10 pt-2">
+                            <span className="text-sm font-tripswift-medium text-tripswift-black">
+                              {t(
+                                "BookingComponents.GuestInformationModal.subtotalBeforeTax"
+                              )}
+                              :
+                            </span>
+                            <span className="text-sm font-tripswift-bold tabular-nums">
+                              {finalPrice.dailyBreakdown?.[0]?.currencyCode ||
+                                "USD"}{" "}
+                              {(
+                                (finalPrice.breakdown?.totalBaseAmount || 0) +
+                                (finalPrice.breakdown?.totalAdditionalCharges ||
+                                  0)
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+
+                      {/* Tax Details - Only show if tax data exists */}
+                      {finalPrice.tax &&
+                        Array.isArray(finalPrice.tax) &&
+                        finalPrice.tax.length > 0 && (
+                          <div className="space-y-1">
+                            <div className="text-sm font-tripswift-medium text-tripswift-black/80 mt-2 mb-1">
+                              {t(
+                                "BookingComponents.GuestInformationModal.taxBreakdown"
+                              )}
+                              :
+                            </div>
+                            {finalPrice.tax
+                              .filter(
+                                (taxItem) =>
+                                  taxItem &&
+                                  typeof taxItem.amount === "number" &&
+                                  !isNaN(taxItem.amount)
+                              )
+                              .map((taxItem, index) => (
+                                <div
+                                  key={index}
+                                  className="flex justify-between items-center py-1"
+                                >
+                                  <span className="text-sm text-tripswift-black/70">
+                                    {taxItem.name || "Tax"}{" "}
+                                    {taxItem.percentage !== undefined
+                                      ? `(${taxItem.percentage}%)`
+                                      : taxItem.type
+                                      ? `(${taxItem.type})`
+                                      : ""}
+                                    :
+                                  </span>
+                                  <span className="text-sm font-tripswift-medium tabular-nums">
+                                    {finalPrice.dailyBreakdown?.[0]
+                                      ?.currencyCode ||
+                                      finalPrice.dailyBreakdown?.find(
+                                        (day) => day.currencyCode
+                                      )?.currencyCode ||
+                                      "USD"}{" "}
+                                    {taxItem.amount.toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+
+                            {/* Total Tax - Only show if totalTax exists */}
+                            {finalPrice.totalTax &&
+                              typeof finalPrice.totalTax === "number" &&
+                              !isNaN(finalPrice.totalTax) && (
+                                <div className="flex justify-between items-center py-1 border-t border-tripswift-black/5 pt-1">
+                                  <span className="text-sm font-tripswift-medium text-tripswift-black">
+                                    {t(
+                                      "BookingComponents.GuestInformationModal.totalTax"
+                                    )}
+                                    :
+                                  </span>
+                                  <span className="text-sm font-tripswift-bold tabular-nums">
+                                    {finalPrice.dailyBreakdown?.[0]
+                                      ?.currencyCode ||
+                                      finalPrice.dailyBreakdown?.find(
+                                        (day) => day.currencyCode
+                                      )?.currencyCode ||
+                                      "USD"}{" "}
+                                    {finalPrice.totalTax.toLocaleString()}
+                                  </span>
+                                </div>
+                              )}
+                          </div>
+                        )}
+
+                      {/* Daily Breakdown */}
+                      {finalPrice.dailyBreakdown &&
+                        Array.isArray(finalPrice.dailyBreakdown) &&
+                        finalPrice.dailyBreakdown.length > 0 && (
+                          <div className="mt-2">
+                            <div className="text-sm font-tripswift-medium text-tripswift-black mb-1">
+                              {t(
+                                "BookingComponents.GuestInformationModal.roomRate"
+                              )}
+                              :
+                            </div>
+                            <div className="space-y-1 max-h-32 overflow-y-auto">
+                              {finalPrice.dailyBreakdown.map((day, index) => (
+                                <div
+                                  key={index}
+                                  className="flex justify-between items-center py-0.5 text-sm"
+                                >
+                                  <span className="text-tripswift-black/70 truncate max-w-[120px]">
+                                    {day.date || `Day ${index + 1}`}
+                                  </span>
+                                  <span className="font-tripswift-medium tabular-nums">
+                                    {day.currencyCode || "USD"}{" "}
+                                    {(
+                                      day.totalForAllRooms || 0
+                                    ).toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Final Total - Show with or without tax */}
+                      <div className="border-t border-tripswift-blue/20 pt-2 mt-2 bg-tripswift-blue/5 -mx-4 px-4 py-2 rounded-b-xl">
+                        <div className="flex justify-between items-center">
+                          <span className="text-base font-tripswift-bold text-tripswift-black">
+                            {finalPrice.priceAfterTax &&
+                            finalPrice.priceAfterTax !== finalPrice.totalAmount
+                              ? t(
+                                  "BookingComponents.GuestInformationModal.finalAmountIncludingTax"
+                                )
+                              : t(
+                                  "BookingComponents.GuestInformationModal.totalAmount"
+                                )}
+                          </span>
+                          <span className="text-lg font-tripswift-bold text-tripswift-blue tabular-nums">
+                            {finalPrice.dailyBreakdown?.[0]?.currencyCode ||
+                              "USD"}{" "}
+                            {finalPrice.priceAfterTax &&
+                            typeof finalPrice.priceAfterTax === "number" &&
+                            !isNaN(finalPrice.priceAfterTax)
+                              ? finalPrice.priceAfterTax.toLocaleString()
+                              : (finalPrice.totalAmount || 0).toLocaleString()}
+                          </span>
+                        </div>
+
+                        {/* Show tax info if available */}
+                        {finalPrice.totalTax != null &&
+                          !isNaN(finalPrice.totalTax) &&
+                          finalPrice.totalTax > 0 && (
+                            <div className="text-xs text-tripswift-black/60 mt-1">
+                              {t(
+                                "BookingComponents.GuestInformationModal.includesTaxAmount",
+                                {
+                                  currency:
+                                    finalPrice.dailyBreakdown?.[0]
+                                      ?.currencyCode || "USD",
+                                  amount: finalPrice.totalTax.toLocaleString(),
+                                }
+                              )}
+                            </div>
+                          )}
+                      </div>
+
+                      {/* Additional Info */}
+                      <div className="text-xs text-tripswift-black/60 mt-2 leading-relaxed">
+                        {t(
+                          "BookingComponents.GuestInformationModal.priceIncludes",
+                          {
+                            rooms:
+                              finalPrice.requestedRooms ||
+                              guestData?.rooms ||
+                              1,
+                            guests:
+                              (guestData?.guests || 1) +
+                              (guestData?.children || 0) +
+                              (guestData?.infants || 0),
+                          }
+                        )}
+                        {finalPrice.totalTax != null &&
+                          finalPrice.totalTax > 0 && (
+                            <div className="text-xs text-tripswift-black/60 mt-1">
+                              {t(
+                                "BookingComponents.GuestInformationModal.includesTaxes"
+                              )}
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-tripswift-off-white rounded-xl shadow-sm border border-tripswift-black/10 p-4 text-center">
+                    <p className="text-sm text-tripswift-black/60">
+                      {t(
+                        "BookingComponents.GuestInformationModal.priceLoading"
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Payment Notice */}
+                <div className="bg-tripswift-blue/5 rounded-xl px-4 py-3 border border-tripswift-blue/20">
+                  <div className="flex items-start gap-3">
+                    <CreditCard
+                      className="text-tripswift-blue flex-shrink-0 mt-1"
+                      size={18}
+                    />
+                    <div>
+                      <p className="text-sm font-tripswift-medium text-tripswift-black/80">
+                        {t(
+                          "BookingComponents.GuestInformationModal.paymentNoticeTitle"
+                        )}
+                      </p>
+                      <p className="text-xs text-tripswift-black/60 mt-1 leading-relaxed">
+                        {t(
+                          "BookingComponents.GuestInformationModal.paymentNoticeDescription"
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="bg-tripswift-off-white flex-col sm:flex-row border-t border-tripswift-black/10 px-4 py-2 flex justify-end gap-3">
+            <button
+              onClick={() =>
+                activeSection === "review"
+                  ? setActiveSection("details")
+                  : onClose()
+              }
+              className="px-6 py-2.5 border bg-tripswift-black/10 text-tripswift-black rounded-lg hover:bg-tripswift-black/20 transition-all duration-200 text-sm font-tripswift-medium"
+            >
+              {activeSection === "review"
+                ? t("BookingComponents.GuestInformationModal.backToDetails")
+                : t("BookingComponents.GuestInformationModal.cancel")}
+            </button>
+            <button
+              onClick={(e) => {
+                // Trigger the appropriate handler based on activeSection
+                activeSection === "details"
+                  ? handleUpdate()
+                  : handleConfirmBooking();
+              }}
+              disabled={
+                (activeSection === "details" &&
+                  (!emailVerified ||
+                    !validateGuestNames() ||
+                    !phone || // Check if phone exists
+                    !validatePhoneNumber())) || // Check if phone is valid
+                (activeSection === "review" && !isFormUpdated) ||
+                isLoading
+              }
+              className={`px-6 py-2.5 rounded-lg text-sm font-tripswift-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                (activeSection === "details" &&
+                  (!emailVerified ||
+                    !validateGuestNames() ||
+                    !phone ||
+                    !validatePhoneNumber())) ||
+                (activeSection === "review" && !isFormUpdated) ||
+                isLoading
+                  ? "bg-gray-300 text-black cursor-not-allowed"
+                  : "bg-tripswift-blue text-tripswift-off-white hover:bg-tripswift-blue/90 active:scale-95 active:opacity-80"
+              }`}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-tripswift-off-white" />
+                  <span>
+                    {activeSection === "details"
+                      ? t("BookingComponents.GuestInformationModal.processing")
+                      : t("BookingComponents.GuestInformationModal.processing")}
+                  </span>
+                </>
+              ) : activeSection === "details" ? (
+                t("BookingComponents.GuestInformationModal.continueToReview")
+              ) : (
+                t("BookingComponents.GuestInformationModal.proceedToPayment")
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default GuestInformationModal;

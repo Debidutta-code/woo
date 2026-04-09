@@ -1,0 +1,1634 @@
+{
+  "Auth": {
+    "Referral": {
+      "alreadyExists": "لديك بالفعل علاقة إحالة مع هذا المستخدم"
+    },
+    "Login": {
+      "title": "تسجيل الدخول إلى حسابك",
+      "subtitle": "مرحباً بعودتك! يرجى إدخال بيانات الاعتماد الخاصة بك.",
+      "heroTitle": {
+        "welcome": "مرحبًا",
+        "back": "بعودتك"
+      },
+      "heroSubtitle": "قم بتسجيل الدخول للوصول إلى عروض حصرية وإدارة مغامراتك القادمة بسهولة.",
+      "benefits": {
+        "exclusiveRates": "الوصول إلى أسعار وعروض حصرية للأعضاء فقط",
+        "freeCancellation": "إلغاء مجاني لمعظم الحجوزات مع خيارات مرنة",
+        "priorityService": "خدمة عملاء ودعم سفر ذو أولوية"
+      },
+      "emailLabel": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "كلمة المرور",
+      "rememberMe": "تذكرني",
+      "signInButton": "تسجيل الدخول",
+      "noAccountYet": "ليس لديك حساب بعد؟",
+      "createAccount": "إنشاء حساب",
+      "successMessage": "تم تسجيل الدخول بنجاح! مرحباً بعودتك.",
+      "errorMessage": "البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
+      "loginFailed": "فشل تسجيل الدخول.",
+      "wrongCredentials": "فشل تسجيل الدخول: بريد إلكتروني أو كلمة مرور خاطئة",
+      "googleSignIn": "تسجيل الدخول باستخدام Google",
+      "userAlreadyExists": "يوجد حساب بهذا البريد الإلكتروني بالفعل",
+      "genericError": "حدث خطأ أثناء تسجيل الدخول بـ Google"
+    },
+    "Register": {
+      "title": "إنشاء حساب",
+      "subtitle": "املأ بياناتك للبدء.",
+      "heroTitle": {
+        "join": "انضم",
+        "now": "الآن"
+      },
+      "heroSubtitle": "أنشئ حساباً للحصول على عروض سفر حصرية وإدارة رحلاتك بسهولة.",
+      "benefits": {
+        "memberPricing": "احجز رحلاتك بأسعار خاصة للأعضاء",
+        "personalizedRecommendations": "احصل على توصيات سفر مخصصة لك",
+        "manageBookings": "أدر جميع حجوزاتك في مكان واحد"
+      },
+      "firstNameLabel": "الاسم الأول",
+      "firstNamePlaceholder": "أحمد",
+      "lastNameLabel": "اسم العائلة",
+      "lastNamePlaceholder": "محمد",
+      "emailLabel": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "example@email.com",
+      "passwordLabel": "كلمة المرور",
+      "passwordHelp": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل بما في ذلك حرف كبير واحد وحرف صغير واحد ورقم واحد ورمز خاص واحد.",
+      "updateAccountButton": "تحديث الحساب",
+      "updatePasswordButton": "تحديث كلمة المرور",
+      "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+      "signIn": "تسجيل الدخول",
+      "successMessage": "تم التسجيل بنجاح! يرجى تسجيل الدخول.",
+      "genericError": "حدث خطأ ما",
+      "registrationFailed": "فشل التسجيل",
+      "createAccountButton": "إنشاء حساب",
+      "enterNewPassword": "أدخل كلمة المرور الجديدة",
+      "reEnterPassword": "أعد إدخال كلمة المرور الجديدة"
+    },
+    "ForgotPassword": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل عنوان بريدك الإلكتروني المسجل لإعادة تعيين كلمة المرور.",
+      "heroTitle": {
+        "reset": "إعادة تعيين",
+        "password": "كلمة المرور"
+      },
+      "heroSubtitle": "سنساعدك على العودة إلى حسابك بأمان.",
+      "benefits": {
+        "quickRecovery": "عملية استرداد كلمة المرور سريعة وسهلة",
+        "secureReset": "إعادة تعيين كلمة المرور بشكل آمن عبر التحقق من البريد الإلكتروني",
+        "quickAccess": "الوصول إلى حسابك مرة أخرى في غضون دقائق"
+      },
+      "emailLabel": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "you@example.com",
+      "sendResetLinkButton": "إرسال رابط إعادة التعيين",
+      "backToLogin": "العودة إلى تسجيل الدخول",
+      "successMessage": "تم إرسال رابط إعادة التعيين بنجاح إلى بريدك الإلكتروني",
+      "errors": {
+        "emailNotFound": "البريد الإلكتروني غير موجود. يرجى التحقق من عنوان بريدك الإلكتروني.",
+        "emailNotVerified": "البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني أولاً.",
+        "generic": "حدث خطأ. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "UpdatePassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أدخل كلمة مرور جديدة لـ {{email}}",
+      "heroTitle": {
+        "create": "إنشاء",
+        "newPassword": "كلمة مرور جديدة"
+      },
+      "heroSubtitle": "قم بتعيين كلمة مرور قوية وآمنة لحسابك للحفاظ على خطط سفرك آمنة.",
+      "benefits": {
+        "strongerPassword": "إنشاء كلمة مرور أقوى لتعزيز الأمان",
+        "protectInformation": "حماية معلوماتك الشخصية وحجوزاتك",
+        "quickAccess": "العودة لاستكشاف عروض السفر على الفور"
+      },
+      "newPasswordLabel": "كلمة المرور الجديدة",
+      "confirmPasswordLabel": "تأكيد كلمة المرور",
+      "passwordHelp": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل بما في ذلك حرف كبير واحد، وحرف صغير واحد، ورقم واحد، وحرف خاص واحد.",
+      "resetPasswordButton": "إعادة تعيين كلمة المرور",
+      "backToLogin": "العودة إلى تسجيل الدخول",
+      "successMessage": "تم إعادة تعيين كلمة المرور بنجاح.",
+      "errors": {
+        "generic": "حدث خطأ. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "Layout": {
+      "travelDestinationAlt": "وجهة سفر",
+      "memberBenefits": "مزايا العضوية",
+      "privacySecurity": {
+        "title": "خصوصيتك وأمانك",
+        "description": "يتم تشفير معلوماتك الشخصية وحمايتها باستخدام بروتوكولات أمان صناعية قياسية. نحن لا نشارك بياناتك أبدًا بدون إذن صريح منك."
+      }
+    },
+    "PasswordInput": {
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور"
+    },
+    "Button": {
+      "processing": "جارٍ المعالجة..."
+    },
+    "Validation": {
+      "fieldRequired": "{{field}} مطلوب",
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "emailInvalid": "يرجى إدخال عنوان بريد إلكتروني صالح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "confirmPasswordRequired": "يرجى تأكيد كلمة المرور الخاصة بك",
+      "passwordComplexity": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل بما في ذلك حرف كبير واحد، وحرف صغير واحد، ورقم واحد، وحرف خاص واحد.",
+      "minLength": "يجب أن يكون على الأقل {{count}} أحرف",
+      "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+      "firstNameInvalid": "الاسم الأول يجب أن يحتوي على حروف ومسافات فقط",
+      "lastNameInvalid": "اسم العائلة يجب أن يحتوي على حروف ومسافات فقط",
+      "namePatternInvalid": "{{field}} يجب أن يحتوي على حروف ومسافات فقط"
+    }
+  },
+  "Navbar": {
+    "pleaseLogin": "يرجى تسجيل الدخول لعرض رحلاتك",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح",
+    "becomeHost": "كن مضيفًا",
+    "becomeAgent": "أصبح شريكًا",
+    "myTrip": "رحلتي",
+    "notifications": "الإشعارات",
+    "profileSettings": "إعدادات الملف الشخصي",
+    "helpFeedback": "المساعدة والتعليقات",
+    "logout": "تسجيل الخروج",
+    "signUp": "اشترك",
+    "login": "تسجيل الدخول",
+    "referral": "أحِل صديقًا واربح"
+  },
+  "Footer": {
+    "companyTitle": "الشركة",
+    "aboutUs": "معلومات عنا",
+    "whyChooseUs": "لماذا تختارنا",
+    "pricing": "التسعير",
+    "testimonials": "الشهادات",
+    "resourcesTitle": "الموارد",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsAndConditions": "الشروط والأحكام",
+    "blog": "المدونة",
+    "contactUs": "اتصل بنا",
+    "productTitle": "المنتج",
+    "projectManagement": "إدارة المشاريع",
+    "timeTracker": "متتبع الوقت",
+    "timeSchedule": "جدول الوقت",
+    "leadGeneration": "توليد العملاء المحتملين",
+    "description": "رفيقك الموثوق في السفر للحجوزات السلسة والتجارب التي لا تُنسى.",
+    "newsletterTitle": "ابق على اطلاع",
+    "newsletterDescription": "اشترك للحصول على العروض الخاصة والتحديثات",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "subscribeButton": "اشترك",
+    "copyright": "© {year} الحجز. جميع الحقوق محفوظة."
+  },
+  "Profile": {
+    "editProfile": "تعديل الملف الشخصي",
+    "signOut": "تسجيل الخروج",
+    "overview": "نظرة عامة",
+    "myTrips": "رحلاتي",
+    "preferences": "التفضيلات",
+    "security": "الأمان",
+    "notifications": "الإشعارات",
+    "helpCenter": "مركز المساعدة",
+    "tripsCompleted": "الرحلات المكتملة",
+    "sinceJoining": "منذ الانضمام",
+    "averageRating": "متوسط التقييم",
+    "fromHosts": "من المضيفين",
+    "savedPlaces": "الأماكن المحفوظة",
+    "wishlisted": "في قائمة الرغبات",
+    "quickActions": "إجراءات سريعة",
+    "bookTrip": "حجز رحلة",
+    "savedPlacesAction": "الأماكن المحفوظة",
+    "rewards": "المكافآت",
+    "deals": "الصفقات",
+    "securitySettings": "إعدادات الأمان",
+    "changePassword": "تغيير كلمة المرور",
+    "updatePassword": "تحديث كلمة المرور الخاصة بك",
+    "twoFactorAuth": "المصادقة الثنائية",
+    "twoFactorDesc": "إضافة طبقة إضافية من الأمان إلى حسابك",
+    "enable2FA": "تفعيل المصادقة الثنائية",
+    "profileUpdatedSuccess": "تم تحديث الملف الشخصي بنجاح",
+    "profileUpdateFailed": "فشل في تحديث الملف الشخصي",
+    "contentComingSoon": "المحتوى لـ {{tab}} قادم قريبًا...",
+    "newPasswordOptional": "كلمة مرور جديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "joined": "انضم في {{date}}",
+    "notificationsDesc": "إدارة تفضيلات الإشعارات الخاصة بك وعرض الإشعارات الحديثة.",
+    "recentNotifications": "الإشعارات الحديثة",
+    "delete":{
+      "deleteAccount": "Delete Account",
+      "deleteAccountDesc": "Are you sure you want to delete your account? This action cannot be undone.",
+      "deleteAccountSuccess": "Account deleted successfully",
+      "deleteAccountFailed": "Failed to delete account",
+      "deleteAccountConfirm": "Delete Account",
+      "deleteAccountConfirmDesc": "Are you sure you want to delete your account? This action cannot be undone.",
+      "deleteAccountConfirmButton": "Delete Account",
+      "deleteAccountCancelButton": "Cancel"
+    }
+
+  },
+  "HotelCard": {
+    "heroTitle": "ابحث عن الإقامة المثالية لرحلتك",
+    "heroSubtitle": "اكتشف أماكن إقامة رائعة بأسعار حصرية",
+    "locationPlaceholder": "إلى أين أنت ذاهب؟",
+    "searchButton": "بحث",
+    "specialOffer": "عرض خاص: احصل على خصم يصل إلى 25% على الحجز الأول الخاص بك!",
+    "errorNoHotels": "لا توجد فنادق متاحة للموقع المحدد.",
+    "errorInvalidLocation": "يرجى إدخال موقع صالح.",
+    "errorSelectDates": "يرجى تحديد تاريخي الوصول والمغادرة.",
+    "exclusiveOffers": "عروض حصرية متاحة",
+    "freeCancellation": "إلغاء مجاني",
+    "bestPriceGuarantee": "ضمان أفضل الأسعار",
+    "downloadourapp": "حمّل تطبيقنا"
+  },
+  "Referral": {
+    "heroTitle": "أحِل صديقاً",
+    "heroSubtitle": "ادعُ أصدقاءك واستمتع بالمكافآت الحصرية عندما ينضمون",
+    "howItWorks": "كيف يعمل",
+    "howItWorksSubTitle": "ادع الأشخاص للفوز بالمكافآت",
+    "step1Title": "إرسال الدعوة",
+    "step1Desc": "شارك رابط الدعوة مع الأصدقاء واربح المكافآت",
+    "step2Title": "التسجيل",
+    "step2Desc": "دعهم يسجلون في خدمتنا باستخدام رابط الإحالة الخاص بك",
+    "step3Title": "الكسب",
+    "step3Desc": "احصل على المكافآت",
+    "stepLabel": "الخطوة {{number}}",
+    "shareYourLink": "شارك رابط الإحالة الخاص بك",
+    "shareDescription": "يمكنك أيضاً مشاركة رابط الإحالة الخاص بك عن طريق نسخه وإرساله لأصدقائك أو مشاركته على وسائل التواصل الاجتماعي.",
+    "copy": "نسخ رابط الإحالة",
+    "copied": "تم النسخ!",
+    "shareVia": "شارك عبر",
+    "generateQr": "إنشاء رمز QR",
+    "scanToShare": "امسح للمشاركة",
+    "scanDescription": "امسح رمز QR هذا أو احفظه للمشاركة مع الأصدقاء.",
+    "hideReferrals": "إخفاء الإحالات",
+    "viewYourReferrals": "عرض إحالاتك",
+    "total": "المجموع:",
+    "referrals": "إحالات",
+    "wallet": "المحفظة",
+    "currentBalance": "الرصيد الحالي",
+    "totalEarned": "إجمالي المكاسب",
+    "totalRedeemed": "إجمالي المستبدل",
+    "redeemEarnings": "استبدل أرباحك",
+    "enterAmount": "أدخل المبلغ",
+    "availableBalance": "الرصيد المتاح",
+    "redeem": "استبدال",
+    "lastUpdated": "آخر تحديث",
+    "redeemSuccess": "تم الاستبدال بنجاح! تم إضافة أرباحك إلى محفظتك.",
+    "tableName": "الاسم",
+    "tableEmail": "البريد الإلكتروني",
+    "tableReferralDate": "تاريخ الإحالة",
+    "tableId": "الهوية",
+    "noWalletData": "لا توجد بيانات محفظة متاحة.",
+    "startReferring": "ابدأ الإحالة الآن",
+    "refreshWallet": "تحديث المحفظة",
+    "noToken": "يرجى المحاولة مرة أخرى لاحقاً.",
+    "walletError": "خطأ في جلب بيانات المحفظة. يرجى المحاولة مرة أخرى لاحقاً.",
+    "insufficientBalance": "رصيد غير كافٍ للاستبدال.",
+    "redeemError": "خطأ في استبدال الأرباح. يرجى المحاولة مرة أخرى لاحقاً.",
+    "yourReferralLink": "رابط الإحالة الخاص بك",
+    "noReferrals": "ليس لديك إحالات حتى الآن.",
+    "shareToEarn": "شارك رابط الإحالة الخاص بك لكسب المكافآت عندما يسجل أصدقاؤك.",
+    "shareLink": "شارك الرابط",
+    "generateReferral": "إنشاء رابط الإحالة",
+    "generateOnce": "أنشئ رابط الإحالة الخاص بك مرة واحدة وشاركه مع أصدقائك لتبدأ في كسب المكافآت.",
+    "generated": "تم إنشاء رابط الإحالة بنجاح!",
+    "copiedToClipboard": "تم نسخ الرابط إلى الحافظة!",
+    "fetchError": "فشل في تحميل الإحالات. يرجى المحاولة مرة أخرى.",
+    "max": "الحد الأقصى",
+    "platforms": {
+      "whatsapp": "واتساب",
+      "facebook": "فيسبوك",
+      "telegram": "تليجرام",
+      "twitter": "تويتر",
+      "linkedin": "لينكدإن"
+    },
+    "shareMessage": "🎉 انضم إليّ على تطبيق الحجز — الطريقة الذكية لحجز الفنادق! استخدم رابط الإحالة الخاص بي: {{referralLink}}"
+  },
+  "HotelListing": {
+    "CompactSearchBar": {
+      "locationPlaceholder": "إلى أين أنت ذاهب؟",
+      "checkInPlaceholder": "تاريخ الوصول",
+      "checkOutPlaceholder": "تاريخ المغادرة",
+      "searchButton": "بحث",
+      "errorSameDates": "لا يمكن أن تكون تواريخ الوصول والمغادرة متطابقة.",
+      "errorInvalidLocation": "يرجى إدخال موقع صالح.",
+      "errorSelectDates": "يرجى تحديد تاريخي الوصول والمغادرة.",
+      "errorNoHotels": "لا توجد فنادق متاحة للموقع المحدد.",
+      "ariaClearSearch": "مسح البحث",
+      "ariaSearchHotels": "البحث عن فنادق",
+      "ariaSearching": "جارٍ البحث..."
+    },
+    "HotelCardItem": {
+      "noImage": "لا توجد صورة",
+      "descriptionFallback": "استمتع بإقامة مريحة في هذا الفندق الرائع.",
+      "contactLabel": "اتصال",
+      "viewRoomButton": "عرض الغرفة",
+      "amenitiesList": {
+        "wifi": "واي فاي مجاني",
+        "swimming_pool": "حمام سباحة",
+        "fitness_center": "مركز لياقة بدنية",
+        "spa_and_wellness": "سبا وصحة",
+        "restaurant": "مطعم",
+        "room_service": "خدمة الغرف",
+        "bar_and_lounge": "بار وصالة",
+        "parking": "موقف سيارات",
+        "concierge_services": "خدمات الكونسيرج",
+        "pet_friendly": "صديق للحيوانات الأليفة",
+        "business_facilities": "مرافق الأعمال",
+        "laundry_services": "خدمات الغسيل",
+        "child_friendly_facilities": "مرافق صديقة للأطفال",
+        "non_smoking_rooms": "غرف غير مدخنين",
+        "facilities_for_disabled_guests": "مرافق للضيوف ذوي الإعاقة",
+        "family_rooms": "غرف عائلية"
+      }
+    },
+    "heroTitle": "ابحث عن إقامتك المثالية",
+    "heroSubtitle": "احجز أماكن إقامة بأفضل الأسعار",
+    "hotelsIn": "فنادق في",
+    "yourDestination": "وجهتك",
+    "selectDates": "اختر التواريخ",
+    "propertiesFound": "تم العثور على العقارات",
+    "nights": "ليالي",
+    "filters": "الفلاتر",
+    "activeFilter": "فلتر نشط",
+    "activeFilters": "فلاتر نشطة",
+    "clearAll": "مسح الكل",
+    "popularFilters": "الفلاتر الشعبية",
+    "freeWifi": "واي فاي مجاني",
+    "parking": "موقف سيارات",
+    "breakfast": "إفطار",
+    "searchPropertyName": "ابحث عن العقار بالاسم",
+    "sortBy": "ترتيب حسب",
+    "recommended": "موصى به",
+    "highestRating": "أعلى تقييم",
+    "lowestRating": "أدنى تقييم",
+    "whyBookWithAlhajz": "لماذا تحجز مع الحج",
+    "freeCancellation": "إلغاء مجاني",
+    "freeCancellationDesc": "معظم عقاراتنا تقدم إلغاء مجاني حتى 24 ساعة قبل تسجيل الوصول.",
+    "bestPriceGuarantee": "ضمان أفضل سعر",
+    "bestPriceGuaranteeDesc": "هل وجدت سعرًا أقل؟ سنطابق السعر ونمنحك خصمًا إضافيًا بنسبة 10%.",
+    "secureBooking": "حجز آمن",
+    "secureBookingDesc": "نستخدم تشفيرًا بمعايير الصناعة لحماية معلوماتك الشخصية.",
+    "noHotelsError": "لم يتم العثور على فنادق لمعايير البحث المحددة.",
+    "tryModifyingSearch": "يرجى محاولة تعديل البحث",
+    "EmptyState": {
+      "noHotelsFound": "لم يتم العثور على فنادق",
+      "noHotelsDescription": "تعذر علينا العثور على أي فنادق تطابق معاييرك. حاول تعديل عوامل التصفية أو مصطلحات البحث.",
+      "clearAllFilters": "مسح جميع عوامل التصفية"
+    }
+  },
+  "HotelBox": {
+    "DateRange": {
+      "checkInPlaceholder": "تاريخ الوصول",
+      "checkOutPlaceholder": "تاريخ المغادرة"
+    },
+    "FilterModal": {
+      "title": "الفلاتر",
+      "propertyRating": "تقييم العقار",
+      "amenities": "المرافق",
+      "sortBy": "ترتيب حسب",
+      "cancel": "مسح جميع الفلاتر",
+      "applyFilters": "رؤية {{count}} نتائج",
+      "ariaCloseModal": "إغلاق النافذة",
+      "ariaSortOrder": "ترتيب الفرز",
+      "ratingUp": "وما فوق",
+      "amenitiesList": {
+        "wifi": "واي فاي مجاني",
+        "swimming_pool": "حمام سباحة",
+        "fitness_center": "مركز لياقة بدنية",
+        "spa_and_wellness": "سبا وصحة",
+        "restaurant": "مطعم",
+        "room_service": "خدمة الغرف",
+        "bar_and_lounge": "بار وصالة",
+        "parking": "موقف سيارات",
+        "concierge_services": "خدمات الكونسيرج",
+        "pet_friendly": "صديق للحيوانات الأليفة",
+        "business_facilities": "مرافق الأعمال",
+        "laundry_services": "خدمات الغسيل",
+        "child_friendly_facilities": "مرافق صديقة للأطفال",
+        "non_smoking_rooms": "غرف غير مدخنين",
+        "facilities_for_disabled_guests": "مرافق للضيوف ذوي الإعاقة",
+        "family_rooms": "غرف عائلية"
+      },
+      "sortOptions": {
+        "recommended": "موصى به",
+        "rating_desc": "التقييم: من الأعلى إلى الأدنى",
+        "rating_asc": "التقييم: من الأدنى إلى الأعلى",
+        "price_desc": "السعر: من الأعلى إلى الأدنى",
+        "price_asc": "السعر: من الأدنى إلى الأعلى"
+      }
+    }
+  },
+  "HomeSections": {
+    "FeaturedOffers": {
+      "title": "العروض المميزة",
+      "limitedTime": "لفترة محدودة",
+      "endsIn": "ينتهي في",
+      "summerSpecial": {
+        "title": "عرض الصيف الخاص",
+        "description": "خصم يصل إلى 50% على حجوزات الفنادق",
+        "validTill": "2 ساعة 45 دقيقة"
+      },
+      "luxuryStay": {
+        "title": "إقامة فاخرة",
+        "description": "خصم يصل إلى 30% على الفنادق الفاخرة",
+        "validTill": "5 ساعات 30 دقيقة"
+      },
+      "weekendGetaway": {
+        "title": "عطلة نهاية الأسبوع",
+        "description": "احجز الآن وادفع لاحقًا في فنادق مختارة",
+        "validTill": "3 ساعات 15 دقيقة"
+      }
+    },
+    "PopularHotels": {
+      "title": "الفنادق الشعبية",
+      "freeCancellation": "إلغاء مجاني",
+      "breakfast": "إفطار",
+      "startingFrom": "ابتداءً من",
+      "bookNow": "احجز الآن",
+      "hotels": {
+        "grandPlaza": {
+          "name": "فندق جراند بلازا"
+        },
+        "sunsetBeach": {
+          "name": "منتجع شاطئ الغروب"
+        },
+        "mountainView": {
+          "name": "نزل ماونتن فيو"
+        },
+        "cityLights": {
+          "name": "فندق أضواء المدينة"
+        }
+      }
+    },
+    "ExploreDestinations": {
+      "title": "استكشف الوجهات",
+      "descriptionTemplate": "استكشف الفنادق في {{city}}",
+      "imageAlt": "وجهة {{name}}",
+      "goToGroup": "الانتقال إلى المجموعة {{count}}",
+      "exploreNow": "استكشف الآن"
+    }
+  },
+  "RoomsPage": {
+    "backToSearch": "العودة إلى البحث",
+    "starHotelRating": "تصنيف الفندق حسب النجوم",
+    "viewPropertyDetails": "عرض تفاصيل العقار",
+    "aboutThisProperty": "عن هذا العقار",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "noImagesAvailable": "لا توجد صور متاحة",
+    "propertyAmenities": "مرافق العقار",
+    "nights": "ليلة",
+    "nightsPlural": "ليالٍ",
+    "stay": "إقامة",
+    "filter": "تصفية",
+    "viewAllPhotos": "عرض جميع الصور",
+    "viewReviews": "تقييمات الضيوف",
+    "amenitiesList": {
+      "wifi": "واي فاي مجاني",
+      "swimming_pool": "مسبح",
+      "fitness_center": "مركز للياقة البدنية",
+      "spa_and_wellness": "سبا وعناية بالصحة",
+      "restaurant": "مطعم",
+      "room_service": "خدمة الغرف",
+      "bar_and_lounge": "بار وصالة",
+      "parking": "موقف سيارات",
+      "concierge_services": "خدمات الكونسيرج",
+      "pet_friendly": "مسموح بالحيوانات الأليفة",
+      "business_facilities": "مرافق الأعمال",
+      "laundry_services": "خدمات الغسيل",
+      "child_friendly_facilities": "مرافق مناسبة للأطفال",
+      "non_smoking_rooms": "غرف لغير المدخنين",
+      "facilities_for_disabled_guests": "مرافق للضيوف ذوي الإعاقات",
+      "family_rooms": "غرف عائلية"
+    },
+    "noAmenitiesSpecified": "لم يتم تحديد أي مرافق لهذا العقار.",
+    "contactInformation": "معلومات الاتصال",
+    "allRooms": "جميع الغرف",
+    "searchRoomName": "البحث عن غرفة حسب الاسم",
+    "availableRooms": "الغرف المتاحة",
+    "showingRooms_one": "عرض {{count}} غرفة",
+    "showingRooms_other": "عرض {{count}} غرف",
+    "noRoomsAvailableTitle": "لا توجد غرف متاحة",
+    "noRoomsAvailableMessage": "تعذر علينا العثور على غرف تطابق معاييرك. حاول تعديل عوامل التصفية أو التواريخ.",
+    "goBack": "العودة",
+    "clearFilters": "مسح الفلاتر",
+    "loadingRoomsMessage": "جاري تحميل الغرف المتاحة...",
+    "priceNotAvailable": "",
+    "qrCode": {
+      "discountTitle": "استخدم خصمك",
+      "qrCodeAlt": "رمز الاستجابة السريعة للخصم",
+      "scanToApply": "امسح لتطبيق الخصم",
+      "instructions": {
+      "applyDiscount": "قم بتنزيل تطبيق Woohoo-Trip من متجر Google Play (إذا لم تكن قد قمت بذلك بالفعل).",
+        "scanAtCheckout": "امسح رمز الاستجابة السريعة (QR) ضوئيًا لحجز هذه الغرفة مباشرةً من خلال التطبيق.",
+        "validityNote": "احجز من خلال التطبيق لتفعيل الخصم الحصري الخاص بك."
+      }
+    },
+    "RoomCard": {
+      "roomImageAlt": "غرفة",
+      "off": "خصم",
+      "adults": "بالغين",
+      "children": "أطفال",
+      "night": "ليلة",
+      "bookNow": "احجز الآن",
+      "viewBookingPolicies": "عرض سياسات الحجز",
+      "notAvailable": "غير متاح",
+      "securePayment": "دفع آمن",
+      "defaultamenities": {
+        "kingBed": "سرير كينج",
+        "bathroom": "حمام خاص"
+      },
+      "roomAmenities": {
+        "basic": {
+          "bed": "سرير",
+          "bedTypes": {
+            "single": "مفرد",
+            "double": "مزدوج",
+            "king": "كينج",
+            "twin": "توأم",
+            "queen": "كوين"
+          },
+          "bathroom": "حمام خاص",
+          "linensBedding": "مفارش وأغطية",
+          "linens": "مفارش نظيفة",
+          "bidet": "_bidet_",
+          "toiletPaper": "ورق حمام",
+          "towelsSheets": "مناشف وشراشف",
+          "freeToiletries": "مستلزمات حمام مجانية",
+          "shower": "دُش",
+          "toilet": "مرحاض"
+        },
+        "furniture": {
+          "tableChairs": "طاولة وكراسي",
+          "desk": "مكتب عمل",
+          "dresserWardrobe": "دولاب ومرآة",
+          "sofaSeating": "مقاعد أريكة",
+          "diningTable": "طاولة طعام",
+          "readingChair": "كرسي قراءة"
+        },
+        "spaceLayout": {
+          "diningArea": "منطقة طعام",
+          "sittingArea": "منطقة جلوس",
+          "balcony": "شرفة"
+        },
+        "technology": {
+          "television": "تلفزيون",
+          "telephone": "هاتف",
+          "wifiInternet": "اتصال واي فاي",
+          "flatScreenTV": "تلفزيون شاشة مسطحة",
+          "satelliteChannels": "قنوات فضائية",
+          "cableChannels": "قنوات كابل"
+        },
+        "climateControl": {
+          "airConditioning": "تكييف هواء",
+          "heating": "تدفئة"
+        },
+        "kitchenetteMiniBar": {
+          "smallRefrigerator": "ثلاجة صغيرة",
+          "microwave": "ميكروويف",
+          "refrigerator": "ثلاجة",
+          "kitchenware": "أدوات مطبخ",
+          "electricKettle": "غلاية كهربائية",
+          "oven": "فرن",
+          "stovetop": "موقد",
+          "teaCoffeeMaker": "ماكينة صنع الشاي/القهوة"
+        },
+        "safetySecurity": {
+          "safe": "خزنة داخل الغرفة",
+          "smokeDetectors": "كاشفات الدخان",
+          "fireExtinguisher": "طفاية حريق"
+        },
+        "toiletries": {
+          "shampooConditioner": "شامبو وبلسم",
+          "soap": "صابون",
+          "hairDryer": "مجفف شعر"
+        },
+        "workLeisure": {
+          "workDesk": "مكتب عمل",
+          "additionalLighting": "إضاءة إضافية",
+          "ironingFacilities": "مرافق كي الملابس"
+        },
+        "accessibilityFeatures": {
+          "accessibleBathroom": "حمام يمكن الوصول إليه",
+          "wheelchairAccessibility": "إمكانية الوصول بكرسي متحرك",
+          "upperFloorsAccessibleByElevator": "الطوابق العليا متاحة عبر المصعد",
+          "entireUnitWheelchairAccessible": "الوحدة بأكملها يمكن الوصول إليها بكرسي متحرك"
+        }
+      },
+      "policies": {
+        "title": "سياسات الحجز",
+        "closeModal": "إغلاق النافذة",
+        "cancellationPolicy": "سياسة الإلغاء",
+        "policyTypes": {
+          "flexible": "مرنة",
+          "moderate": "متوسطة",
+          "strict": "صارمة",
+          "nonrefundable": "غير قابلة للاسترداد"
+        },
+        "amendmentPolicy": "سياسة التعديل",
+        "amendmentPoints": {
+          "dateChanges": "التغييرات في التواريخ تخضع للتوافر",
+          "changes72Hours": "قد تترتب رسوم إضافية على التغييرات خلال 72 ساعة من وقت تسجيل الوصول",
+          "roomUpgrades": "تحديثات الغرفة تخضع للتوافر والرسوم الإضافية",
+          "reducingStay": "تقصير مدة الإقامة يخضع لسياسة الإلغاء"
+        },
+        "gotIt": "فهمت"
+      },
+      "seeMore": "عرض المزيد",
+      "seeLess": "عرض أقل"
+    }
+  },
+  "CancellationPolicies": {
+    "policyTypes": {
+      "flexible": {
+        "description": "إلغاء مجاني حتى 24 ساعة قبل تسجيل الوصول. بعد ذلك، الحجز غير قابل للاسترداد.",
+        "shortDescription": "إلغاء مجاني حتى 24 ساعة قبل تسجيل الوصول",
+        "bulletPoints": [
+          "استرداد كامل: إذا تم الإلغاء قبل أكثر من 24 ساعة من تسجيل الوصول",
+          "لا استرداد: إذا تم الإلغاء خلال 24 ساعة من تسجيل الوصول"
+        ]
+      },
+      "moderate": {
+        "description": "استرداد كامل إذا تم الإلغاء قبل 5 أيام أو أكثر من تسجيل الوصول. استرداد بنسبة 50% بين 1-5 أيام قبل تسجيل الوصول. لا استرداد خلال 24 ساعة من تسجيل الوصول.",
+        "shortDescription": "إلغاء مجاني حتى 5 أيام قبل تسجيل الوصول",
+        "bulletPoints": [
+          "استرداد كامل: إذا تم الإلغاء قبل 5 أيام أو أكثر من تسجيل الوصول",
+          "استرداد بنسبة 50%: إذا تم الإلغاء بين 1-5 أيام قبل تسجيل الوصول",
+          "لا استرداد: إذا تم الإلغاء خلال 24 ساعة من تسجيل الوصول"
+        ]
+      },
+      "strict": {
+        "description": "استرداد كامل إذا تم الإلغاء قبل 7 أيام أو أكثر من تسجيل الوصول. استرداد بنسبة 50% إذا تم الإلغاء بين 1-7 أيام قبل تسجيل الوصول. لا استرداد خلال 24 ساعة من تسجيل الوصول.",
+        "shortDescription": "إلغاء مجاني حتى 7 أيام قبل تسجيل الوصول",
+        "bulletPoints": [
+          "استرداد كامل: إذا تم الإلغاء قبل 7 أيام أو أكثر من تسجيل الوصول",
+          "استرداد بنسبة 50%: إذا تم الإلغاء بين 1-7 أيام قبل تسجيل الوصول",
+          "لا استرداد: إذا تم الإلغاء خلال 24 ساعة من تسجيل الوصول"
+        ]
+      },
+      "nonrefundable": {
+        "description": "هذا الحجز غير قابل للاسترداد. لن يتم تقديم أي استرداد بغض النظر عن توقيت الإلغاء.",
+        "shortDescription": "معدل غير قابل للاسترداد",
+        "bulletPoints": [
+          "لا استرداد: هذا الحجز غير قابل للاسترداد في أي وقت",
+          "الحجوزات غير القابلة للاسترداد تأتي عادةً مع خصم خاص"
+        ]
+      }
+    },
+    "roomCardPolicyDescriptions": {
+      "flexible": "إلغاء مجاني حتى 24 ساعة قبل تسجيل الوصول",
+      "moderate": "إلغاء مجاني حتى 5 أيام قبل تسجيل الوصول",
+      "strict": "إلغاء مجاني حتى 7 أيام قبل تسجيل الوصول",
+      "nonrefundable": "معدل غير قابل للاسترداد مع خصم خاص"
+    }
+  },
+  "BookingComponents": {
+    "GuestInformationModal": {
+      "completeYourBooking": "أكمل حجزك",
+      "guestDetailsStep": "تفاصيل الضيف",
+      "reviewAndPayStep": "مراجعة ودفع",
+      "roomSummary": "ملخص الغرفة",
+      "priceLoading": "",
+      "roomType": "نوع الغرفة",
+      "checkIn": "تسجيل الوصول",
+      "checkOut": "تسجيل المغادرة",
+      "nights": "ليلة",
+      "nightsPlural": "ليالٍ",
+      "guestInformation": "معلومات الضيف",
+      "dob": "تاريخ الميلاد",
+      "firstNameLabel": "الاسم الأول",
+      "firstNamePlaceholder": "أدخل الاسم الأول",
+      "firstNameError": "الاسم الأول مطلوب",
+      "lastNameLabel": "اسم العائلة",
+      "lastNamePlaceholder": "أدخل اسم العائلة",
+      "lastNameError": "اسم العائلة مطلوب",
+      "emailLabel": "عنوان البريد الإلكتروني",
+      "emailPlaceholder": "your.email@example.com",
+      "emailInfo": "سيتم إرسال تأكيد الحجز إلى هذا البريد الإلكتروني",
+      "emailError": "البريد الإلكتروني مطلوب.",
+      "emailInvalidError": "يرجى إدخال بريد إلكتروني صالح",
+      "emailNotVerified": "يرجى التحقق من بريدك الإلكتروني",
+      "verifyEmail": "تحقق من البريد الإلكتروني",
+      "verifyPhone": "تحقق من الهاتف",
+      "verifyOtp": "تحقق من رمز OTP",
+      "otpPlaceholder": "أدخل رمز OTP",
+      "otpExpiresIn": "ينتهي خلال",
+      "otpSent": "تم إرسال رمز OTP إلى بريدك الإلكتروني",
+      "otpSendFailed": "فشل إرسال رمز OTP",
+      "otpSendError": "حدث خطأ أثناء إرسال رمز OTP",
+      "otpEmptyError": "يرجى إدخال رمز OTP",
+      "otpInvalidError": "رمز OTP غير صالح",
+      "otpVerifyError": "خطأ في التحقق من رمز OTP",
+      "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
+      "emailAlreadyVerified": "البريد الإلكتروني مُتحقق منه بالفعل",
+      "phoneVerified": "تم التحقق من رقم الهاتف بنجاح",
+      "phoneLabel": "رقم الهاتف",
+      "phonePlaceholder": "أدخل رقم الهاتف",
+      "phoneInfo": "لإشعارات متعلقة بالحجز",
+      "phoneError": "رقم الهاتف مطلوب",
+      "phoneLengthError": "يجب أن يتكون رقم الهاتف في الهند من 10 أرقام بالضبط.",
+      "phoneIndiaError": "يجب أن يتكون رقم الهاتف في الهند من 10 أرقام بالضبط.",
+      "phoneInternationalError": "يجب أن يتكون رقم الهاتف الدولي من 8 أرقام على الأقل.",
+      "guestDetailsSection": "تفاصيل الضيف",
+      "roomSingular": "غرفة",
+      "roomsPlural": "غرف",
+      "adultSingular": "بالغ",
+      "adultsPlural": "بالغين",
+      "childSingular": "طفل",
+      "childrenPlural": "أطفال",
+      "infantSingular": "رضيع",
+      "infantsPlural": "رُضَّع",
+      "guestDisplayFormat": "الغرف والضيوف",
+      "childrenPartFormat": "أطفال",
+      "informationVerified": "تم التحقق من المعلومات بنجاح!",
+      "propertyInfoMissing": "معلومات العقار مفقودة. الرجاء المحاولة مرة أخرى.",
+      "bookingSummary": "ملخص الحجز",
+      "stayDetails": "تفاصيل الإقامة",
+      "primaryGuest": "الضيف الأساسي",
+      "guests": "الضيوف",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "priceDetails": "تفاصيل السعر",
+      "roomRate": "سعر الغرفة",
+      "totalAmount": "المبلغ الإجمالي",
+      "baseRatePerRoomPerNight": "السعر الأساسي (لكل غرفة لكل ليلة)",
+      "additionalGuestCharges": "رسوم الضيوف الإضافيين",
+      "priceIncludes": "يشمل السعر {{rooms}} غرفة لـ {{guests}} ضيفًا",
+      "paymentNoticeTitle": "سيتم معالجة الدفع بشكل آمن",
+      "paymentNoticeDescription": "بالمتابعة، فإنك توافق على الشروط والأحكام وسياسة الخصوصية الخاصة بنا.",
+      "backToDetails": "العودة إلى التفاصيل",
+      "cancel": "إلغاء",
+      "continueToReview": "متابعة إلى المراجعة",
+      "proceedToPayment": "متابعة إلى الدفع",
+      "phoneNotVerified": "رقم الهاتف غير مُتحقق",
+      "phoneInvalidError": "يرجى إدخال رقم هاتف صالح",
+      "processing": "جارٍ المعالجة...",
+      "verifying": "جارٍ التحقق",
+      "priceFetchError": "تعذر جلب السعر المحدث. يرجى المحاولة مرة أخرى لاحقًا.",
+      "subtotalBeforeTax": "المبلغ الجزئي (قبل الضريبة)",
+      "totalTax": "إجمالي الضريبة",
+      "finalAmountIncludingTax": "المبلغ النهائي (شامل الضريبة)",
+      "includesTaxes": "يشمل الضرائب والرسوم",
+      "taxBreakdown": "تفصيل الضريبة",
+      "includesTaxAmount": "يتضمن {{amount}} {{currency}} كضرائب",
+      "dobError": "تاريخ الميلاد مطلوب"
+    }
+  },
+  "BookingTabs": {
+    "userNotLoggedIn": "المستخدم غير مسجل الدخول",
+    "backToHome": "العودة إلى الصفحة الرئيسية",
+    "noBooking": "لا يوجد حجز",
+    "BookingHeader": {
+      "backToHome": "العودة إلى الرئيسية",
+      "yourBookings": "حجوزاتك",
+      "viewManageTrack": "عرض وإدارة وتتبع جميع حجوزات الفنادق الخاصة بك في مكان واحد"
+    },
+    "BookingTabsNavigation": {
+      "allBookings": "جميع الحجوزات",
+      "upcoming": "القادمة",
+      "completed": "المكتملة",
+      "cancelled": "الملغاة"
+    },
+    "LoadingState": {
+      "retrievingBookings": "جاري استرداد حجوزاتك",
+      "fetchingDetails": "لحظة من فضلك بينما نستعيد تفاصيل حجزك..."
+    },
+    "ErrorState": {
+      "noBookingsFound": "لم نتمكن من العثور على أي حجوزات مرتبطة بحسابك.",
+      "startBookingNow": "ابدأ الحجز الآن"
+    },
+    "EmptyState": {
+      "heading": {
+        "all": "لم يتم العثور على حجوزات",
+        "upcoming": "لا توجد حجوزات قادمة",
+        "completed": "لا توجد إقامات مكتملة",
+        "cancelled": "لا توجد حجوزات ملغاة"
+      },
+      "paragraph": {
+        "all": "ابدأ التخطيط لرحلتك القادمة!",
+        "upcoming": "ليس لديك أي حجوزات فندقية قادمة.",
+        "completed": "لم تكمل أي إقامات بعد.",
+        "cancelled": "ليس لديك أي حجوزات ملغاة."
+      },
+      "bookHotelButton": "احجز فندقًا"
+    },
+    "BookingCard": {
+      "bookingId": "معرف الحجز",
+      "nightSingular": "ليلة",
+      "nightsPlural": "ليالٍ",
+      "checkIn": "تسجيل الدخول",
+      "checkOut": "تسجيل الخروج",
+      "roomType": "نوع الغرفة",
+      "standardRoom": "غرفة قياسية",
+      "paymentMethod": "طريقة الدفع",
+      "primaryGuest": "الضيف الأساسي",
+      "rateBreakdown": "المبلغ الإجمالي",
+      "viewBookingDetails": "عرض تفاصيل الحجز",
+      "modify": "تعديل",
+      "cancel": "إلغاء",
+      "bookAgain": "احجز مرة أخرى"
+    },
+    "BookingPagination": {
+      "show": "عرض",
+      "perPage": "لكل صفحة",
+      "showing": "عرض",
+      "of": "من",
+      "bookings": "حجوزات",
+      "noBookingsToShow": "لا توجد حجوزات لعرضها"
+    },
+    "CancellationModal": {
+      "confirmCancellation": "تأكيد الإلغاء",
+      "reviewBeforeProceeding": "يرجى مراجعة التفاصيل أدناه قبل المتابعة في إلغاء حجزك",
+      "bookingDetails": "تفاصيل الحجز",
+      "property": "العقار",
+      "room": "الغرفة",
+      "stayDates": "تواريخ الإقامة",
+      "nightStay_one": "إقامة {{count}} ليلة",
+      "nightStay_other": "إقامة {{count}} ليالي",
+      "totalAmount": "المبلغ الإجمالي",
+      "calculatingDetails": "حساب تفاصيل الإلغاء...",
+      "policyTypes": {
+        "flexible": "سياسة إلغاء مرنة",
+        "moderate": "سياسة إلغاء معتدلة",
+        "strict": "سياسة إلغاء صارمة",
+        "nonrefundable": "سياسة غير قابلة للاسترداد"
+      },
+      "refundEligible": "مؤهل لاسترداد {{percentage}}%",
+      "policyTerms": "شروط السياسة",
+      "yourRefundStatus": "حالة الاسترداد الخاصة بك",
+      "refundExplanation": "بناءً على تاريخ تسجيل الوصول وسياسة {{policyType}}، ستحصل على استرداد بنسبة {{percentage}}%.",
+      "financialBreakdown": "التفاصيل المالية",
+      "originalPayment": "مبلغ الدفع الأصلي",
+      "cancellationFee": "رسوم الإلغاء",
+      "refundAmount": "مبلغ الاسترداد",
+      "reasonForCancellation": "سبب الإلغاء",
+      "reasonPlaceholder": "يرجى إخبارنا بسبب الإلغاء (اختياري)...",
+      "feedbackHelpsImprove": "تساعدنا ملاحظاتك على تحسين خدماتنا. يتم استخدام هذه المعلومات داخليًا فقط.",
+      "success": "نجاح",
+      "error": "خطأ",
+      "successWithRefund": "تم إلغاء حجزك بنجاح. سيتم معالجة استرداد بقيمة ₹{{amount}}.",
+      "successNoRefund": "تم إلغاء حجزك بنجاح. لن يتم إصدار استرداد بناءً على سياسة الإلغاء.",
+      "errorCancelling": "غير قادر على إلغاء الحجز. يرجى المحاولة مرة أخرى أو الاتصال بالدعم.",
+      "errorRetrievingPolicy": "غير قادر على استرداد معلومات سياسة الإلغاء. يمكنك المتابعة، ولكن قد لا تكون معلومات الرسوم دقيقة.",
+      "actionCannotBeUndone": "لا يمكن التراجع عن هذا الإجراء",
+      "cancellationWarning": "بمجرد تأكيد الإلغاء، سيتم إلغاء حجزك على الفور ولا يمكن استعادته. سيتم معالجة أي استرداد قابل للتطبيق وفقًا للسياسة المذكورة أعلاه.",
+      "keepMyReservation": "الاحتفاظ بحجزي",
+      "processing": "جارٍ المعالجة...",
+      "confirmCancellationButton": "تأكيد الإلغاء",
+      "invalidDate": "تاريخ غير صالح",
+      "cancellationProcessedSuccess": "تم معالجة إلغاء الحجز بنجاح",
+      "cancellationFailed": "فشل الإلغاء",
+      "checkInDatePassed": "لا يمكن إلغاء الحجز. لقد انتهى تاريخ تسجيل الوصول الخاص بك بالفعل."
+    },
+    "AmendReservationModal": {
+      "title": "تحديث حجزك",
+      "subtitle": "قم بإجراء تغييرات على إقامتك القادمة في {{propertyName}}",
+      "currentBookingDetails": "تفاصيل الحجز الحالي",
+      "stayDates": "تواريخ الإقامة",
+      "nightsCount_one": "{{count}} ليلة",
+      "nightsCount_other": "{{count}} ليالٍ",
+      "guests": "الضيوف",
+      "guestsCount": "{{adults}} بالغين، {{children}} أطفال",
+      "roomDetails": "تفاصيل الغرفة",
+      "ratePlan": "خطة السعر",
+      "bestAvailableRate": "أفضل سعر متاح",
+      "total": "الإجمالي",
+      "whatToChange": "ما الذي ترغب في تغييره؟",
+      "estimatedTotal": "الإجمالي المتوقع",
+      "amendmentTypes": {
+        "dates": "التواريخ",
+        "guests": "الضيوف",
+        "roomType": "نوع الغرفة",
+        "specialRequests": "الطلبات الخاصة"
+      },
+      "changeDates": "تغيير التواريخ",
+      "selectNewDates": "اختر تواريخ إقامة جديدة",
+      "checkInDate": "تاريخ الوصول",
+      "checkOutDate": "تاريخ المغادرة",
+      "stayDuration_one": "مدة الإقامة: {{count}} ليلة",
+      "stayDuration_other": "مدة الإقامة: {{count}} ليالٍ",
+      "nightsAdded_one": "(+{{count}} ليلة)",
+      "nightsAdded_other": "(+{{count}} ليالٍ)",
+      "nightsReduced_one": "(-{{count}} ليلة)",
+      "nightsReduced_other": "(-{{count}} ليالٍ)",
+      "changeGuests": "تغيير الضيوف",
+      "numberOfAdults": "عدد البالغين",
+      "numberOfChildren": "عدد الأطفال",
+      "adult_one": "بالغ",
+      "adult_other": "بالغين",
+      "child_one": "طفل",
+      "child_other": "أطفال",
+      "guestsNote": "قد يتم تطبيق رسوم إضافية على الضيوف الإضافيين. الحد الأقصى للإشغال يختلف حسب نوع الغرفة.",
+      "changeRoomType": "تغيير نوع الغرفة",
+      "roomType": "نوع الغرفة",
+      "roomTypeNote": "تغييرات نوع الغرفة تخضع للتوافر وقد تؤثر على السعر الإجمالي.",
+      "updateSpecialRequests": "تحديث الطلبات الخاصة",
+      "specialRequestsLabel": "الطلبات أو التفضيلات الخاصة",
+      "specialRequestsPlaceholder": "أدخل أي طلبات أو تفضيلات خاصة مثل الطابق العلوي، تسجيل الوصول المبكر، إلخ.",
+      "specialRequestsNote": "الطلبات الخاصة تخضع للتوافر ولا يمكن ضمانها.",
+      "priceAdjustment": "تعديل السعر",
+      "additionalPayment": "مطلوب دفعة إضافية",
+      "additionalChargeExplanation": "ستؤدي تغييراتك إلى رسوم إضافية بقيمة ₹{{amount}}",
+      "refundToBeProcessed": "سيتم معالجة استرداد",
+      "refundExplanation": "ستؤدي تغييراتك إلى استرداد بقيمة ₹{{amount}}",
+      "amendmentPolicies": "سياسات التحديث",
+      "checkingAvailability": "جاري التحقق من التوفر...",
+      "loadingPrice": "جاري تحميل الأسعار المحدثة...",
+      "policies": {
+        "dateChanges": "تغييرات التواريخ تخضع للتوافر",
+        "changes72Hours": "التغييرات خلال 72 ساعة من تسجيل الوصول قد تتطلب رسومًا إضافية",
+        "roomUpgrades": "ترقيات الغرف تخضع للتوافر ورسوم إضافية",
+        "reducingStay": "تقليص مدة الإقامة قد يخضع لسياسة الإلغاء الأصلية للحجز"
+      },
+      "cancel": "إلغاء",
+      "processing": "جارٍ المعالجة...",
+      "confirmAmendment": "تأكيد التحديث",
+      "errors": {
+        "selectValidDates": "يرجى اختيار تواريخ وصول ومغادرة صالحة.",
+        "unableToAmend": "غير قادر على تحديث الحجز. يرجى المحاولة مرة أخرى أو التواصل مع الدعم.",
+        "unableToFetchPrice": "غير قادر على جلب الأسعار المحدثة. يرجى المحاولة مرة أخرى أو التواصل مع الدعم.",
+        "invalidFirstName": "الاسم الأول مطلوب",
+        "invalidLastName": "الاسم الأخير مطلوب",
+        "dobRequired": "تاريخ الميلاد مطلوب.",
+        "selectRoomType": "يرجى اختيار نوع الغرفة.",
+        "selectRatePlan": "يرجى اختيار خطة السعر.",
+        "invalidDateRange": "يجب أن يكون تاريخ المغادرة بعد تاريخ الوصول.",
+        "correctFormErrors": "يرجى تصحيح الأخطاء في النموذج قبل الإرسال.",
+        "roomNotAvailable": "الغرفة المحددة غير متاحة للتواريخ المختارة.",
+        "roomNotFound": "لا يمكن العثور على الغرفة.",
+        "networkError": "خطأ في الشبكة. يرجى التحقق من اتصالك والمحاولة مرة أخرى."
+      },
+      "success": {
+        "reservationAmended": "تم تحديث حجزك بنجاح.",
+        "additionalPayment": "سيتم معالجة دفعة إضافية بقيمة ₹{{amount}}.",
+        "refundProcessed": "سيتم معالجة استرداد بقيمة ₹{{amount}}.",
+        "noChange": "لا يوجد تغيير في السعر الإجمالي."
+      },
+      "roomTypes": {
+        "standard": "غرفة قياسية",
+        "deluxe": "غرفة ديلوكس",
+        "suite": "غرفة جناح",
+        "executive": "جناح تنفيذي",
+        "family": "غرفة عائلية"
+      },
+      "ratePlans": {
+        "bestAvailable": "أفضل سعر متاح",
+        "aaaMember": "سعر عضو AAA",
+        "package": "سعر الباقة",
+        "weekend": "عرض نهاية الأسبوع"
+      },
+      "modifications": {
+        "changedCheckIn": "تم تغيير تاريخ الوصول",
+        "changedCheckOut": "تم تغيير تاريخ المغادرة",
+        "changedRoomType": "تم تغيير نوع الغرفة إلى {{roomType}}",
+        "changedGuestCount": "تم تغيير عدد الضيوف",
+        "changedRatePlan": "تم تغيير خطة السعر إلى {{ratePlanName}}"
+      },
+      "priceBreakdown": "تفصيل السعر",
+      "baseAmount": "المبلغ الأساسي",
+      "additionalCharges": "الرسوم الإضافية",
+      "subtotal": "المجموع الجزئي",
+      "taxes": "الضرائب والرسوم",
+      "totalTax": "إجمالي الضريبة",
+      "grandTotal": "الإجمالي الكلي",
+      "averagePerNight": "متوسط السعر لليلة",
+      "taxInclusiveNote": "جميع الأسعار تشمل الضرائب والرسوم المعمول بها. ويتم عرض تفصيل الضريبة لأغراض الشفافية.",
+      "adultFirstName": "الاسم الأول للبالغ",
+      "childFirstName": "الاسم الأول للطفل",
+      "infantFirstName": "الاسم الأول للرضيع",
+      "adultLastName": "الاسم الأخير للبالغ",
+      "childLastName": "الاسم الأخير للطفل",
+      "infantLastName": "الاسم الأخير للرضيع",
+      "dateOfBirth": "تاريخ الميلاد"
+    },
+    "BookingDetailsModal": {
+      "bookingNumber": "الحجز #{{id}}",
+      "closeModal": "إغلاق النافذة",
+      "status": {
+        "confirmed": "مؤكد",
+        "pending": "قيد الانتظار",
+        "cancelled": "ملغى"
+      },
+      "stayDetails": "تفاصيل الإقامة",
+      "checkIn": "تسجيل الدخول",
+      "checkOut": "تسجيل الخروج",
+      "duration": "المدة",
+      "nightsStay_one": "{{count}} ليلة",
+      "nightsStay_other": "{{count}} ليالي",
+      "roomType": "نوع الغرفة",
+      "roomName": "اسم الغرفة",
+      "roomsCount_one": "{{count}} غرفة",
+      "roomsCount_other": "{{count}} غرف",
+      "guestDetails": "تفاصيل الضيف",
+      "guestName": "اسم الضيف",
+      "contactNumber": "رقم الاتصال",
+      "email": "البريد الإلكتروني",
+      "adults": "البالغين",
+      "children": "الأطفال",
+      "specialRequests": "طلبات خاصة",
+      "paymentDetails": "تفاصيل الدفع",
+      "paymentMethod": "طريقة الدفع",
+      "paymentMethods": {
+        "credit_card": "بطاقة ائتمان",
+        "debit_card": "بطاقة خصم",
+        "pay_at_hotel": "الدفع في الفندق",
+        "bank_transfer": "تحويل بنكي",
+        "paypal": "باي بال",
+        "google_pay": "جوجل باي"
+      },
+      "bookingDate": "تاريخ الحجز",
+      "totalAmount": "المبلغ الإجمالي",
+      "night": "ليلة",
+      "ratePlan": "خطة السعر",
+      "modifyBooking": "تعديل الحجز",
+      "cancelBooking": "إلغاء الحجز",
+      "dob": "تاريخ الميلاد",
+      "rooms": "غرف",
+      "printItinerary": "طباعة خط سير الرحلة",
+      "guest": "ضيف",
+      "printFooter": "شكرًا لحجزك. إذا كانت لديك أي أسئلة، يرجى الاتصال بخدمة العملاء لدينا.",
+      "printTitle": "تأكيد الحجز",
+      "taxAmount": "مبلغ الضريبة"
+    }
+  },
+  "Payment": {
+    "PaymentPageContent": {
+      "selectCryptoMethod": "يرجى تحديد طريقة دفع بالعملة المشفرة أعلاه.",
+      "invalidPayment": {
+        "title": "دفع غير صالح",
+        "message": "لم نتمكن من معالجة دفعتك بسبب المعلومات المفقودة.",
+        "returnToHomepage": "العودة إلى الصفحة الرئيسية"
+      },
+      "bookingSummary": {
+        "title": "ملخص الحجز",
+        "stayDates": "تواريخ الإقامة",
+        "night": "ليلة",
+        "nights": "ليالٍ",
+        "guests": "الضيوف",
+        "room": "غرفة",
+        "rooms": "غرف",
+        "adult": "بالغ",
+        "adults": "بالغون",
+        "child": "طفل",
+        "children": "أطفال",
+        "infant": " رضيع",
+        "infants": "رُضَّع",
+        "guest": "الضيف"
+      },
+      "paymentMethod": {
+        "title": "طريقة الدفع"
+      },
+      "priceDetails": {
+        "title": "تفاصيل السعر",
+        "roomRate": "سعر الغرفة",
+        "perNight": " / ليلة",
+        "total": "المبلغ الإجمالي",
+        "payAtHotelInfo": "سيتم تخزين بطاقتك بشكل آمن، ولكن سيتم تحصيل الدفع في الفندق.",
+        "originalPrice": "السعر الأصلي",
+        "promoApplied": "تم تطبيق رمز الترويج",
+        "removePromo": "إزالة رمز الترويج",
+        "subtotal": "المجموع الفرعي",
+        "discount": "الخصم"
+      },
+      "securityBadges": {
+        "securePayments": "مدفوعات آمنة",
+        "noCardStorage": "لا نقوم أبدًا بتخزين تفاصيل بطاقتك بالكامل",
+        "freeCancellation": "إلغاء مجاني متاح"
+      },
+      "needHelp": {
+        "title": "هل تحتاج مساعدة؟",
+        "message": "فريق خدمة العملاء لدينا متاح على مدار الساعة طوال أيام الأسبوع لمساعدتك في أي أسئلة حول حجزك.",
+        "contactSupport": "اتصل بالدعم"
+      },
+      "loading": {
+        "title": "جارٍ تحميل معلومات الدفع...",
+        "message": "يرجى الانتظار بينما نقوم بإعداد عملية الدفع الخاصة بك."
+      }
+    },
+    "PaymentComponents": {
+      "PaymentOptionSelector": {
+        "title": "خيارات الدفع",
+        "payNow": "ادفع الآن",
+        "payNowDescription": "أكمل الدفع فورًا",
+        "payAtHotel": "الدفع في الفندق",
+        "payAtHotelDescription": "احفظ بطاقتك بأمان للدفع في الفندق",
+        "payWithCrypto": "الدفع بالعملات المشفرة",
+        "payWithCryptoDescription": "استخدم العملات المشفرة لإكمال دفعتك",
+        "chooseCryptoMethod": "اختر طريقة الدفع بالعملات المشفرة",
+        "payWithWallet": "الدفع بالمحفظة",
+        "payWithQR": "الدفع برمز QR"
+      },
+      "PayAtHotelFunction": {
+        "infoTitle": "معلومات الدفع في الفندق",
+        "infoMessage": "سيتم تخزين تفاصيل بطاقتك الائتمانية بشكل آمن ولكن لن يتم تحصيلها الآن. سيتم معالجة الدفع أثناء إقامتك في الفندق.",
+        "cardDetailsLabel": "تفاصيل البطاقة",
+        "stripeNotLoadedError": "لم يتم تحميل Stripe بعد. يرجى المحاولة مرة أخرى.",
+        "notLoggedInError": "يجب عليك تسجيل الدخول لإكمال هذا الحجز. يرجى تسجيل الدخول والمحاولة مرة أخرى.",
+        "cardElementNotFoundError": "لم يتم العثور على عنصر البطاقة",
+        "cardSetupFailedError": "فشل إعداد البطاقة",
+        "processing": "جاري المعالجة...",
+        "confirmBooking": "تأكيد الحجز",
+        "paymentProcessingError": "حدث خطأ أثناء معالجة الدفع",
+        "footer": "يتم تشفير تفاصيل بطاقتك ومعالجتها بأمان من قبل Stripe. نحن لا نقوم أبدًا بتخزين معلومات بطاقتك الكاملة على خوادمنا."
+      }
+    },
+    "PaymentSuccess": {
+      "processingBooking": "جارٍ معالجة حجزك...",
+      "confirmingReservation": "نحن نؤكد حجزك. يجب أن يستغرق هذا لحظة فقط.",
+      "bookingFailedTitle": "فشل الحجز",
+      "returnToHomepage": "العودة إلى الصفحة الرئيسية",
+      "bookingConfirmedTitle": "تم تأكيد الحجز!",
+      "reservationSuccessMessage": "تم إتمام حجزك بنجاح",
+      "bookingId": "معرف الحجز:",
+      "bookingSummaryTitle": "ملخص الحجز",
+      "checkInLabel": "تسجيل الدخول",
+      "checkOutLabel": "تسجيل الخروج",
+      "night": "ليلة",
+      "nights": "ليالٍ",
+      "guestsLabel": "الضيوف",
+      "guestInfoTitle": "معلومات الضيف",
+      "guestNameLabel": "اسم الضيف",
+      "guestDefaultName": "ضيف",
+      "emailLabel": "البريد الإلكتروني",
+      "paymentMethodLabel": "طريقة الدفع",
+      "paymentMethodCreditCard": "بطاقة الائتمان",
+      "paymentMethodPayAtHotel": "الدفع في الفندق",
+      "paymentMethodUnknown": "غير معروف",
+      "paymentDetailsTitle": "تفاصيل الدفع",
+      "roomRate": "سعر الغرفة",
+      "perNight": " / ليلة",
+      "total": "الإجمالي",
+      "paymentAtHotelMessage": "سيتم تحصيل الدفع في الفندق",
+      "paymentProcessedMessage": "تمت معالجة الدفع",
+      "viewMyBookings": "عرض حجوزاتي",
+      "returnHome": "العودة إلى الرئيسية",
+      "whatsNextTitle": "ماذا بعد؟",
+      "confirmationEmailSent": "تم إرسال بريد إلكتروني للتأكيد إلى بريدك الوارد",
+      "viewBookingDetails": "يمكنك عرض تفاصيل الحجز في حسابك في أي وقت",
+      "contactSupportForChanges": "هل تحتاج إلى إجراء تغييرات؟ اتصل بنا 24/7 للحصول على الدعم",
+      "downloadBookingConfirmation": "تنزيل تأكيد الحجز",
+      "needHelpTitle": "هل تحتاج مساعدة؟",
+      "customerServiceMessage": "فريق خدمة العملاء لدينا متاح على مدار الساعة طوال أيام الأسبوع لمساعدتك في أي أسئلة.",
+      "contactSupportButton": "اتصل بالدعم",
+      "exploreMoreHotels": "استكشاف المزيد من خيارات الفنادق",
+      "phoneLabel": "رقم الهاتف",
+      "missingBookingDetailsToast": "تفاصيل الحجز مفقودة. غير قادر على تنزيل التأكيد.",
+      "missingBookingDetails": "تفاصيل الحجز مفقودة. يُرجى التواصل مع الدعم إذا استمرت المشكلة.",
+      "PDF": {
+        "bookingConfirmation": "تأكيد الحجز",
+        "reservationConfirmed": "تم تأكيد حجزك",
+        "confirmed": "مؤكد",
+        "bookingReference": "رقم الحجز",
+        "guestInformation": "معلومات الضيف",
+        "guestName": "اسم الضيف:",
+        "email": "البريد الإلكتروني:",
+        "phone": "الهاتف:",
+        "hotelDetails": "تفاصيل الفندق",
+        "hotelNameNotAvailable": "اسم الفندق غير متوفر",
+        "bookingDetails": "تفاصيل الحجز",
+        "checkInDate": "تاريخ تسجيل الوصول:",
+        "checkOutDate": "تاريخ تسجيل المغادرة:",
+        "duration": "المدة:",
+        "night": "ليلة",
+        "nights": "ليالٍ",
+        "guests": "الضيوف:",
+        "roomType": "نوع الغرفة:",
+        "standardRoom": "غرفة قياسية",
+        "paymentInformation": "معلومات الدفع",
+        "paymentMethod": "طريقة الدفع: الدفع في الفندق",
+        "payAtHotelDescription": "يرجى دفع المبلغ بالكامل في الفندق عند تسجيل الوصول",
+        "totalAmount": "المبلغ الإجمالي:",
+        "importantNotes": "ملاحظات هامة",
+        "carryValidID": "• يرجى إحضار بطاقة هوية صورة شخصية سارية عند تسجيل الوصول",
+        "paymentDue": "• يُستحق الدفع الكامل في الفندق عند تسجيل الوصول",
+        "contactForChanges": "• للتعديلات أو الإلغاءات، يرجى الاتصال بنا فورًا",
+        "contactInfo": "للحصول على المساعدة، يرجى الاتصال بنا على: bussines.alhajz@gmail.com",
+        "thankYou": "شكرًا لاختيارك لخدمتنا. نتطلع إلى خدمتك!"
+      },
+      "hotelLabel": "فندق",
+      "roomTypeLabel": "نوع الغرفة",
+      "originalPrice": "السعر الأصلي",
+      "promoApplied": "تم تطبيق رمز الترويج"
+    },
+    "PaymentProgress": {
+      "title": "بوابة الدفع بالعملات المشفرة",
+      "subtitle": "أكمل دفع حجز الفندق الخاص بك باستخدام العملات المشفرة",
+      "paymentInfo": "معلومات الدفع",
+      "guestInfo": "معلومات الضيف",
+      "scanAndPay": "مسح والدفع",
+      "payThroughWallet": "الدفع من خلال المحفظة",
+      "token": "الرمز",
+      "network": "الشبكة",
+      "amount": "المبلغ",
+      "guestInformation": "معلومات الضيف",
+      "hotel": "الفندق",
+      "checkIn": "تسجيل الوصول",
+      "checkOut": "تسجيل الخروج",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "guests": "الضيوف",
+      "age": "العمر",
+      "years": "سنوات",
+      "walletAddress": "عنوان المحفظة",
+      "scanInstructions": "امسح ضوئيًا باستخدام محفظة العملات المشفرة الخاصة بك",
+      "paymentInstructions": "تعليمات الدفع",
+      "viewBookings": "عرض حجوزاتي",
+      "returnHome": "العودة إلى الصفحة الرئيسية",
+      "paymentSuccessful": "تم الدفع بنجاح!",
+      "paymentConfirmed": "تم تأكيد دفعتك.",
+      "paymentInformation": "معلومات الدفع",
+      "status": {
+        "pending": "بانتظار الدفع",
+        "completed": "تم تأكيد الدفع",
+        "processing": "جاري معالجة الدفع",
+        "expired": "انتهى الدفع",
+        "sessionExpired": "انتهت الجلسة",
+        "expiringSoon": "تنتهي قريبًا",
+        "maxTimeReached": "تم الوصول إلى الحد الأقصى للوقت",
+        "timeRemaining": "الوقت المتبقي",
+        "securePayment": "دفع آمن",
+        "default": "معلق"
+      },
+      "errors": {
+        "invalidPaymentData": "بيانات الدفع غير صالحة",
+        "noPaymentData": "لم يتم العثور على بيانات الدفع",
+        "noAuthToken": "مطلوب مصادقة"
+      },
+      "loading": {
+        "title": "جاري تحميل تفاصيل الدفع",
+        "subtitle": "جارٍ إعداد الدفع بالعملات المشفرة..."
+      },
+      "error": {
+        "title": "خطأ في الدفع"
+      },
+      "wallet": {
+        "sendInstruction": "إرسال {{amount}} {{token}} على شبكة {{network}} إلى {{address}}",
+        "loadingAddress": "جارٍ تحميل العنوان..."
+      },
+      "modal": {
+        "waitingConfirmation": "في انتظار تأكيد الحجز",
+        "confirmationMessage": "انتظر بينما نقوم بتأكيد دفعتك. قد يستغرق هذا ما يصل إلى 2-3 دقائق. يرجى عدم إغلاق هذه النافذة."
+      },
+      "actions": {
+        "checkStatus": "تحقق من الحالة",
+        "checkBooking": "تحقق من الحجز",
+        "copyAddress": "نسخ العنوان",
+        "addressCopied": "✓ تم نسخ العنوان إلى الحافظة!",
+        "takeMeToBookings": "خذني إلى حجوزاتي"
+      },
+      "support": {
+        "needHelp": "تحتاج مساعدة؟",
+        "supportMessage": "فريق الدعم لدينا متاح على مدار الساعة لمساعدتك في الدفع بالعملات المشفرة",
+        "contactSupport": "اتصل بالدعم",
+        "securityInfo": "معلومات الأمان"
+      },
+      "walletAddressLabel": "عنوان المحفظة",
+      "instructions": {
+        "sendAmount": "أرسل بالضبط {{amount}} بقيمة {{token}}",
+        "useNetwork": "استخدم شبكة {{network}} فقط",
+        "doubleCheck": "تحقق من عنوان المحفظة مرة أخرى قبل الإرسال",
+        "confirmationTime": "تأكيد الدفع تلقائي (5-15 دقيقة)"
+      },
+      "warning": "مهم: أرسل {{token}} فقط على شبكة {{network}}. إرسال عملات أخرى أو استخدام الشبكة الخاطئة سيؤدي إلى فقدان الأموال.",
+      "common": {
+        "important": "مهم"
+      }
+    },
+    "promoCode": {
+      "label": "هل لديك رمز ترويجي؟",
+      "placeholder": "أدخل الرمز",
+      "apply": "تطبيق",
+      "applied": "مُطبق",
+      "success": "تم تطبيق الرمز الترويجي! لقد وفرت {{discount}}",
+      "invalid": "رمز ترويجي غير صالح أو منتهي الصلاحية",
+      "genericError": "فشل تطبيق الرمز الترويجي. يرجى المحاولة مرة أخرى.",
+      "loginRequired": "يرجى تسجيل الدخول لاستخدام الرموز الترويجية",
+      "viewAvailable": "عرض الرموز الترويجية المتاحة",
+      "noAvailable": "لا توجد رموز ترويجية متاحة في الوقت الحالي"
+    }
+  },
+  "GuestBox": {
+    "guests": "ضيوف",
+    "adultsPlural": "بالغين",
+    "adultSingular": "بالغ",
+    "infantsPlural": "رُضع",
+    "infantSingular": "رضيع",
+    "roomsPlural": "غرف",
+    "roomSingular": "غرفة",
+    "childSingular": "طفل",
+    "childrenPlural": "أطفال",
+    "age": "العمر",
+    "yearSingular": "سنة",
+    "yearPlural": "سنوات",
+    "selectAge": "اختر العمر",
+    "selectGuests": "اختر الضيوف",
+    "ages": "الأعمار",
+    "cancel": "إلغاء",
+    "apply": "تطبيق",
+    "defaultText": "1 غرفة · 1 بالغ · 0 أطفال",
+    "maxGuestsError": "الحد الأقصى {{maxGuests}} ضيوف مسموح لكل غرفة. يرجى إضافة المزيد من الغرف أو تقليل عدد الضيوف.",
+    "selectAgeError": "يرجى تحديد عمر جميع الأطفال والرُضع"
+  },
+  "PayWithCryptoQR": {
+    "title": "الدفع بالعملات الرقمية",
+    "amountLabel": "المبلغ",
+    "loadingTokens": "جارٍ تحميل العملات...",
+    "loadingNetworks": "جارٍ تحميل الشبكات...",
+    "convertingCurrency": "جارٍ تحويل {{currency}} إلى دولار أمريكي...",
+    "convertedAmount": "المبلغ المحول",
+    "selectToken": "اختر العملة",
+    "selectNetwork": "اختر الشبكة",
+    "noNetworksAvailable": "لا توجد شبكات متاحة لهذه العملة",
+    "noTokensAvailable": "لا توجد عملات متاحة",
+    "processing": "جارٍ المعالجة...",
+    "initiatePayment": "بدء الدفع",
+    "paymentInitiated": "تم بدء الدفع بالعملة الرقمية بنجاح",
+    "token": "العملة",
+    "blockchain": "البلوكشين",
+    "amount": "المبلغ",
+    "status": "الحالة",
+    "paymentId": "معرف الدفع",
+    "scanQRCode": "امسح رمز QR للدفع باستخدام {{token}} على {{network}}",
+    "qrCodePlaceholder": "سيظهر رمز QR هنا",
+    "sendAmountInstruction": "أرسل المبلغ الدقيق إلى العنوان الموضح أعلاه باستخدام شبكة {{network}}",
+    "tokenLogoAlt": "شعار {{token}}",
+    "networkLogoAlt": "شعار {{network}}",
+    "errors": {
+      "noAuthToken": "لم يتم العثور على رمز التوثيق",
+      "fetchTokens": "خطأ في جلب العملات",
+      "fetchTokensError": "حدث خطأ أثناء جلب العملات",
+      "fetchNetworks": "خطأ في جلب الشبكات",
+      "fetchNetworksError": "حدث خطأ أثناء جلب الشبكات",
+      "currencyConversion": "خطأ في تحويل العملة",
+      "currencyConversionError": "حدث خطأ أثناء تحويل العملة",
+      "selectionIncomplete": "يرجى اختيار العملة والشبكة والتأكد من تحويل المبلغ",
+      "initiatePayment": "خطأ في بدء الدفع",
+      "initiatePaymentError": "حدث خطأ أثناء بدء الدفع"
+    }
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "newNotification": "إشعار جديد",
+    "unread": "غير مقروء",
+    "markAllRead": "تعيين الكل كمقروء",
+    "markAsRead": "تعيين كمقروء",
+    "retry": "إعادة المحاولة",
+    "loading": "جارٍ تحميل الإشعارات...",
+    "noUnread": "لا توجد إشعارات غير مقروءة",
+    "noNotifications": "لا توجد إشعارات بعد",
+    "emptyDescription": "سنقوم بإعلامك عندما يصل شيء",
+    "unknownTime": "وقت غير معروف",
+    "type": "نوع",
+    "offerCode": "كود العرض",
+    "tabs": {
+      "all": "الكل",
+      "unread": "غير مقروء"
+    },
+    "errors": {
+      "fetchFailed": "فشل في جلب الإشعارات",
+      "loadFailed": "فشل في تحميل الإشعارات",
+      "markAllReadFailed": "فشل في تعيين جميع الإشعارات كمقروءة",
+      "markReadFailed": "فشل في تعيين الإشعار كمقروء",
+      "loadingError": "خطأ في تحميل الإشعارات"
+    }
+  },
+  "Help": {
+    "helpCenter": "مركز المساعدة",
+    "helpCenterDesc": "اعثر على إجابات للأسئلة الشائعة حول الحجز والمدفوعات والمزيد.",
+    "searchPlaceholder": "البحث في مقالات المساعدة...",
+    "searchAriaLabel": "البحث في الأسئلة الشائعة",
+    "noResults": "لم يتم العثور على نتائج. جرب مصطلح بحث مختلف.",
+    "allCategories": "جميع الفئات",
+    "popularTopics": "المواضيع الشائعة",
+    "searchResults": "نتائج البحث",
+    "clearFilters": "مسح المرشحات",
+    "stillNeedHelp": "لا تزال بحاجة للمساعدة؟",
+    "contactDesc": "فريق الدعم لدينا هنا لمساعدتك على مدار الساعة طوال أيام الأسبوع",
+    "contactFooter": "قد تختلف أوقات الاستجابة خلال ساعات الذروة. للمسائل العاجلة، يُرجى الاتصال بنا على <phoneLink>رقم الهاتف</phoneLink>.",
+    "contactPhone": "+1-800-555-1234",
+    "contactPhoneFormatted": "(800) 555-1234",
+    "email": "دعم البريد الإلكتروني",
+    "emailDesc": "سنرد خلال 4 ساعات",
+    "phone": "الدعم الهاتفي",
+    "phoneDesc": "اتصل بنا للمسائل العاجلة",
+    "supportOptions": {
+      "email": {
+        "responseTime": "< 4 ساعات"
+      },
+      "phone": {
+        "responseTime": "24/7"
+      }
+    },
+    "categories": {
+      "booking": {
+        "title": "الحجز والحجوزات",
+        "description": "أسئلة حول إجراء وإدارة الحجوزات"
+      },
+      "payment": {
+        "title": "الدفع والفوترة",
+        "description": "طرق الدفع والعملات المشفرة والفوترة والمبالغ المسترة"
+      },
+      "security": {
+        "title": "الأمان والخصوصية",
+        "description": "أمان الحساب وحماية البيانات"
+      },
+      "account": {
+        "title": "الحساب والملف الشخصي",
+        "description": "إدارة حسابك وإعدادات الملف الشخصي"
+      },
+      "promotions": {
+        "title": "العروض والترويجات",
+        "description": "كوبونات الخصم والعروض الترويجية"
+      }
+    },
+    "contactForm": {
+      "title": "أرسل لنا رسالة",
+      "subject": "الموضوع",
+      "message": "رسالتك",
+      "messagePlaceholder": "اوصف مشكلتك...",
+      "cancel": "إلغاء",
+      "send": "إرسال الرسالة",
+      "sending": "جاري الإرسال...",
+      "sent": "تم إرسال الرسالة!",
+      "thankYou": "شكرًا لك! سيتواصل معك فريقنا قريبًا."
+    },
+    "contactFooterNoPhone": "للحصول على مساعدة فورية، يرجى استخدام الدعم عبر البريد الإلكتروني.",
+    "faq": {
+      "howToPayQuestion": "كيف يمكن للمستخدم إجراء الدفع؟",
+      "howToPayAnswer": "تقدم المنصة خيارات دفع متعددة ومريحة لتلبية مجموعة واسعة من تفضيلات المستخدمين. يمكن للمستخدمين اختيار طريقة \"الدفع في الفندق\"، حيث يقدمون تفاصيل بطاقتهم أثناء عملية الحجز لتأكيد الحجز فقط. لا يتم فرض أي رسوم فورية، ويتم تسوية الدفع مباشرة في الفندق - إما أثناء تسجيل الوصول أو عند المغادرة - حسب سياسة العقار المحددة.\n\nبالإضافة إلى ذلك، للمستخدمين الذين يفضلون العملة الرقمية، تدعم المنصة مدفوعات العملات المشفرة بـ USDC و USDT (شبكة Polygon) و Ethereum و BNB و Polygon Mainnet. هذا يضمن مرونة أكبر للمسافرين الدوليين والمستخدمين التقنيين وأولئك الذين يفضلون المعاملات القائمة على البلوك تشين. تم تصميم كلا طريقتي الدفع لتوفير الأمان والشفافية والراحة.",
+      "cancelReservationQuestion": "هل من الممكن إلغاء الحجز بعد تأكيده؟",
+      "cancelReservationAnswer": "نعم. يمكن للمستخدمين إلغاء الحجوزات المؤكدة، شرط أن يفعلوا ذلك قبل 24 ساعة على الأقل من وقت تسجيل الوصول المجدول. ميزة الإلغاء متاحة بسهولة في قسم \"رحلاتي\" في لوحة تحكم المستخدم.\n\nمن المهم ملاحظة أنه بينما تسمح معظم الفنادق بالإلغاء المجاني ضمن الفترة المذكورة، قد تكون لدى بعض العقارات شروط أكثر صرامة - مثل الحجوزات غير القابلة للاسترداد أو الأسعار الترويجية الخاصة. لذلك، يُنصح المستخدمون بشدة بمراجعة سياسة الإلغاء الخاصة بالفندق وقت الحجز لتجنب أي رسوم محتملة.",
+      "paymentSecurityQuestion": "هل يتم التعامل مع معلومات دفع المستخدم بشكل آمن؟",
+      "paymentSecurityAnswer": "بالتأكيد. تعطي المنصة الأولوية لأمان مدفوعات المستخدمين من خلال الشراكة مع Stripe، وهي بوابة دفع معترف بها عالمياً ومتوافقة مع PCI DSS معروفة بتقنية التشفير المتقدمة. لا يتم تخزين أي بيانات دفع حساسة على خوادم المنصة. جميع المعاملات، سواء للمدفوعات بالبطاقة أو تحويلات العملات المشفرة، تتم معالجتها من خلال قنوات آمنة ومشفرة، مما يضمن أقصى حماية للبيانات وثقة المستخدم.",
+      "internationalCardsQuestion": "هل يمكن للمستخدمين الدفع باستخدام بطاقات ائتمان أو خصم دولية؟",
+      "internationalCardsAnswer": "نعم. يدعم نظام الدفع بالكامل المعاملات الدولية، مما يسمح للمستخدمين من جميع أنحاء العالم بحجز الفنادق دون قيود. تشمل أنواع البطاقات المدعومة مقدمي الخدمات العالميين الرئيسيين مثل Visa و Mastercard و American Express. يتم التعامل مع تحويل العملات تلقائياً بواسطة بوابة الدفع، مما يوفر تجربة حجز سلسة وخالية من المتاعب للمسافرين الدوليين.",
+      "receiptQuestion": "هل سيتم توفير إيصال بعد إتمام الدفع؟",
+      "receiptAnswer": "نعم. سواء اختار المستخدم الدفع في الفندق أو عبر البطاقة أو من خلال العملة المشفرة، يتم إنتاج إيصال دفع رقمي تلقائياً وإرساله إلى عنوان البريد الإلكتروني المسجل بمجرد إتمام المعاملة. يتضمن هذا الإيصال رقم مرجع الحجز واسم الفندق وسعر الغرفة وتفاصيل الضرائب وتفصيل واضح للدفع، ليكون بمثابة سجل رسمي للمعاملة.",
+      "accountRequiredQuestion": "هل يحتاج المستخدمون إلى إنشاء حساب قبل الحجز؟",
+      "accountRequiredAnswer": "إنشاء الحساب مطلوب فقط عندما يرغب المستخدم في إجراء حجز. هذا يعني أن أي شخص يمكنه استكشاف الفنادق بحرية وعرض توفر الغرف ومقارنة الأسعار والاطلاع على المرافق وقراءة تقييمات النزلاء دون تسجيل الدخول.\n\nومع ذلك، عند المتابعة لحجز غرفة، سيطلب النظام من المستخدم إنشاء حساب أو تسجيل الدخول. هذه الخطوة تضمن أن تفاصيل الحجز وتأكيدات الدفع والحجوزات المستقبلية يتم تخزينها بأمان ويمكن الوصول إليها بسهولة في قسم \"رحلاتي\".",
+      "contactSupportQuestion": "كيف يمكن للمستخدمين الاتصال بدعم العملاء؟",
+      "contactSupportAnswer": "توفر المنصة قنوات دعم متعددة لمساعدة المستخدمين في استفسارات الحجز أو مشاكل الدفع أو المشاكل التقنية. يمكن للمستخدمين التواصل عبر دعم البريد الإلكتروني أو مكتب المساعدة داخل التطبيق. تختلف أوقات الاستجابة حسب القناة، لكن الأولوية تُعطى دائماً للمشاكل العاجلة المتعلقة بالحجز أو الدفع.",
+      "additionalChargesQuestion": "هل هناك أي رسوم إضافية أثناء الحجز؟",
+      "additionalChargesAnswer": "جميع الأسعار المعروضة شاملة للضرائب والرسوم المعمول بها، ما لم يُذكر خلاف ذلك في ملخص الحجز. قد تفرض بعض الفنادق مبالغ إضافية عند تسجيل الوصول للخدمات الاختيارية مثل الأسرة الإضافية أو الوجبات أو تسجيل المغادرة المتأخر. ستكون هذه واضحة قبل إنهاء الحجز، مما يضمن الشفافية الكاملة وعدم وجود مفاجآت خفية.",
+      "discountCouponQuestion": "كيف يمكن للمستخدم الحصول على خصم أو استخدام قسيمة أثناء الحجز؟",
+      "discountCouponAnswer": "للاستفادة من العروض والخصومات، يحتاج المستخدمون لاتباع عملية بسيطة. كوبونات ترويجية خاصة مرتبطة برموز QR موضوعة في غرف فندقية مختارة أو مواد ترويجية أخرى. بمسح رمز QR هذا باستخدام جهاز محمول، يتم إعادة توجيه المستخدمين إلى تطبيق المنصة المحمول. من هناك، يمكنهم المتابعة بعملية الحجز القياسية. في مرحلة الدفع، سيكون خيار \"تطبيق الكوبون\" مرئياً - النقر عليه سيسمح للمستخدم بإدخال الرمز وتطبيق الخصم المؤهل فوراً على إجمالي مبلغ الحجز."
+    }
+  },
+  "Reviews": {
+    "guestReviewsFor": "تقييمات الضيوف لـ {{hotelName}}",
+    "weAimForRealReviews": "نهدف إلى تقييمات حقيقية بنسبة 100%",
+    "writeAReview": "اكتب تقييمًا",
+    "reviews": "تقييمات",
+    "all": "الكل",
+    "superb": "ممتاز",
+    "good": "جيد",
+    "poor": "ضعيف",
+    "marMay": "مارس–مايو",
+    "junAug": "يونيو–أغسطس",
+    "sepNov": "سبتمبر–نوفمبر",
+    "decFeb": "ديسمبر–فبراير",
+    "mostRelevant": "الأكثر صلة",
+    "newestFirst": "الأحدث أولًا",
+    "oldestFirst": "الأقدم أولًا",
+    "highestRated": "الأعلى تقييمًا",
+    "lowestRated": "الأدنى تقييمًا",
+    "guestReviews": "تقييمات الضيوف ({{count}})",
+    "reviewedOn": "تم التقييم في: {{date}}",
+    "noReviews": "لا توجد تقييمات بعد",
+    "beFirstToReview": "كن أول من يشارك تجربته!",
+    "filtersAndSort": "التصفية والترتيب",
+    "reviewScores": "درجات التقييم",
+    "timeOfYear": "وقت السنة",
+    "sortReviewsBy": "ترتيب التقييمات حسب",
+    "show": "عرض",
+    "perPage": "في الصفحة",
+    "showing": "عرض",
+    "of": "من",
+    "noReviewsToShow": "لا توجد تقييمات لعرضها"
+  },
+  "NetworkStatus": {
+    "offline": "أنت غير متصل بالإنترنت. يرجى التحقق من اتصالك.",
+    "online": "لقد عدت إلى الإنترنت!"
+  },
+  "rebookModal": {
+    "bookAgain": "احجز مرة أخرى",
+    "updateDetails": "تحديث التفاصيل",
+    "reviewAndBook": "المراجعة والحجز",
+    "checkingAvailability": "جارٍ التحقق من التوفر...",
+    "continueToReview": "المتابعة للمراجعة",
+    "cancel": "إلغاء",
+    "greatNews": "أخبار رائعة!",
+    "datesAvailableMessage": "التواريخ المحددة متاحة للحجز",
+    "priceDetails": "تفاصيل السعر",
+    "baseAmount": "المبلغ الأساسي",
+    "additionalGuestCharges": "رسوم الضيوف الإضافية",
+    "taxAndFeeBreakdown": "تفصيل الضرائب والرسوم",
+    "totalTax": "إجمالي الضريبة",
+    "roomRate": "سعر الغرفة",
+    "totalForNights": "الإجمالي لـ {{count}} ليالٍ",
+    "totalForNights_one": "الإجمالي لـ {{count}} ليلة",
+    "totalForNights_other": "الإجمالي لـ {{count}} ليالٍ",
+    "finalAmount": "المبلغ النهائي (شامل الضريبة)",
+    "includesTaxes": "يشمل",
+    "inTaxes": "من الضرائب",
+    "backToDetails": "العودة إلى التفاصيل",
+    "proceedToPayment": "المتابعة للدفع",
+    "redirectingToPayment": "جارٍ التوجيه للدفع...",
+    "errors": {
+      "atLeastOneGuest": "مطلوب ضيف واحد على الأقل",
+      "selectCheckInDate": "يرجى تحديد تاريخ تسجيل الوصول",
+      "selectCheckOutDate": "يرجى تحديد تاريخ المغادرة",
+      "checkOutAfterCheckIn": "يجب أن يكون تاريخ المغادرة بعد تاريخ تسجيل الوصول",
+      "atLeastOneRoom": "مطلوب غرفة واحدة على الأقل",
+      "maxRoomsAllowed": "الحد الأقصى 4 غرف مسموح به",
+      "maxGuestsForRooms": "الحد الأقصى {{maxGuests}} ضيف مسموح به لـ {{rooms}} {{roomText}}",
+      "room": "غرفة",
+      "rooms": "غرف",
+      "provideEmail": "يرجى تقديم بريد إلكتروني للاتصال",
+      "validEmail": "يرجى تقديم عنوان بريد إلكتروني صالح",
+      "firstNameRequired": "الاسم الأول مطلوب",
+      "firstNameLetters": "يجب أن يحتوي الاسم الأول على أحرف فقط",
+      "lastNameRequired": "اسم العائلة مطلوب",
+      "lastNameLetters": "يجب أن يحتوي اسم العائلة على أحرف فقط",
+      "dobRequired": "تاريخ الميلاد مطلوب",
+      "dobMismatch": "تاريخ الميلاد لا يتطابق مع نوع الضيف",
+      "correctErrors": "يرجى تصحيح الأخطاء أعلاه",
+      "noRoomsAvailable": "لا توجد غرف متاحة للتواريخ المحددة. يرجى تجربة تواريخ مختلفة.",
+      "somethingWrong": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      "completeFields": "يرجى إكمال جميع الحقول المطلوبة قبل المتابعة"
+    },
+    "success": {
+      "datesAvailable": "رائع! تواريخك الجديدة متاحة."
+    }
+  },
+  "dateSelectionCard": {
+    "title": "متى تريد الإقامة؟",
+    "checkInDate": "تاريخ تسجيل الوصول",
+    "checkOutDate": "تاريخ المغادرة",
+    "numberOfRooms": "عدد الغرف",
+    "checkInPlaceholder": "تسجيل الوصول",
+    "checkOutPlaceholder": "المغادرة",
+    "roomsLabel": "الغرف",
+    "room": "غرفة",
+    "rooms": "غرف",
+    "decreaseRooms": "تقليل الغرف",
+    "increaseRooms": "زيادة الغرف",
+    "roomsRange": "الحد الأدنى: غرفة واحدة، الحد الأقصى: 4 غرف",
+    "guestRatioError": "الحد الأقصى 4 ضيوف مسموح به لكل غرفة. لديك {{guestsCount}} ضيف لـ {{rooms}} {{roomText}}.",
+    "nightsCount": "{{count}} ليالٍ",
+    "nightsCount_one": "{{count}} ليلة",
+    "nightsCount_other": "{{count}} ليالٍ",
+    "guestsCount": "{{count}} ضيوف",
+    "guestsCount_one": "{{count}} ضيف",
+    "guestsCount_other": "{{count}} ضيوف",
+    "roomsCount": "{{count}} غرف",
+    "roomsCount_one": "{{count}} غرفة",
+    "roomsCount_other": "{{count}} غرف"
+  },
+  "contactInfoCard": {
+    "title": "معلومات الاتصال",
+    "emailAddress": "عنوان البريد الإلكتروني",
+    "phoneNumber": "رقم الهاتف",
+    "notProvided": "غير متوفر"
+  },
+  "guestForm": {
+    "removeGuest": "إزالة الضيف",
+    "guestNumber": "الضيف {{number}}",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "guestType": "نوع الضيف",
+    "dateOfBirth": "تاريخ الميلاد",
+    "firstNamePlaceholder": "الاسم الأول",
+    "lastNamePlaceholder": "اسم العائلة",
+    "selectDOB": "اختر تاريخ الميلاد",
+    "adult": "بالغ",
+    "child": "طفل",
+    "infant": "رضيع"
+  },
+  "guestManagementCard": {
+    "title": "تفاصيل الضيوف",
+    "addGuest": "إضافة ضيف"
+  },
+  "reviewSummaryCard": {
+    "title": "ملخص الحجز",
+    "hotel": "الفندق",
+    "roomType": "نوع الغرفة",
+    "checkIn": "تسجيل الوصول",
+    "checkOut": "المغادرة",
+    "nights": "الليالي",
+    "guests": "الضيوف",
+    "rooms": "الغرف",
+    "contactInformation": "معلومات الاتصال",
+    "guestDetails": "تفاصيل الضيوف",
+    "guestTypes": {
+      "adult": "بالغ",
+      "child": "طفل",
+      "infant": "رضيع"
+    }
+  },
+  "roomInfoCard": {
+    "title": "تفاصيل الغرفة",
+    "roomType": "نوع الغرفة",
+    "sameRoomType": "نفس نوع الغرفة كحجزك الأصلي"
+  }
+}

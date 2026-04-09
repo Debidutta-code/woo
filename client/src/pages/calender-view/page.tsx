@@ -537,7 +537,7 @@ export default function InventoryPage() {
   };
 
   return (
-    <div className="min-h-screen md:mx-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen md:mx-4">
       {/* Header */}
       <div className="container px-3 py-3 mx-auto sm:px-4 lg:px-8 max-w-6xl">
         <div className="flex items-center justify-between">

@@ -1,0 +1,71 @@
+// BookingTabsNavigation.tsx
+import React from 'react';
+import { FaTicketAlt, FaRegCalendarCheck, FaHistory, FaRegTimesCircle } from 'react-icons/fa';
+import { BookingTabType } from './types';
+import { useTranslation } from 'react-i18next';
+
+interface BookingTabsNavigationProps {
+  activeTab: BookingTabType;
+  setActiveTab: (tab: BookingTabType) => void;
+}
+
+const BookingTabsNavigation: React.FC<BookingTabsNavigationProps> = ({ activeTab, setActiveTab }) => {
+  const { t ,i18n } = useTranslation();
+
+  return (
+    <div className="bg-tripswift-off-white rounded-xl shadow-md mb-6 overflow-hidden font-noto-sans">
+      <div className="flex flex-wrap md:flex-nowrap">
+        <button
+          className={`flex-1 py-4 px-4 text-center font-tripswift-medium text-sm md:text-base transition-colors duration-300 border-b-2 ${activeTab === 'all'
+              ? 'border-tripswift-blue text-tripswift-blue'
+              : 'border-transparent text-gray-500 hover:text-tripswift-blue/70'
+            }`}
+          onClick={() => setActiveTab('all')}
+        >
+          <span className="flex items-center justify-center">
+            <FaTicketAlt className={` h-4 w-4 ${i18n.language === "ar" ?"ml-2":"mr-2"}`} />
+            {t('BookingTabs.BookingTabsNavigation.allBookings')}
+          </span>
+        </button>
+        <button
+          className={`flex-1 py-4 px-4 text-center font-tripswift-medium text-sm md:text-base transition-colors duration-300 border-b-2 ${activeTab === 'upcoming'
+              ? 'border-tripswift-blue text-tripswift-blue'
+              : 'border-transparent text-gray-500 hover:text-tripswift-blue/70'
+            }`}
+          onClick={() => setActiveTab('upcoming')}
+        >
+          <span className="flex items-center justify-center">
+            <FaRegCalendarCheck className={` h-4 w-4 ${i18n.language === "ar" ?"ml-2":"mr-2"}`} />
+            {t('BookingTabs.BookingTabsNavigation.upcoming')}
+          </span>
+        </button>
+        <button
+          className={`flex-1 py-4 px-4 text-center font-tripswift-medium text-sm md:text-base transition-colors duration-300 border-b-2 ${activeTab === 'completed'
+              ? 'border-tripswift-blue text-tripswift-blue'
+              : 'border-transparent text-gray-500 hover:text-tripswift-blue/70'
+            }`}
+          onClick={() => setActiveTab('completed')}
+        >
+          <span className="flex items-center justify-center">
+            <FaHistory className={` h-4 w-4 ${i18n.language === "ar" ?"ml-2":"mr-2"}`} />
+            {t('BookingTabs.BookingTabsNavigation.completed')}
+          </span>
+        </button>
+        <button
+          className={`flex-1 py-4 px-4 text-center font-tripswift-medium text-sm md:text-base transition-colors duration-300 border-b-2 ${activeTab === 'cancelled'
+              ? 'border-tripswift-blue text-tripswift-blue'
+              : 'border-transparent text-gray-500 hover:text-tripswift-blue/70'
+            }`}
+          onClick={() => setActiveTab('cancelled')}
+        >
+          <span className="flex items-center justify-center">
+            <FaRegTimesCircle className={` h-4 w-4 ${i18n.language === "ar" ?"ml-2":"mr-2"}`} />
+            {t('BookingTabs.BookingTabsNavigation.cancelled')}
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default BookingTabsNavigation;
