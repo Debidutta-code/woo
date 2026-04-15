@@ -17,21 +17,16 @@ const AuthButton: React.FC<AuthButtonProps> = ({
   className = ""
 }) => {
   const { t } = useTranslation();
-  
-  // Base classes that will always be applied
-  const baseClasses = `
-    w-full flex justify-center items-center py-3 px-6 rounded-xl font-tripswift-bold text-base
-    relative overflow-hidden
-    text-tripswift-off-white shadow-lg hover:shadow-xl transform
-    transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tripswift-blue
-    disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0
-  `;
 
   return (
     <button
       type={type}
       disabled={loading}
-      className={`${baseClasses} ${className}`}
+      className={`w-full flex justify-center items-center py-3 px-6 rounded-xl font-tripswift-bold text-base
+    relative overflow-hidden
+    text-tripswift-off-white shadow-lg hover:shadow-xl transform
+    transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tripswift-blue
+    disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${className}`}
     >
       {/* Background gradient with animated hover effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-tripswift-blue to-[#054B8F] transition-transform duration-300 hover:scale-110"></div>

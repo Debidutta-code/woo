@@ -9,6 +9,7 @@ import {
   DollarSign,
   Cable,
   View,
+  MapPinHouse,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type {
@@ -39,6 +40,7 @@ import MasterIntegrationsTab from "./components/MasterIntegrationsTab";
 import { getAllRoomViews } from "./services/room-view.services";
 import type { ILoader } from "../dashboard/interface";
 import RoomViewTab from "./components/RoomView";
+import ExplorDestination from "./components/ExplorDestination";
 
 const TABS = [
   { value: "categories", label: "Categories", icon: Tag },
@@ -47,23 +49,38 @@ const TABS = [
   { value: "room-amenities", label: "Room Amenities", icon: Sparkles },
   { value: "room-views", label: "Room Views", icon: View },
   { value: "loyalty-fields", label: "Loyalty Fields", icon: Users },
-  { value: "payment-integrations", label: "Payment Integrations", icon: DollarSign },
+  {
+    value: "payment-integrations",
+    label: "Payment Integrations",
+    icon: DollarSign,
+  },
   { value: "master-integrations", label: "Master Integrations", icon: Cable },
+  {
+    value: "explor-destinations",
+    label: "Explor Destinations",
+    icon: MapPinHouse,
+  },
 ];
 
 export default function ManagementPage() {
-  const [loading, setLoading] = useState<ILoader> ({
-    isLoading:true,
-    message:"Loading Management Data ..."
+  const [loading, setLoading] = useState<ILoader>({
+    isLoading: true,
+    message: "Loading Management Data ...",
   });
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<IPropertyType[]>([]);
   const [propertyAmenities, setPropertyAmenities] = useState<IAmenity[]>([]);
   const [roomAmenities, setRoomAmenities] = useState<IAmenity[]>([]);
   const [roomViews, setRoomViews] = useState<IMasterRoomView[]>([]);
-  const [loyaltyGuestFields, setLoyaltyGuestFields] = useState<ILoyaltyGuestField[]>([]);
-  const [paymentIntegrations, setPaymentIntegrations] = useState<IPaymentIntegration[]>([]);
-  const [masterIntegrations, setMasterIntegrations] = useState<IMasterIntegrations[]>([]);
+  const [loyaltyGuestFields, setLoyaltyGuestFields] = useState<
+    ILoyaltyGuestField[]
+  >([]);
+  const [paymentIntegrations, setPaymentIntegrations] = useState<
+    IPaymentIntegration[]
+  >([]);
+  const [masterIntegrations, setMasterIntegrations] = useState<
+    IMasterIntegrations[]
+  >([]);
 
   useEffect(() => {
     fetchAllData();
@@ -72,7 +89,7 @@ export default function ManagementPage() {
   const fetchAllData = async () => {
     setLoading({
       isLoading: true,
-      message: "Loading Management Data ..."
+      message: "Loading Management Data ...",
     });
     try {
       const [
@@ -99,20 +116,20 @@ export default function ManagementPage() {
       if (propTypeRes.success) setPropertyTypes(propTypeRes.data);
       if (propAmenRes.success) setPropertyAmenities(propAmenRes.data);
       if (roomAmenRes.success) setRoomAmenities(roomAmenRes.data);
-      if (loyaltyFieldsRes.success) setLoyaltyGuestFields(loyaltyFieldsRes.data);
+      if (loyaltyFieldsRes.success)
+        setLoyaltyGuestFields(loyaltyFieldsRes.data);
       if (masterIntegrationsRes.success && masterIntegrationsRes.data) {
         setMasterIntegrations(masterIntegrationsRes.data);
       }
       if (masterPaymentIntegrationRes.success)
         setPaymentIntegrations(masterPaymentIntegrationRes?.data);
-      if (roomViewsRes.success)
-        setRoomViews(roomViewsRes?.data);
+      if (roomViewsRes.success) setRoomViews(roomViewsRes?.data);
     } catch (error) {
       toast.error("Failed to fetch management data");
     } finally {
       setLoading({
         isLoading: false,
-        message: ""
+        message: "",
       });
     }
   };
@@ -162,9 +179,11 @@ export default function ManagementPage() {
           ))}
         </TabsList>
 
-
         <TabsContent value="categories" className="mt-4">
-          <CategoriesTab categories={categories} setCategories={setCategories} />
+          <CategoriesTab
+            categories={categories}
+            setCategories={setCategories}
+          />
         </TabsContent>
 
         <TabsContent value="property-types" className="mt-4">
@@ -210,6 +229,12 @@ export default function ManagementPage() {
           <MasterIntegrationsTab
             masterIntegrations={masterIntegrations}
             setMasterIntegrations={setMasterIntegrations}
+          />
+        </TabsContent>
+        <TabsContent value="explor-destinations" className="mt-4">
+          <ExplorDestination
+            // masterIntegrations={masterIntegrations}
+            // setMasterIntegrations={setMasterIntegrations}
           />
         </TabsContent>
       </Tabs>

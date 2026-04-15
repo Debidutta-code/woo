@@ -1,40 +1,24 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { Mail, User } from "lucide-react";
+import { Mail, User, Phone } from "lucide-react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 
-// Import shared components
 import AuthLayout from "../../../components/auth/AuthLayout";
 import FormInput from "../../../components/auth/FormInput";
 import PasswordInput from "../../../components/auth/PasswordInput";
 import AuthButton from "../../../components/auth/AuthButton";
 import { useFormValidation } from "../../../components/auth/hooks/useFormValidation";
-import { useSearchParams } from "next/navigation";
+import { registerApi } from "./api";
 
 const Register: React.FC = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [promotionalEmailEnabled, setPromotionalEmailEnabled] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [referralCode, setReferralCode] = useState<string | null>("");
-  const [referralId, setReferralId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const referrerId = searchParams.get("referrerId");
-    const referralCode = searchParams.get("referralCode");
-    // if (referralCode && referrerId) {
-    //   console.log(">>>>>>>>>>>>>", referralCode, referrerId);
-    // } else {
-    //   console.log(">>>>>>>>>>>>>not found", referralCode);
-    // }
-    setReferralCode(referralCode);
-    setReferralId(referrerId);
-  }, []);
 
   const {
     values,
@@ -50,15 +34,14 @@ const Register: React.FC = () => {
       lastName: "",
       email: "",
       password: "",
-      provider: "local",
+      mobilePhone: "",
     },
     {
       firstName: { required: true, namePattern: true },
       lastName: { required: true, namePattern: true },
       email: { required: true, email: true },
       password: { required: true, passwordStrength: true },
-      provider: { required: true },
-    }
+    },
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,35 +49,30 @@ const Register: React.FC = () => {
     if (!validateForm()) {
       return;
     }
+
     setLoading(true);
     try {
-      let apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/register`;
-
-      if (referralCode && referralId) {
-        const params = new URLSearchParams({
-          referrerId: referralId,
-          referralCode: referralCode,
-        });
-        apiUrl += `?${params.toString()}`;
-      }
-
-      const response = await axios.post(apiUrl, {
-        ...values,
+      const response = await registerApi({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        mobilePhone: values.mobilePhone,
+        promotionalEmailEnabled,
       });
 
-      if (response.status === 201) {
-        setLoading(false);
+      if (response?.success) {
         toast.success(t("Auth.Register.successMessage"));
         router.push("/login");
       } else {
-        toast.error(t("Auth.Register.genericError"));
-        setLoading(false);
+        toast.error(response?.message || t("Auth.Register.registrationFailed"));
       }
     } catch (error: any) {
-      setLoading(false);
       toast.error(
-        error.response?.data?.message || t("Auth.Register.registrationFailed")
+        error?.message || t("Auth.Register.registrationFailed"),
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -129,7 +107,7 @@ const Register: React.FC = () => {
       }
     >
       <form className="space-y-2" onSubmit={handleSubmit}>
-        {/* First Name Field */}
+        {/* First Name */}
         <FormInput
           id="firstName"
           name="firstName"
@@ -145,7 +123,7 @@ const Register: React.FC = () => {
           onBlur={() => handleBlur("firstName")}
         />
 
-        {/* Last Name Field */}
+        {/* Last Name */}
         <FormInput
           id="lastName"
           name="lastName"
@@ -161,7 +139,7 @@ const Register: React.FC = () => {
           onBlur={() => handleBlur("lastName")}
         />
 
-        {/* Email Field */}
+        {/* Email */}
         <FormInput
           id="email"
           name="email"
@@ -177,7 +155,23 @@ const Register: React.FC = () => {
           onBlur={() => handleBlur("email")}
         />
 
-        {/* Password Field */}
+        {/* Mobile Phone */}
+        <FormInput
+          id="mobilePhone"
+          name="mobilePhone"
+          label="Mobile Number"
+          type="tel"
+          value={values.mobilePhone}
+          onChange={handleChange}
+          placeholder="+91 98765 43210"
+          error={errors.mobilePhone}
+          icon={<Phone />}
+          isFocused={formFocus === "mobilePhone"}
+          onFocus={() => handleFocus("mobilePhone")}
+          onBlur={() => handleBlur("mobilePhone")}
+        />
+
+        {/* Password */}
         <PasswordInput
           id="password"
           name="password"
@@ -191,7 +185,21 @@ const Register: React.FC = () => {
           helpText={t("Auth.Register.passwordHelp")}
         />
 
-        {/* Submit Button */}
+        {/* Promotional Email Checkbox */}
+        <label className="flex items-start gap-3 cursor-pointer group pt-1">
+          <input
+            type="checkbox"
+            checked={promotionalEmailEnabled}
+            onChange={(e) => setPromotionalEmailEnabled(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+          />
+          <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors leading-snug">
+            I'd like to receive exclusive deals, travel inspiration, and promotional
+            emails from Wooho Trip.
+          </span>
+        </label>
+
+        {/* Submit */}
         <AuthButton
           loading={loading}
           text={t("Auth.Register.createAccountButton")}

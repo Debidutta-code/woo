@@ -87,8 +87,8 @@ const HotelCard = () => {
         style={{ transform: `translateY(${isScrolled ? "5%" : "0"})` }}
       >
         <Image
-          src="/assets/popular/Home.jpg"
-          alt="Luxury Accommodation - TripSwift"
+          src="/assets/booking_widget.jpg"
+          alt="Luxury Accommodation - Woohoo Trip"
           className="object-cover w-full h-full"
           width={800}
           height={500}
@@ -133,7 +133,7 @@ const HotelCard = () => {
         <div className="w-[290px] md:w-full max-w-6xl animate-in slide-in-from-bottom duration-700 delay-200">
           {/* Search Box */}
           <CompactSearchBar
-            initialLocation="Manama"
+            initialLocation="Dubai"
             initialCheckin={tomorrow}
             initialCheckout={dayAfterTomorrow}
             onSearch={handleSearch}

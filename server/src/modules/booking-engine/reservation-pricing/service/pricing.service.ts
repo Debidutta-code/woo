@@ -106,7 +106,8 @@ export class PricingService {
                 startDate,
                 endDate,
                 selectedRoom.totalRoom,
-                priceBrakedowns.totalAmount
+                priceBrakedowns.totalAmount,
+                null
             );
             priceBrakedowns.dynamicPricing = dynamicPricing;
             

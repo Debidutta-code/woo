@@ -104,6 +104,7 @@ class InventoryServices {
                     roomTypeCode: roomType,
                     date: yyyyMmDd,
                     availability: availableRooms,
+                    roomId:isRoomExists.id
                 });
             }
             const response = await InventoryDao.createInventory(invTOCreated);

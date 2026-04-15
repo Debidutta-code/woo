@@ -320,11 +320,11 @@ const HotelListing: React.FC = () => {
 
       //console.log(`Hotels fetched for ${searchTerm}:`, hotelsResponse.data);
 
-      if (hotelsResponse.data.length === 0) {
-        toast.error(
-          t("HotelListing.noHotelsError", { defaultValue: "No hotels found." }),
-        );
-      }
+      // if (hotelsResponse.data.length === 0) {
+      //   toast.error(
+      //     t("HotelListing.noHotelsError", { defaultValue: "No hotels found." }),
+      //   );
+      // }
     } catch (error) {
       setError(
         error instanceof Error ? error : new Error("An unknown error occurred"),

@@ -1,6 +1,5 @@
 // src/components/Sections/Destination.tsx
 "use client";
-import axios from "axios";
 import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -8,70 +7,35 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setCheckInDate, setCheckOutDate } from "../../Redux/slices/pmsHotelCard.slice";
 import { format, addDays } from "date-fns";
+import { getExplorDestinations } from "./api";
+import { IExplorDestination } from "./types";
+import toast from "react-hot-toast";
 
-interface Destination {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  propertyCount?: number;
-}
 
 export function Destination() {
   const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
-  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [destinations, setDestinations] = useState<IExplorDestination[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-
   // Fetch unique cities from API
   useEffect(() => {
-    const fetchDestinations = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/unique-cities`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = response.data;
-        if (data.status !== "success") {
-          throw new Error(data.message || t("HomeSections.AllHotelLists.errorMessage", { defaultValue: "API error" }));
-        }
+    fetchDestinations();
+  }, [t]);
 
-        const curatedImages = [
-          "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=800&h=600&fit=crop&crop=center&q=80",
-          "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&h=600&fit=crop&crop=center&q=80"
-        ];
-
-        const fetchedDestinations: Destination[] = data.data.map((cityObj: { city: string; propertyCount: number }, index: number) => {
-          const cityName = cityObj.city;
-          const translatedCityName = t(`HomeSections.ExploreDestinations.destinations.${cityName.toLowerCase()}.name`, {
-            defaultValue: cityName,
-          });
-
-          const image = curatedImages[index % curatedImages.length];
-
-          return {
-            id: `${index + 1}`,
-            name: translatedCityName,
-            description: "",
-            image,
-            propertyCount: cityObj.propertyCount
-          };
-        });
-        setDestinations(fetchedDestinations);
-        setLoading(false);
+  const fetchDestinations = async () => {
+    try {
+      setLoading(true);
+      const response = await getExplorDestinations();
+      console.log(response)
+      if(response.success){
+        setDestinations(response.data);
+      }else{
+        toast.error(response.message);
+      }
       } catch (err: any) {
         const errorMessage =
           err.response?.data?.message ||
@@ -80,14 +44,11 @@ export function Destination() {
             defaultValue: "An error occurred while fetching destinations",
           });
         setError(errorMessage);
-        setLoading(false);
+      }finally{
+        setLoading(false)
       }
     };
-    fetchDestinations();
-  }, [t]);
-
-  // ✅ UPDATED: Handle destination click with image
-  const handleLocationClick = (destination: Destination) => {
+  const handleLocationClick = (destination: IExplorDestination) => {
     const checkin = format(addDays(new Date(), 1), "yyyy-MM-dd");
     const checkout = format(addDays(new Date(), 2), "yyyy-MM-dd");
     dispatch(setCheckInDate(checkin));
@@ -95,11 +56,10 @@ export function Destination() {
 
     const guestParams = "&rooms=1&adults=1&children=0&infant=0";
 
-    // ✅ Pass the image URL as a query parameter
-    const imageParam = destination.image ? `&image=${encodeURIComponent(destination.image)}` : '';
+    const imageParam = destination.destinationImage ? `&image=${encodeURIComponent(destination.destinationImage)}` : '';
 
     router.push(
-      `/destination?location=${encodeURIComponent(destination.name)}&checkin=${encodeURIComponent(
+      `/destination?location=${encodeURIComponent(destination.destinationName)}&checkin=${encodeURIComponent(
         checkin
       )}&checkout=${encodeURIComponent(checkout)}${guestParams}${imageParam}`
     );
@@ -201,11 +161,11 @@ export function Destination() {
                   onClick={() => handleLocationClick(destination)}
                 >
                   {/* Image Container with Hover Effect */}
-                  <div className="relative mb-3 rounded-2xl overflow-hidden transform transition-transform duration-300 group-hover:scale-105">
+                  <div className="relative mb-3 rounded-2xl overflow-hidden transform transition-transform duration-300 group-hover:scale-95">
                     <img
-                      src={destination.image}
-                      alt={destination.name}
-                      className="w-full h-[200px] object-cover transition-transform duration-300 group-hover:scale-110"
+                      src={destination.destinationImage}
+                      alt={destination.destinationName}
+                      className="w-full h-[200px] object-cover transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
                     {/* Overlay on hover */}
@@ -215,13 +175,8 @@ export function Destination() {
                   {/* Destination Info */}
                   <div>
                     <h3 className="text-base font-semibold text-tripswift-black mb-1 group-hover:text-tripswift-blue transition-colors">
-                      {destination.name}
+                      {destination.destinationName}
                     </h3>
-                    {destination.propertyCount && (
-                      <p className="text-sm text-gray-600">
-                        {destination.propertyCount.toLocaleString()} {t("HomeSections.ExploreDestinations.accommodations", { defaultValue: "accommodations" })}
-                      </p>
-                    )}
                   </div>
                 </div>
               ))}

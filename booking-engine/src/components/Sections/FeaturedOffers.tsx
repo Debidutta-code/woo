@@ -92,7 +92,7 @@ export default function AccommodationPromotions() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl md:text-[28px] font-bold text-gray-900">
-            Accommodation Promotions
+            Woohoo Collection
           </h2>
           <a 
             href="#" 

@@ -15,19 +15,25 @@ export class DynamicPricingCalculator {
         startDate: Date,
         endDate: Date,
         maxRoom: number,
-        // currentAvailableRoom: number,
-        finalBaseAmount: number
+        finalBaseAmount: number,
+        currentAvailableRoom:number|null
     ): Promise<IDynamicPricingResult[]> {
         const results: IDynamicPricingResult[] = [];
         const currentDate = new Date(startDate);
 
         // Pricing charges in the booking engine exclude checkout date; match that behavior.
         while (currentDate < endDate) {
+            const availableRooms = currentAvailableRoom?currentAvailableRoom:await this.getAvailableRooms(roomId, currentDate);
+            if(!availableRooms){
+                throw new Error(
+                    `Failed to get available rooms for on ${currentDate}`
+                );
+            }
             const result = await this.calculateDynamicPricing(
                 propertyId,
                 roomId,
                 currentDate,
-                (currentAvailableRoom / maxRoom) * 100,
+                (availableRooms / maxRoom) * 100,
                 finalBaseAmount
             );
             results.push(result);
@@ -36,7 +42,23 @@ export class DynamicPricingCalculator {
 
         return results;
     }
-    private async get
+    private async getAvailableRooms(roomId: string, date: Date) {
+     try {
+        const availableRooms = await prisma.inventory.findUnique({
+            where: {
+                roomId_date:{
+                    roomId,
+                    date
+                }
+            },
+        });
+        return availableRooms?.availability;
+     } catch (error) {
+        throw new Error(
+            `Failed to get available rooms for room ${roomId} on ${date}`
+        );
+     }   
+    }
 
     private async calculateDynamicPricing(
         propertyId: string,

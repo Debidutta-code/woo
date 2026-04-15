@@ -13,7 +13,7 @@ const HomeSection = () => {
         <Destination />
         <AccommodationPromotions />
         <PopularHotels />
-        <PropertiesYouLike />
+        {/* <PropertiesYouLike /> */}
         <ExploreDestinations />
       </div>
     </div>

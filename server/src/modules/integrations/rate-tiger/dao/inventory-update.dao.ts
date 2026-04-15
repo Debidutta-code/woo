@@ -65,6 +65,7 @@ export class InventoryUpdateDao {
                         date,
                         availability: bookingLimit,
                         ratePlans: [ratePlanCode],
+                        roomId: room.id,
                     },
                 });
             }

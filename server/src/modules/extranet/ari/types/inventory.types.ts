@@ -39,6 +39,7 @@ export interface InventoryWithRate {
 export interface ICreateInventoryRepo {
     propertyCode: string;
     roomTypeCode: string;
+    roomId:string;
     date: string;
     availability: number;
 }

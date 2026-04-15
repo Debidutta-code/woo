@@ -143,7 +143,6 @@ class InventoryRepository {
                 throw new Error('No charge data provided');
             }
 
-            // ── Step 1: Upsert all charges in parallel ────────────────────────────
             const upsertedCharges = await Promise.all(
                 payload.map(chargeData => {
                     const {

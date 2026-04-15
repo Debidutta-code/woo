@@ -106,32 +106,6 @@ const Navbar: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const persistedAccessToken = localStorage.getItem("persist:root")
-  //     ? JSON.parse(localStorage.getItem("persist:root") || "{}").auth
-  //     : null;
-
-  //   let persistedToken = null;
-  //   if (persistedAccessToken) {
-  //     try {
-  //       persistedToken = JSON.parse(persistedAccessToken).accessToken;
-  //     } catch {
-  //       persistedToken = null;
-  //     }
-  //   }
-
-  //   if (accessToken) {
-  //     if (persistedToken !== accessToken) {
-  //       // If persisted token and cookie token mismatch, logout
-  //       dispatch(logout() as any);
-  //     } else {
-  //       dispatch(getUser() as any);
-  //     }
-  //   } else {
-  //     dispatch(logout() as any);
-  //   }
-  // }, [dispatch, accessToken]);
-
   useEffect(() => {
     if (accessToken) {
       dispatch(getUser() as any);

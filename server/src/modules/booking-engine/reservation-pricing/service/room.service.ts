@@ -308,8 +308,8 @@ export class RoomBookingService {
                         entry.date,
                         nextDay,
                         room.totalRoom,
+                        entry.amount,                  // per-date base amount
                         inventory[i]?.availability,  // per-date inventory
-                        entry.amount                  // per-date base amount
                     );
                 })
             )
