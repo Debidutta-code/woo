@@ -11,8 +11,8 @@ router.post('/login', customerController.loginCustomer.bind(customerController))
 router.post('/logout', customerController.logoutCustomer.bind(customerController));
 
 // Protected routes
-router.get('/me', customerProtect, customerController.getProfile.bind(customerController));
-router.put('/me', customerProtect, customerController.updateProfile.bind(customerController));
-router.delete('/me', customerProtect, customerController.deleteAccount.bind(customerController));
+router.route('/me').get(customerProtect, customerController.getProfile.bind(customerController))
+  .put(customerProtect, customerController.updateProfile.bind(customerController))
+  .delete(customerProtect, customerController.deleteAccount.bind(customerController));
 
 export { router as customerRouter };
