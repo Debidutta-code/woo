@@ -40,6 +40,7 @@ const Register: React.FC = () => {
       firstName: { required: true, namePattern: true },
       lastName: { required: true, namePattern: true },
       email: { required: true, email: true },
+      mobilePhone: { required: true },
       password: { required: true, passwordStrength: true },
     },
   );

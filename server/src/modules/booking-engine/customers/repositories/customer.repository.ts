@@ -12,9 +12,9 @@ export class CustomerRepository {
         }
     }
 
-    public async getCustomerByEmail(email: string,isDeleted:boolean = false): Promise<ICustomer | null> {
+    public async getCustomerByEmail(email: string, isDeleted: boolean = false): Promise<ICustomer | null> {
         try {
-            return await prisma.customers.findUnique({
+            return await prisma.customers.findFirst({
                 where: {
                     email,
                     isDeleted: isDeleted,
@@ -24,9 +24,9 @@ export class CustomerRepository {
             throw new Error('Error occure while fetching the customer');
         }
     }
-    public async getCustomerById(id: string,isDeleted:boolean = false): Promise<ICustomer | null> {
+    public async getCustomerById(id: string, isDeleted: boolean = false): Promise<ICustomer | null> {
         try {
-            return await prisma.customers.findUnique({
+            return await prisma.customers.findFirst({
                 where: {
                     id,
                     isDeleted: isDeleted,
@@ -37,10 +37,10 @@ export class CustomerRepository {
         }
     }
     public async getCustomerByPhoneNumber(
-        phoneNumber: string,isDeleted:boolean = false
+        phoneNumber: string, isDeleted: boolean = false
     ): Promise<ICustomer | null> {
         try {
-            return await prisma.customers.findUnique({
+            return await prisma.customers.findFirst({
                 where: {
                     mobilePhone: phoneNumber,
                     isDeleted: isDeleted,

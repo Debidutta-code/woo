@@ -36,10 +36,10 @@ export class CustomerService{
             const password = await createHash(data.password);
             await this.customerRepository.createCustomer({
                 ...data,
-                referralCode:"",
-                referralLink:"",
-                referralQRCode:"",
-                password:password
+                referralCode: null,
+                referralLink: null,
+                referralQRCode: null,
+                password: password
             });
             return successResponse("Customer created successfully");
         } catch (error) {
@@ -99,8 +99,8 @@ export class CustomerService{
             if(!customer){
                 return errorResponse("User not found");
             }
-            const isPasswordValid = await compareHash(loginBody.password,customer.password);
-            if(!isPasswordValid || loginBody.password!=="CPass@1234"){
+            const isPasswordValid = await compareHash(loginBody.password, customer.password);
+            if (!isPasswordValid) {
                 return errorResponse("Invalid password for the user");
             }
             const accessToken: any = assignCustomerToken(
