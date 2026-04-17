@@ -35,6 +35,8 @@ const authSlice = createSlice({
     ) {
       state.user = action.payload;
       if (action.payload) {
+        state.isAuthenticated = true;
+        Cookies.set("isAuthenticated", "true", cookieOptions);
         Cookies.set("userData", JSON.stringify(action.payload), cookieOptions);
       }
     },
@@ -195,6 +197,27 @@ export const getUser = createAsyncThunk<
 
   dispatch(setUser(res.data.data));
   Cookies.set("userData", JSON.stringify(res.data.data), cookieOptions);
+});
+
+// Logout thunk
+export const logoutUser = createAsyncThunk<
+  void,
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>("auth/logoutUser", async (_, { dispatch }) => {
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/logout`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    dispatch(logout());
+  }
 });
 
 // Update profile thunk
