@@ -18,7 +18,7 @@ export const customerProtect = async (
     try {
         const decoded = await decodeToken(
             token,
-            config.jwtExpiresInDev!
+            config.customerJWTSecret!
         );
 
         if (!decoded?.id || !decoded?.email) {
