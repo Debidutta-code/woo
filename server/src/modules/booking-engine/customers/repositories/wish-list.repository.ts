@@ -7,8 +7,8 @@ export class WishListRepository{
             return await prisma.wishList.create({
                 data,
             });
-        } catch (error) {
-            throw new Error('Error occure while creating the wish list');
+        } catch (error: any) {
+            throw new Error(`Error occurred while creating the wish list: ${error.message}`);
         }
     }
     public async getWishListById(id:string):Promise<IWishlist | null>{
@@ -18,8 +18,8 @@ export class WishListRepository{
                     id,
                 }
             })
-        } catch (error) {
-            throw new Error('Error occure while fetching the wish list');
+        } catch (error: any) {
+            throw new Error(`Error occurred while fetching the wish list: ${error.message}`);
         }
     }
     public async getWishListByCustomerId(customerId:string):Promise<IWishlistWProperty[] >{
@@ -32,8 +32,8 @@ export class WishListRepository{
                     Property:true
                 }
             })
-        } catch (error) {
-            throw new Error('Error occure while fetching the wish list');
+        } catch (error: any) {
+            throw new Error(`Error occurred while fetching the wish list: ${error.message}`);
         }
     }
 
@@ -44,8 +44,8 @@ export class WishListRepository{
                     id,
                 }
             })
-        } catch (error) {
-            throw new Error('Error occure while deleting the wish list');
+        } catch (error: any) {
+            throw new Error(`Error occurred while deleting the wish list: ${error.message}`);
         }
     }
     public async getWishListByPropertyId(propertyId:string):Promise<IWishlist[] | null>{
@@ -55,8 +55,8 @@ export class WishListRepository{
                     propertyId,
                 }
             })
-        } catch (error) {
-            throw new Error('Error occure while fetching the wish list');
+        } catch (error: any) {
+            throw new Error(`Error occurred while fetching the wish list: ${error.message}`);
         }
     }
 
