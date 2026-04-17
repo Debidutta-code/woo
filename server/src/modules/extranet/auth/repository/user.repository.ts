@@ -26,7 +26,7 @@ export class UserAuthRepository {
             });
         } catch (error: any) {
             console.log(error);
-            throw new Error('Error occurred while verifying email');
+            throw new Error(`Error occurred while verifying email: ${error.message}`);
         }
     }
     public static async recoveryUser(email: string) {
@@ -35,8 +35,8 @@ export class UserAuthRepository {
                 where: { email: email },
                 data: { isDrafted: false, creationId: null },
             });
-        } catch (error) {
-            throw new Error('Error occurred while recovering user');
+        } catch (error: any) {
+            throw new Error(`Error occurred while recovering user: ${error.message}`);
         }
     }
     public static async createUser(
@@ -144,7 +144,7 @@ export class Users {
                 },
             });
         } catch (error: any) {
-            throw new Error('Error occurred while fetching all users');
+            throw new Error(`Error occurred while fetching all users: ${error.message}`);
         }
     }
     private static async getUnmappedUsersForSuperAdmin(): Promise<IRUsers[]> {
@@ -198,7 +198,7 @@ export class Users {
                 throw new Error('Role not authorized to fetch unmapped users');
             }
         } catch (error: any) {
-            throw new Error('Error occurred while fetching unmapped users');
+            throw new Error(`Error occurred while fetching unmapped users: ${error.message}`);
         }
     }
 
@@ -219,7 +219,7 @@ export class Users {
                 },
             });
         } catch (error: any) {
-            throw new Error('Error occurred while fetching users');
+            throw new Error(`Error occurred while fetching users: ${error.message}`);
         }
     }
 
@@ -241,7 +241,7 @@ export class Users {
             });
         } catch (error: any) {
             throw new Error(
-                'Error occurred while fetching users by creation ID'
+                `Error occurred while fetching users by creation ID: ${error.message}`
             );
         }
     }

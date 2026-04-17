@@ -27,7 +27,6 @@ const authSlice = createSlice({
     ) => {
       state.isAuthenticated = true;
       state.accessToken = action.payload;
-      Cookies.set("accessToken", action.payload, cookieOptions);
       Cookies.set("isAuthenticated", "true", cookieOptions);
     },
     setUser(
@@ -36,6 +35,8 @@ const authSlice = createSlice({
     ) {
       state.user = action.payload;
       if (action.payload) {
+        state.isAuthenticated = true;
+        Cookies.set("isAuthenticated", "true", cookieOptions);
         Cookies.set("userData", JSON.stringify(action.payload), cookieOptions);
       }
     },
@@ -43,7 +44,6 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.accessToken = "";
-      Cookies.remove("accessToken");
       Cookies.remove("isAuthenticated");
       Cookies.remove("userData");
     },
@@ -68,7 +68,6 @@ const authSlice = createSlice({
       .addCase(googleLogin.fulfilled, (state, action) => {
         state.isAuthenticated = true;
         state.accessToken = action.payload.token;
-        Cookies.set("accessToken", action.payload.token);
         Cookies.set("isAuthenticated", "true");
       })
       .addCase(googleLogin.rejected, (state, action) => {
@@ -90,13 +89,15 @@ export const login = createAsyncThunk<
     {
       ...data,
     },
+    {
+      withCredentials: true,
+    }
   );
   //console.log("Login response from REDUX:", res);
   if (res.status !== 200) {
     throw new Error(res.data.error || "Failed to login");
   }
   const token = res.data.token;
-  Cookies.set("accessToken", token, cookieOptions);
   dispatch(setAccessToken(token));
   await dispatch(getUser());
   return token;
@@ -137,6 +138,7 @@ export const googleLogin = createAsyncThunk<
             "Content-Type": "application/json",
             Accept: "application/json",
           },
+          withCredentials: true,
         },
       );
 
@@ -152,7 +154,6 @@ export const googleLogin = createAsyncThunk<
 
       //console.log("🔑 Token received from backend:", token);
 
-      Cookies.set("accessToken", token, cookieOptions);
       dispatch(setAccessToken(token));
       await dispatch(getUser());
 
@@ -187,23 +188,36 @@ export const getUser = createAsyncThunk<
   void,
   { dispatch: AppDispatch; state: RootState }
 >("auth/getUser", async (_, { dispatch }) => {
-  let accessToken = Cookies.get("accessToken");
-  //console.log(`The access token we get from cookies ${accessToken}`);
-  // if (!accessToken) {
-  // const token = Cookies.get("accessToken");
-  // }
-  if (!accessToken) return;
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/me`,
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      withCredentials: true,
     },
   );
 
   dispatch(setUser(res.data.data));
   Cookies.set("userData", JSON.stringify(res.data.data), cookieOptions);
+});
+
+// Logout thunk
+export const logoutUser = createAsyncThunk<
+  void,
+  void,
+  { dispatch: AppDispatch; state: RootState }
+>("auth/logoutUser", async (_, { dispatch }) => {
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/logout`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    dispatch(logout());
+  }
 });
 
 // Update profile thunk
@@ -219,14 +233,11 @@ export const updateProfile = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >("auth/updateProfile", async (data, { rejectWithValue }) => {
   try {
-    const token = Cookies.get("accessToken") || "";
     const response = await axios.patch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/update`,
       data,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        withCredentials: true,
       },
     );
     return response.data.data;
@@ -256,6 +267,9 @@ export const deleteAccount = createAsyncThunk<
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/delete-form`,
       data,
+      {
+        withCredentials: true,
+      }
     );
     dispatch(logout());
     return response.data;

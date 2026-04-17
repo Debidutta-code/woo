@@ -7,8 +7,8 @@ export class CustomerRepository {
             return await prisma.customers.create({
                 data,
             });
-        } catch (error) {
-            throw new Error('Error occure while creating the customer');
+        } catch (error: any) {
+            throw new Error(`Error occurred while creating the customer: ${error.message}`);
         }
     }
 
@@ -20,8 +20,8 @@ export class CustomerRepository {
                     isDeleted: isDeleted,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occure while fetching the customer');
+        } catch (error: any) {
+            throw new Error(`Error occurred while fetching the customer: ${error.message}`);
         }
     }
     public async getCustomerById(id: string, isDeleted: boolean = false): Promise<ICustomer | null> {
@@ -32,8 +32,8 @@ export class CustomerRepository {
                     isDeleted: isDeleted,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occure while fetching the customer');
+        } catch (error: any) {
+            throw new Error(`Error occurred while fetching the customer: ${error.message}`);
         }
     }
     public async getCustomerByPhoneNumber(
@@ -46,8 +46,8 @@ export class CustomerRepository {
                     isDeleted: isDeleted,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occure while fetching the customer');
+        } catch (error: any) {
+            throw new Error(`Error occurred while fetching the customer: ${error.message}`);
         }
     }
     public async updateCustomer(
@@ -61,8 +61,8 @@ export class CustomerRepository {
                 },
                 data,
             });
-        } catch (error) {
-            throw new Error('Error occure while updating the customer');
+        } catch (error: any) {
+            throw new Error(`Error occurred while updating the customer: ${error.message}`);
         }
     }
     public async deleteCustomer(id:string):Promise<ICustomer>{
@@ -75,8 +75,8 @@ export class CustomerRepository {
                     isDeleted:true
                 }
             })
-        } catch (error) {
-            throw new Error('Error occure while deleting the customer');
+        } catch (error: any) {
+            throw new Error(`Error occurred while deleting the customer: ${error.message}`);
         }
     }
 }

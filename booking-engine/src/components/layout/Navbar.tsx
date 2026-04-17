@@ -15,7 +15,7 @@ import {
   DropdownItem,
   Avatar,
 } from "@nextui-org/react";
-import { logout, getUser } from "../../Redux/slices/auth.slice";
+import { logoutUser, getUser } from "../../Redux/slices/auth.slice";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { ThunkDispatch } from "redux-thunk";
@@ -29,6 +29,7 @@ import BecomePartnerModal from "../BecomePartner/BecomePartnerModal";
 interface RootState {
   auth: {
     user: UserType | null;
+    isAuthenticated: boolean;
   };
   notifications: {
     notifications: Notification[];
@@ -55,7 +56,7 @@ const Navbar: React.FC = () => {
   const router = useRouter();
 
   const user = useSelector((state: RootState) => state.auth.user);
-  const accessToken = Cookies.get("accessToken");
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated) || Cookies.get("isAuthenticated") === "true";
   const { i18n } = useTranslation();
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
@@ -87,7 +88,7 @@ const Navbar: React.FC = () => {
   }, []);
 
   const handleMyTripClick = () => {
-    if (accessToken) {
+    if (isAuthenticated) {
       router.push("/my-trip");
       setIsMenuOpen(false);
     } else {
@@ -97,7 +98,7 @@ const Navbar: React.FC = () => {
   };
 
   const handleMyReferals = () => {
-    if (accessToken) {
+    if (isAuthenticated) {
       router.push("/referral");
       setIsMenuOpen(false);
     } else {
@@ -107,12 +108,10 @@ const Navbar: React.FC = () => {
   };
 
   useEffect(() => {
-    if (accessToken) {
+    if (isAuthenticated && !user) {
       dispatch(getUser() as any);
-    } else {
-      dispatch(logout() as any);
     }
-  }, [dispatch, accessToken]);
+  }, [dispatch, isAuthenticated, user]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -120,8 +119,8 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     toast.success(t("Navbar.logoutSuccess"));
-    dispatch(logout() as any);
-    router.push("/");
+    dispatch(logoutUser() as any);
+    router.push("/login");
     setIsMenuOpen(false);
   };
 
@@ -238,7 +237,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* User Profile */}
-          {user ? (
+          {isAuthenticated && user ? (
             <Dropdown
               placement="bottom-end"
               classNames={{
@@ -340,7 +339,7 @@ const Navbar: React.FC = () => {
             </div>
           )}
 
-          {user && (
+          {isAuthenticated && user && (
             <div className="flex items-center py-2 rounded-full hover:bg-tripswift-blue/10 transition-all duration-300">
               <NotificationBell className="relative" userId={user._id} />
             </div>
@@ -398,7 +397,7 @@ const Navbar: React.FC = () => {
               </span>
             </div>
             {/* Notification Bell - Mobile */}
-            {user && (
+            {isAuthenticated && user && (
               <div className="flex items-center gap-1">
                 <NotificationBell
                   className="flex items-center gap-1"
@@ -411,7 +410,7 @@ const Navbar: React.FC = () => {
             )}
 
             {/* Auth Options */}
-            {!user ? (
+            {!isAuthenticated ? (
               <div className="pt-1.5 border-t border-tripswift-black/10 flex flex-col gap-2 mt-1">
                 <div
                   onClick={handleLogin}
@@ -428,30 +427,32 @@ const Navbar: React.FC = () => {
               </div>
             ) : (
               <div className="pt-1.5 border-t border-tripswift-black/10 flex flex-col gap-1.5 mt-1">
-                <div className="flex items-center gap-3 py-1.5">
-                  <Avatar
-                    size="sm"
-                    className="bg-tripswift-blue text-tripswift-off-white"
-                    fallback={
-                      // <p className="text-lg font-tripswift-bold text-tripswift-off-white">
-                      //   {user.firstName.charAt(0) + user.lastName?.charAt(0)}
-                      // </p>
-                      user.lastName
-                        ? user.firstName.charAt(0) + user.lastName.charAt(0)
-                        : user.firstName.slice(0, 2)
-                    }
-                  />
-                  <div>
-                    <p className="text-[18px] leading-[23px] tracking-[0px] text-tripswift-black font-tripswift-medium">
-                      {`${user.firstName}${
-                        user.lastName ? ` ${user.lastName}` : ""
-                      }`}
-                    </p>
-                    <p className="text-[14px] leading-[18px] tracking-[2px] text-tripswift-black/70 font-tripswift-medium">
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
+                {user && (
+                    <div className="flex items-center gap-3 py-1.5">
+                    <Avatar
+                        size="sm"
+                        className="bg-tripswift-blue text-tripswift-off-white"
+                        fallback={
+                        // <p className="text-lg font-tripswift-bold text-tripswift-off-white">
+                        //   {user.firstName.charAt(0) + user.lastName?.charAt(0)}
+                        // </p>
+                        user.lastName
+                            ? user.firstName.charAt(0) + user.lastName.charAt(0)
+                            : user.firstName.slice(0, 2)
+                        }
+                    />
+                    <div>
+                        <p className="text-[18px] leading-[23px] tracking-[0px] text-tripswift-black font-tripswift-medium">
+                        {`${user.firstName}${
+                            user.lastName ? ` ${user.lastName}` : ""
+                        }`}
+                        </p>
+                        <p className="text-[14px] leading-[18px] tracking-[2px] text-tripswift-black/70 font-tripswift-medium">
+                        {user.email}
+                        </p>
+                    </div>
+                    </div>
+                )}
                 <div
                   onClick={() => {
                     router.push("/profile");
