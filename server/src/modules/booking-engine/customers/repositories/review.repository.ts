@@ -15,7 +15,7 @@ export class ReviewRepository {
     }
     public async getReviewById(id:string):Promise<IReviews | null>{
         try {
-            return await prisma.reviews.findUnique({
+            return await prisma.reviews.findFirst({
                 where:{
                     id,
                     isDeleted:false
@@ -30,7 +30,6 @@ export class ReviewRepository {
             return await prisma.reviews.update({
                 where:{
                     id,
-                    isDeleted:false
                 },
                 data,
             })

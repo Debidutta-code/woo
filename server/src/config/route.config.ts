@@ -9,6 +9,8 @@ import { AppError } from '../common/utils/error.util';
 import { currencyRoutes } from '../infrastructure/currency-maping/routes';
 import { bookingEngineRouter } from '../modules/booking-engine/routes';
 import { extranetRouter } from '../modules/extranet/routes';
+import { customerRouter } from '../modules/booking-engine/customers/routes';
+
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
     app.head('/status', (_, res: Response) => res.status(200).end());
@@ -36,6 +38,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/platform', platformRouter);
 
     apiV1Router.use('/currency', currencyRoutes);
+    apiV1Router.use('/customers', customerRouter);
 
     app.all('/api/v1/*', (req: Request, _res: Response, next: NextFunction) => {
         next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
