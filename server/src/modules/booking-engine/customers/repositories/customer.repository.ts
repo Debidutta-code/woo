@@ -8,7 +8,8 @@ export class CustomerRepository {
                 data,
             });
         } catch (error) {
-            throw new Error('Error occure while creating the customer');
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Error occurred while creating the customer: ${message}`);
         }
     }
 
@@ -21,7 +22,8 @@ export class CustomerRepository {
                 },
             });
         } catch (error) {
-            throw new Error('Error occure while fetching the customer');
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Error occurred while fetching the customer: ${message}`);
         }
     }
     public async getCustomerById(id: string, isDeleted: boolean = false): Promise<ICustomer | null> {
@@ -33,7 +35,8 @@ export class CustomerRepository {
                 },
             });
         } catch (error) {
-            throw new Error('Error occure while fetching the customer');
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Error occurred while fetching the customer: ${message}`);
         }
     }
     public async getCustomerByPhoneNumber(
@@ -47,7 +50,8 @@ export class CustomerRepository {
                 },
             });
         } catch (error) {
-            throw new Error('Error occure while fetching the customer');
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Error occurred while fetching the customer: ${message}`);
         }
     }
     public async updateCustomer(
@@ -62,7 +66,8 @@ export class CustomerRepository {
                 data,
             });
         } catch (error) {
-            throw new Error('Error occure while updating the customer');
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Error occurred while updating the customer: ${message}`);
         }
     }
     public async deleteCustomer(id:string):Promise<ICustomer>{
@@ -76,7 +81,8 @@ export class CustomerRepository {
                 }
             })
         } catch (error) {
-            throw new Error('Error occure while deleting the customer');
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Error occurred while deleting the customer: ${message}`);
         }
     }
 }
