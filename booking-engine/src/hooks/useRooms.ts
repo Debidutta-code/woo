@@ -163,7 +163,7 @@ export const useBookRoom = ({
   }>({});
 
   const checkPriceBeforeBooking = useCallback(
-    async (room: ConvertedRoom, ratePlan: RatePlan | Room) => {
+    async (room: ConvertedRoom, ratePlan: RatePlan | Room, parsedAddons: any[] = []) => {
       if (!room.has_valid_rate) return false;
 
       const ratePlanCode =
@@ -176,17 +176,20 @@ export const useBookRoom = ({
 
       try {
         const finalPriceResponse = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/rate-plan/getRoomRentPrice`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/get-price`,
           {
-            hotelCode: propertyCode,
+            propertyCode: propertyCode,
             invTypeCode: room.room_type,
             ratePlanCode,
             startDate: checkInDate,
             endDate: checkOutDate,
-            noOfChildrens: guestDetails?.children,
+            noOfChildren: guestDetails?.children,
             noOfAdults: guestDetails?.guests,
             noOfRooms: guestDetails?.rooms,
-            noOfInfants: guestDetails?.infants,
+            childAges: [],
+            guestDistribution: [{ adults: guestDetails?.guests || 1, children: guestDetails?.children || 0, childAges: [] }],
+            promoCode: "",
+            ...(parsedAddons.length > 0 && { parsedAddons }),
           },
           { withCredentials: true },
         );

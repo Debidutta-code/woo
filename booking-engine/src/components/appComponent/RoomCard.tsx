@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSelector } from "../../Redux/store";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import {
@@ -36,7 +37,7 @@ import {
   FaEye,
   FaSpinner,
 } from "react-icons/fa";
-import { Card } from "../ui/card";
+import { Card } from "../../components/ui/card";
 import { Room, RatePlan, Amenity } from "../../types/room.types";
 import {
   getPolicyStyling,
@@ -47,8 +48,13 @@ import {
   calculateDiscountPercentage,
   isFreeCancellation,
   formatCurrency,
-} from "./transformUtils";
-import { getAvailabilityCount, isRoomAvailable } from "./availabilityUtils";
+} from "../../components/appComponent/transformUtils";
+import {
+  getAvailabilityCount,
+  isRoomAvailable,
+} from "../../components/appComponent/availabilityUtils";
+import { AddonsModal } from "./AddonsModal";
+import { AvailableAddon, fetchAvailableAddons } from "../../api/addon";
 import toast from "react-hot-toast";
 
 // Type guard to check if amenity is an object with icon and name
@@ -71,6 +77,7 @@ interface RoomCardProps {
   isLoadingPrice?: boolean;
   guestDetails?: any;
   roomAmenities?: any;
+  propertyCode?: string;
 }
 
 export const RoomCard: React.FC<RoomCardProps> = ({
@@ -78,15 +85,20 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   ratePlans,
   onBookNow,
   guestDetails,
+  propertyCode,
 }) => {
+  const { checkInDate, checkOutDate } = useSelector((state: any) => state.pmsHotelCard);
   const { t } = useTranslation();
   const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAllRatePlans, setShowAllRatePlans] = useState(false);
   const [showFacilitiesModal, setShowFacilitiesModal] = useState(false);
+  const [showAddonsModal, setShowAddonsModal] = useState(false);
   const [loadingRatePlans, setLoadingRatePlans] = useState<{
     [key: string]: boolean;
   }>({});
+  const [selectedAddons, setSelectedAddons] = useState<AvailableAddon[]>([]);
+  const [addonsModalClosedViaAddButton, setAddonsModalClosedViaAddButton] = useState(false);
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1617104678098-de229db51175?q=80&w=1514&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
@@ -416,13 +428,89 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     const key =
       "ratePlanCode" in ratePlan ? ratePlan.ratePlanCode : data.room_name;
     setLoadingRatePlans((prev) => ({ ...prev, [key]: true }));
+    
+    // Reset the flag for new booking flow
+    setAddonsModalClosedViaAddButton(false);
 
     try {
+      // Store the selected rate plan temporarily for booking
+      (window as any).__selectedRatePlan = ratePlan;
+      
+      // Check if there are any addons available before showing the modal
+      if (checkInDate && checkOutDate && propertyCode) {
+        const ratePlanCode = "ratePlanCode" in ratePlan ? ratePlan.ratePlanCode : undefined;
+        const addons = await fetchAvailableAddons(
+          propertyCode,
+          checkInDate,
+          checkOutDate,
+          ratePlanCode
+        );
+        
+        // Only show modal if there are addons available
+        if (addons && addons.length > 0) {
+          setShowAddonsModal(true);
+        } else {
+          // No addons available, proceed directly to booking
+          await onBookNow(ratePlan);
+          delete (window as any).__selectedRatePlan;
+          setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
+        }
+      } else {
+        // Missing required data, proceed directly to booking
+        await onBookNow(ratePlan);
+        delete (window as any).__selectedRatePlan;
+        setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+      setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
+    }
+  };
+
+  const handleAddonsSelected = async (addons: AvailableAddon[]) => {
+    const ratePlan = (window as any).__selectedRatePlan;
+    const key =
+      "ratePlanCode" in ratePlan ? ratePlan.ratePlanCode : data.room_name;
+
+    try {
+      // Store selected addons in session/context before proceeding
+      setSelectedAddons(addons);
+      
+      // Mark that modal was closed via Add button to prevent duplicate booking
+      setAddonsModalClosedViaAddButton(true);
+      
+      // Call the original onBookNow
       await onBookNow(ratePlan);
+      
+      // Clear the temporary storage
+      delete (window as any).__selectedRatePlan;
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
     } finally {
       setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
+    }
+  };
+
+  const handleAddonsModalClose = async () => {
+    setShowAddonsModal(false);
+    const ratePlan = (window as any).__selectedRatePlan;
+    const key =
+      "ratePlanCode" in (ratePlan || {})
+        ? ratePlan.ratePlanCode
+        : data.room_name;
+    
+    try {
+      // Only proceed with booking if modal was not closed via Add button
+      // (Add button already calls onBookNow via handleAddonsSelected)
+      if (ratePlan && !addonsModalClosedViaAddButton) {
+        await onBookNow(ratePlan);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
+      delete (window as any).__selectedRatePlan;
+      setAddonsModalClosedViaAddButton(false);
     }
   };
 
@@ -1019,6 +1107,24 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Addons Modal */}
+      <AddonsModal
+        isOpen={showAddonsModal}
+        onClose={handleAddonsModalClose}
+        propertyCode={propertyCode || data.propertyInfo_id || ""}
+        roomCode={data.room_name}
+        ratePlanCode={
+          "ratePlanCode" in ((window as any).__selectedRatePlan || {})
+            ? (window as any).__selectedRatePlan.ratePlanCode
+            : undefined
+        }
+        startDate={checkInDate || ""}
+        endDate={checkOutDate || ""}
+        numberOfNights={data.number_of_nights || 1}
+        currencyCode={data.currency_code || "USD"}
+        onAddonsSelected={handleAddonsSelected}
+      />
     </>
   );
 };

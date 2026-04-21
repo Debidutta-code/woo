@@ -1,5 +1,30 @@
 import axios from "axios";
 
+// Create a reservation via PMS front-office API
+export const createReservation = async (payload: any, token?: string) => {
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/pms/front-office/reservations`,
+      payload,
+      {
+        headers: token ? {
+          Authorization: `Bearer ${token}`,
+        } : {}
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Reservation Error:", error);
+    if (error.response?.status === 401 ||
+      error.response?.data?.message?.includes('jwt') ||
+      error.message?.includes('jwt')) {
+      throw new Error("Authentication error. Please log in again and try.");
+    }
+    throw new Error(error?.response?.data?.message || "Failed to create reservation");
+  }
+};
+
 // Create a Stripe SetupIntent for securely storing card details
 export const createSetupIntent = async (guestData: any, token?: string) => {
   try {

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { formatDate, calculateNights } from "../../../utils/dateUtils";
 import { useTranslation } from "react-i18next";
-import { getCheckoutSessionDetails } from "@/components/paymentComponents/stripePayment/apis/stripe";
+// import { getCheckoutSessionDetails } from "@/components/paymentComponents/stripePayment/apis/stripe";
 
 export default function PaymentSuccess() {
   const { t, i18n } = useTranslation();
@@ -30,6 +30,7 @@ export default function PaymentSuccess() {
   // Redux state (fallback if session data not available)
   const reduxState = useSelector((state: any) => state.pmsHotelCard);
   const authUser = useSelector((state: any) => state.auth.user);
+  const bookingState = useSelector((state: any) => state.booking);
 
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState(
@@ -45,40 +46,41 @@ export default function PaymentSuccess() {
       if (sessionId) {
         try {
           // Fetch session data from Stripe
-          const response = await getCheckoutSessionDetails(sessionId);
+          // const response = await getCheckoutSessionDetails(sessionId);
+          throw new Error("Stripe session fetch disabled");
           
-          if (response.success && response.session) {
-            const session = response.session;
-            const metadata = session.metadata || {};
+          // if (response.success && response.session) {
+          //   const session = response.session;
+          //   const metadata = session.metadata || {};
 
-            // Parse guests if stored as JSON string
-            let parsedGuests = [];
-            try {
-              parsedGuests = metadata.guests ? JSON.parse(metadata.guests) : [];
-            } catch (e) {
-              console.error("Error parsing guests:", e);
-            }
+          //   // Parse guests if stored as JSON string
+          //   let parsedGuests = [];
+          //   try {
+          //     parsedGuests = metadata.guests ? JSON.parse(metadata.guests) : [];
+          //   } catch (e) {
+          //     console.error("Error parsing guests:", e);
+          //   }
 
-            // Build booking data from session metadata
-            setBookingData({
-              hotelName: metadata.hotelName,
-              roomType: metadata.roomTypeCode,
-              checkInDate: metadata.checkInDate,
-              checkOutDate: metadata.checkOutDate,
-              numberOfRooms: parseInt(metadata.numberOfRooms) || 1,
-              customerName: metadata.customerName,
-              customerEmail: session.customer_email || session.customer_details?.email,
-              phone: metadata.phone,
-              guests: parsedGuests,
-              amount: parseFloat(metadata.roomTotalPrice) || (session.amount_total / 100),
-              currency: metadata.currencyCode || session.currency,
-              paymentMethod: metadata.paymentMethod || "payOnline",
-              reference: metadata.reservationId,
-              paymentStatus: session.payment_status,
-            });
-          } else {
-            throw new Error("Failed to retrieve session");
-          }
+          //   // Build booking data from session metadata
+          //   setBookingData({
+          //     hotelName: metadata.hotelName,
+          //     roomType: metadata.roomTypeCode,
+          //     checkInDate: metadata.checkInDate,
+          //     checkOutDate: metadata.checkOutDate,
+          //     numberOfRooms: parseInt(metadata.numberOfRooms) || 1,
+          //     customerName: metadata.customerName,
+          //     customerEmail: session.customer_email || session.customer_details?.email,
+          //     phone: metadata.phone,
+          //     guests: parsedGuests,
+          //     amount: parseFloat(metadata.roomTotalPrice) || (session.amount_total / 100),
+          //     currency: metadata.currencyCode || session.currency,
+          //     paymentMethod: metadata.paymentMethod || "payOnline",
+          //     reference: metadata.reservationId,
+          //     paymentStatus: session.payment_status,
+          //   });
+          // } else {
+          //   throw new Error("Failed to retrieve session");
+          // }
         } catch (err: any) {
           console.error("Error fetching session:", err);
           // Fall back to Redux state if available
@@ -114,7 +116,34 @@ export default function PaymentSuccess() {
         }
       } else {
         // No session ID, try to use Redux state
-        if (reduxState.finalAmount) {
+        if (bookingState.bookingCode) {
+          // Use booking state from Redux (set by payment page after Fikafi/N-Genius)
+          setBookingData({
+            hotelName: bookingState.hotelName || reduxState.hotelName,
+            roomType: bookingState.roomTypeCode || reduxState.roomType,
+            checkInDate: bookingState.startDate || reduxState.checkInDate,
+            checkOutDate: bookingState.endDate || reduxState.checkOutDate,
+            numberOfRooms: bookingState.numberOfRooms || reduxState.rooms,
+            customerName: bookingState.guestDetails?.[0]
+              ? `${bookingState.guestDetails[0].firstName} ${bookingState.guestDetails[0].lastName}`
+              : reduxState.guestDetails?.guests?.[0]
+              ? `${reduxState.guestDetails.guests[0].firstName} ${reduxState.guestDetails.guests[0].lastName}`
+              : "",
+            customerEmail: bookingState.email || reduxState.guestDetails?.email,
+            phone: bookingState.phone || reduxState.guestDetails?.phone,
+            guests: bookingState.guestDetails || reduxState.guestDetails?.guests || [],
+            amount: bookingState.finalPrice?.totalAmount || reduxState.finalAmount,
+            originalAmount: reduxState.originalAmount,
+            promoCode: bookingState.promoCode || reduxState.promoCode,
+            promoCodeName: reduxState.promoCodeName,
+            currency: bookingState.currency || reduxState.currency,
+            paymentMethod: reduxState.paymentOption || "payment_gateway",
+            reference: bookingState.bookingCode,
+            adults: bookingState.guests?.adults || reduxState.adults,
+            children: bookingState.guests?.children || reduxState.children,
+            infants: reduxState.infants,
+          });
+        } else if (reduxState.finalAmount) {
           setBookingData({
             hotelName: reduxState.hotelName,
             roomType: reduxState.roomType,
@@ -161,7 +190,7 @@ export default function PaymentSuccess() {
       case "payAtHotel":
         return t("Payment.PaymentSuccess.paymentMethodPayAtHotel") || "Pay at Hotel";
       case "payOnline":
-      case "stripe":
+      // case "stripe":
       case "CREDIT_CARD":
       case "card":
         return "Online Payment";

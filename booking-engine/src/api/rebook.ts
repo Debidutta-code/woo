@@ -46,21 +46,25 @@ export const getRoomPrice = async (
   noOfAdults: number,
   noOfChildrens: number,
   noOfInfants: number,
-  noOfRooms: number
+  noOfRooms: number,
+  parsedAddons: any[] = []
 ) => {
   const token = Cookies.get("accessToken");
   const response = await axios.post(
-    `${API_BASE_URL}/rate-plan/getRoomRentPrice`,
+    `${API_BASE_URL}/booking-engine/pricing/get-price`,
     {
-      hotelCode,
+      propertyCode: hotelCode,
       invTypeCode: roomTypeCode,
       ratePlanCode,
       startDate,
       endDate,
       noOfAdults,
-      noOfChildrens,
-      noOfInfants,
+      noOfChildren: noOfChildrens,
       noOfRooms,
+      childAges: [],
+      guestDistribution: [{ adults: noOfAdults, children: noOfChildrens, childAges: [] }],
+      promoCode: "",
+      ...(parsedAddons.length > 0 && { parsedAddons }),
     },
     { withCredentials: true }
   );

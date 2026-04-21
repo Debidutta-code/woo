@@ -15,8 +15,8 @@ import {
 import { setGuestDetails } from "../../Redux/slices/hotelcard.slice";
 import { useTranslation } from "react-i18next";
 
-import { RoomCard, RoomData } from "./RoomCard";
-import GuestInformationModal from "../bookingComponents/GuestInformationModal";
+import { RoomCard, RoomData } from "../../components/appComponent/RoomCard";
+import GuestInformationModal from "../../components/bookingComponents/GuestInformationModal";
 import FullscreenGallery from "./FullscreenGallery";
 
 import { useRooms } from "../../hooks/useRooms";
@@ -66,7 +66,7 @@ const RoomsPage: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<ConvertedRoom | null>(null);
   const [selectedRatePlan, setSelectedRatePlan] = useState<
     RatePlan | Room | null
-  >(null);
+>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
 
@@ -111,7 +111,7 @@ const RoomsPage: React.FC = () => {
           children: Number(children) || 0,
           infants: Number(infants) || 0,
           childAges: Array(Number(children) || 0).fill(0),
-        }),
+        })
       );
     }
   }, [searchParams, dispatch]);
@@ -141,19 +141,19 @@ const RoomsPage: React.FC = () => {
 
   const filteredRooms = useMemo(
     () => filterRooms(rooms?.data || null, filterType, searchQuery),
-    [rooms, filterType, searchQuery],
+    [rooms, filterType, searchQuery]
   );
 
   const convertedRooms = useMemo(
     () => filteredRooms.map((room) => convertAmenities(room, roomAmenities, t)),
-    [filteredRooms, roomAmenities, t],
+    [filteredRooms, roomAmenities, t]
   );
 
   // ✅ NEW: Simple handler that updates Redux and refetches rooms
   const handleCheckAvailability = async (
     checkin: string,
     checkout: string,
-    guestDetailsData?: GuestDetails,
+    guestDetailsData?: GuestDetails
   ) => {
     // Update Redux state
     dispatch(setCheckInDate(checkin));
@@ -211,10 +211,7 @@ const RoomsPage: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-4 lg:py-6">
-        <PropertyInfo
-          propertyDetails={propertyDetails}
-          isLoading={isPropertyLoading}
-        />
+        <PropertyInfo propertyDetails={propertyDetails} isLoading={isPropertyLoading} />
 
         <RoomFilters
           roomTypes={roomTypes}
@@ -225,9 +222,7 @@ const RoomsPage: React.FC = () => {
         />
 
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-section-heading">
-            {t("RoomsPage.availableRooms")}
-          </h2>
+          <h2 className="text-section-heading">{t("RoomsPage.availableRooms")}</h2>
           <div className="text-sm font-tripswift-medium text-tripswift-black/70 bg-tripswift-blue/5 px-3.5 py-1.5 rounded-lg">
             {t("RoomsPage.showingRooms", {
               count: filteredRooms.length,
@@ -281,15 +276,16 @@ const RoomsPage: React.FC = () => {
               return (
                 <div
                   key={room._id}
-                  className={`relative ${
-                    unavailable ? "blur-sm opacity-60" : ""
-                  }`}
+                  className={`relative ${unavailable ? "blur-sm opacity-60" : ""
+                    }`}
                 >
                   <RoomCard
                     data={roomCardData}
                     ratePlans={room.ratePlans}
                     onBookNow={(ratePlan) => onBookNow(room, ratePlan)}
                     isLoadingPrice={isFetchingPrice}
+                    guestDetails={guestDetails}
+                    propertyCode={propertyCode}
                   />
                   {unavailable && (
                     <div className="absolute top-4 left-4 z-20 bg-gray-600 text-tripswift-off-white text-xs font-tripswift-semibold py-1 px-2.5 rounded-full flex items-center shadow-md">
@@ -314,7 +310,7 @@ const RoomsPage: React.FC = () => {
         <FullscreenGallery
           images={propertyDetails.images}
           isOpen={false}
-          onClose={() => {}}
+          onClose={() => { }}
           initialIndex={0}
           propertyName={propertyDetails.propertyName}
         />

@@ -26,6 +26,7 @@ import { verifyApi } from "../../api/verify";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { ConvertedRoom } from "../../types/room.types";
+import { BookingAddons } from "./BookingAddons";
 
 // Interfaces remain unchanged
 export interface Guest {
@@ -128,6 +129,14 @@ interface FinalPrice {
   tax?: TaxInfo[];
   totalTax?: number;
   priceAfterTax?: number;
+  // Add-on and promotion fields
+  totalAddonAmount?: number;
+  totalPromotionAmount?: number;
+  currentChargeableAmount?: number;
+  latterpayableAmount?: number;
+  currencyCode?: string;
+  addonBrakeDown?: any[];
+  promotionBrakeDown?: any[];
 }
 
 const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
@@ -198,6 +207,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   const [activeSection, setActiveSection] = useState<"details" | "review">(
     "details"
   );
+  const [selectedAddons, setSelectedAddons] = useState<any[]>([]);
   const [finalPrice, setFinalPrice] = useState<FinalPrice | null>({
     totalAmount: 0,
     numberOfNights: 0,
@@ -222,23 +232,27 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
     selectedRoom: any,
     checkInDate: string,
     checkOutDate: string,
-    guestData: any
+    guestData: any,
+    parsedAddons: any[] = selectedAddons
   ) => {
     try {
       // //console.log("selected room",selectedRoom)
       // //console.log("guest data", guestData);
       const finalPriceResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/rate-plan/getRoomRentPrice`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/get-price`,
         {
-          hotelCode: hotelCode,
+          propertyCode: hotelCode,
           invTypeCode: selectedRoom?.room_type,
           startDate: checkInDate,
           endDate: checkOutDate,
           ratePlanCode:selectedRateplan,
-          noOfChildrens: guestData?.children,
+          noOfChildren: guestData?.children,
           noOfAdults: guestData?.guests,
           noOfRooms: guestData?.rooms,
-          noOfInfants: guestData?.infants,
+          childAges: [],
+          guestDistribution: [{ adults: guestData?.guests || 1, children: guestData?.children || 0, childAges: [] }],
+          promoCode: "",
+          ...(parsedAddons.length > 0 && { parsedAddons }),
         },
         { withCredentials: true }
       );
@@ -360,8 +374,8 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
       (guest) =>
         guest.firstName.trim() &&
         guest.lastName.trim() &&
-        /^[A-Za-z\s]+$/.test(guest.firstName) &&
-        /^[A-Za-z\s]+$/.test(guest.lastName)
+        /^[A-Za-z\s\-'\.]+$/.test(guest.firstName) &&
+        /^[A-Za-z\s\-'\.]+$/.test(guest.lastName)
     );
   };
   const handleVerifyEmail = async () => {
@@ -428,8 +442,9 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
     if (!phone) return false;
     // Remove all non-digit characters and check length
     const phoneDigits = phone.replace(/\D/g, "");
-    // For international numbers, ensure we have at least 10 digits (excluding country code if needed)
-    return phoneDigits.length >= 10;
+    // For international numbers, ensure we have at least 7 digits (minimum for most countries)
+    // This is more lenient to handle various international formats
+    return phoneDigits.length >= 7;
   };
 
   // const handleVerifyPhone = async () => {
@@ -479,13 +494,13 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
 
     for (let i = 0; i < guests.length; i++) {
       const guest = guests[i];
-      if (!guest.firstName || !/^[A-Za-z\s]+$/.test(guest.firstName)) {
+      if (!guest.firstName || !/^[A-Za-z\s\-'\.]+$/.test(guest.firstName)) {
         newErrors[`firstName-${i}`] = t(
           "BookingComponents.GuestInformationModal.firstNameError"
         );
         valid = false;
       }
-      if (!guest.lastName || !/^[A-Za-z\s]+$/.test(guest.lastName)) {
+      if (!guest.lastName || !/^[A-Za-z\s\-'\.]+$/.test(guest.lastName)) {
         newErrors[`lastName-${i}`] = t(
           "BookingComponents.GuestInformationModal.lastNameError"
         );
@@ -511,12 +526,13 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
       valid = false;
     }
 
-    if (!emailVerified) {
-      newErrors["email"] = t(
-        "BookingComponents.GuestInformationModal.emailNotVerified"
-      );
-      valid = false;
-    }
+    // Email verification bypassed - allow proceeding without verification
+    // if (!emailVerified) {
+    //   newErrors["email"] = t(
+    //     "BookingComponents.GuestInformationModal.emailNotVerified"
+    //   );
+    //   valid = false;
+    // }
 
     // if (!phoneVerified) {
     //   newErrors["phone"] = t(
@@ -566,6 +582,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         selectedRoom.propertyInfo_id ||
         selectedRoom.property_id ||
         selectedRoom.propertyId ||
+        hotelCode ||
         "";
       if (!propertyId) {
         toast.error(
@@ -1669,8 +1686,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
               }}
               disabled={
                 (activeSection === "details" &&
-                  (!emailVerified ||
-                    !validateGuestNames() ||
+                  (!validateGuestNames() ||
                     !phone || // Check if phone exists
                     !validatePhoneNumber())) || // Check if phone is valid
                 (activeSection === "review" && !isFormUpdated) ||
@@ -1678,8 +1694,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
               }
               className={`px-6 py-2.5 rounded-lg text-sm font-tripswift-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                 (activeSection === "details" &&
-                  (!emailVerified ||
-                    !validateGuestNames() ||
+                  (!validateGuestNames() ||
                     !phone ||
                     !validatePhoneNumber())) ||
                 (activeSection === "review" && !isFormUpdated) ||
