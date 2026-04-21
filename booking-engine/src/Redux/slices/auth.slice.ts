@@ -86,16 +86,17 @@ export const login = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >("auth/login", async (data, { dispatch }) => {
   const res = await axios.post(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/login`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/login`,
     {
       ...data,
     },
+    { withCredentials: true }
   );
   //console.log("Login response from REDUX:", res);
   if (res.status !== 200) {
     throw new Error(res.data.error || "Failed to login");
   }
-  const token = res.data.token;
+  const token = res.data.data?.accessToken; 
   Cookies.set("accessToken", token, cookieOptions);
   dispatch(setAccessToken(token));
   await dispatch(getUser());
@@ -194,11 +195,12 @@ export const getUser = createAsyncThunk<
   // }
   if (!accessToken) return;
   const res = await axios.get(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/me`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+       withCredentials: true, 
     },
   );
 

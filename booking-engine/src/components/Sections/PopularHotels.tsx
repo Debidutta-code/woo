@@ -78,7 +78,7 @@ export function PopularHotels() {
   const fetchCities = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/unique-cities`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/search/unique-cities`,
       );
       const data = response.data;
       if (data.status === "success") {

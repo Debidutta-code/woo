@@ -7,7 +7,8 @@ export const customerProtect = async (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies?.woohooCustomerAccess;
+    const token = req.cookies?.accessToken;
+    
 
     if (!token) {
         return res.status(401).json(
@@ -18,7 +19,7 @@ export const customerProtect = async (
     try {
         const decoded = await decodeToken(
             token,
-            config.jwtExpiresInDev!
+            config.customerJWTSecret!
         );
 
         if (!decoded?.id || !decoded?.email) {

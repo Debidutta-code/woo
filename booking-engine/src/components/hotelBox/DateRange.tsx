@@ -56,7 +56,7 @@ const DateRange: React.FC<Props> = ({ dates, setDates, hotelCode }) => {
 
       // ✅ Use the correct booking-engine endpoint
       const response = await axios.get<AvailabilityResponse>(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/hotel-availability`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/availability`,
         {
           params: {
             hotelCode: hotelCode,

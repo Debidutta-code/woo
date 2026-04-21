@@ -43,7 +43,7 @@ export class CustomerController {
             if (!result.success) {
                 return res.status(400).json(result);
             }
-            res.cookie('woohooCustomerAccess', result.data.accessToken, {
+            res.cookie('accessToken', result.data.accessToken, {
                 httpOnly: true,
                 secure: true,
             });
@@ -97,7 +97,7 @@ export class CustomerController {
             const customerId = req.Customer!.id;
             const result = await this.customerService.deleteUser(customerId);
             if (result.success) {
-                res.clearCookie('woohooCustomerAccess');
+                res.clearCookie('accessToken');
             }
             return res.status(result.success ? 200 : 400).json(result);
         } catch (error) {
@@ -112,7 +112,7 @@ export class CustomerController {
         _req: Request,
         res: Response
     ): Promise<Response> {
-        res.clearCookie('woohooCustomerAccess');
+        res.clearCookie('accessToken');
         return res.status(200).json({ success: true, message: 'Logged out successfully' });
     }
 }

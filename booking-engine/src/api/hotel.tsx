@@ -225,7 +225,7 @@ export const getHotelsByCity = async (
     const queryString = buildQueryString(filters);
 
     const response = await axios.get(
-      `${backendUrl}/booking-engine/search?location=${encodeURIComponent(cityCode)}&${queryString}`,
+      `${backendUrl}/booking-engine/filters/search?location=${encodeURIComponent(cityCode)}&${queryString}`,
       {
         headers: getAuthHeaders(),
       },

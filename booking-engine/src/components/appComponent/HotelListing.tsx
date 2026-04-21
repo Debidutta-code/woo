@@ -111,6 +111,8 @@ const HotelListing: React.FC = () => {
   const [amenitiesLoaded, setAmenitiesLoaded] = useState(false);
   const [propertyCategories, setPropertyCategories] = useState<string[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
+  const [propertyTypesLoaded, setPropertyTypesLoaded] = useState(false);
 
   const [filters, setFilters] = useState<FilterState>({
     amenities: {},
@@ -154,7 +156,7 @@ const HotelListing: React.FC = () => {
     const fetchAllAmenities = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/amenities`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/search/amenities`,
         );
         if (response.data.success) {
           setAllAmenities(response.data.data);
@@ -188,7 +190,7 @@ const HotelListing: React.FC = () => {
     const fetchPropertyCategories = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/property-categories`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/search/property-categories`,
         );
         if (response.data.success) {
           setPropertyCategories(response.data.data);
@@ -204,6 +206,27 @@ const HotelListing: React.FC = () => {
       fetchPropertyCategories();
     }
   }, [categoriesLoaded]);
+
+  useEffect(() => {
+    const fetchPropertyTypes = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/search/property-types`,
+        );
+        if (response.data.success) {
+          setPropertyTypes(response.data.data);
+          setPropertyTypesLoaded(true);
+          console.log("Property types loaded:", response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching property types:", error);
+      }
+    };
+
+    if (!propertyTypesLoaded) {
+      fetchPropertyTypes();
+    }
+  }, [propertyTypesLoaded]);
 
   const handleGuestChange = (guestData: any) => {
     //console.log("Guest details updated:", guestData);
@@ -707,6 +730,7 @@ const HotelListing: React.FC = () => {
               hotelsData={hotelsData}
               allAmenities={allAmenities}
               propertyCategories={propertyCategories}
+              propertyTypes={propertyTypes}
             />
           </div>
 
@@ -719,8 +743,8 @@ const HotelListing: React.FC = () => {
             hotelsData={hotelsData}
             allAmenities={allAmenities}
             propertyCategories={propertyCategories}
+            propertyTypes={propertyTypes}
           />
-
           <div className="lg:w-3/4">
             <div className="bg-tripswift-off-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="relative flex-grow max-w-xs">

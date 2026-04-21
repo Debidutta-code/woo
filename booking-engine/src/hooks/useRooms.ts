@@ -57,7 +57,7 @@ export const useRooms = ({
     try {
       // ✅ Use the correct booking-engine property details endpoint
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/property/details`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/property`,
         {
           params: {
             id: propertyId,

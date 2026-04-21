@@ -79,7 +79,7 @@ const MobileFilterDrawer: React.FC<MobileFilterDrawerProps> = ({
         </div> */}
 
         {/* Property rating */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <h3 className="text-xs font-tripswift-medium text-tripswift-black mb-3">
             {t("HotelBox.FilterModal.propertyRating", {
               defaultValue: "Property Rating",
@@ -119,7 +119,7 @@ const MobileFilterDrawer: React.FC<MobileFilterDrawerProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Amenities */}
         <div>

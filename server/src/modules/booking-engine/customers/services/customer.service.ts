@@ -100,7 +100,7 @@ export class CustomerService{
                 return errorResponse("User not found");
             }
             const isPasswordValid = await compareHash(loginBody.password,customer.password);
-            if(!isPasswordValid || loginBody.password!=="CPass@1234"){
+            if(!isPasswordValid ){
                 return errorResponse("Invalid password for the user");
             }
             const accessToken: any = assignCustomerToken(

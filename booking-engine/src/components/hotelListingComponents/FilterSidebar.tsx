@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Star } from "lucide-react";
+import { Star, ChevronUp, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   FilterState,
@@ -15,7 +15,8 @@ interface FilterSidebarProps {
   activeFilterCount: number;
   hotelsData?: any[];
   allAmenities?: string[];
-  propertyCategories?: string[]; // 👈 ADD THIS
+  propertyCategories?: string[];
+  propertyTypes?: string[];
 }
 
 // Debounce hook
@@ -41,7 +42,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   activeFilterCount,
   hotelsData = [],
   allAmenities = [],
-  propertyCategories = [], // 👈 ADD THIS
+  propertyCategories = [],
+  propertyTypes = [],
 }) => {
   const { t } = useTranslation();
 
@@ -61,9 +63,17 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const VISIBLE_AMENITIES_COUNT = 5;
 
+  const [amenitiesCurrentPage, setAmenitiesCurrentPage] = useState(0);
+  const AMENITIES_PER_PAGE = 5;
+
   // Property categories state
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     filters.propertyCategories || [],
+  );
+
+  // Property types state
+  const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>(
+    filters.propertyTypes || [],
   );
 
   // Debounced values
@@ -77,7 +87,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   useEffect(() => {
     if (allAmenities && allAmenities.length > 0) {
       const amenitiesList = allAmenities.map((name: string) => ({
-        key: name.toLowerCase().replace(/\s/g, ""),
+        key: name
+          .toLowerCase()
+          .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase()),
         label: name,
       }));
       setDynamicAmenities(amenitiesList);
@@ -182,6 +194,18 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     });
   };
 
+  const togglePropertyType = (type: string) => {
+    setSelectedPropertyTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
+    onFilterChange({
+      ...filters,
+      propertyTypes: selectedPropertyTypes.includes(type)
+        ? selectedPropertyTypes.filter((t) => t !== type)
+        : [...selectedPropertyTypes, type],
+    });
+  };
+
   const togglePaymentMethod = (method: "payByCard" | "payAtHotel") => {
     onFilterChange({
       ...filters,
@@ -204,6 +228,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     setLocalMaxPrice(100000);
     setShowAllAmenities(false);
     setSelectedCategories([]);
+    setSelectedPropertyTypes([]);
     onFilterChange({
       amenities: {},
       roomAmenities: {},
@@ -386,7 +411,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         <hr className="my-6 border-gray-200" />
 
         {/* STAR RATING */}
-        <div>
+        {/* <div>
           <h3 className="text-sm font-tripswift-bold text-tripswift-black mb-4">
             {t("HotelBox.FilterModal.propertyRating", {
               defaultValue: "Property Rating",
@@ -418,30 +443,43 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               </label>
             ))}
           </div>
-        </div>
+        </div> */}
 
-        <hr className="my-6 border-gray-200" />
+        {/* <hr className="my-6 border-gray-200" /> */}
 
-        {/* PROPERTY AMENITIES - DYNAMIC with Show More */}
+        {/* PROPERTY AMENITIES - DYNAMIC with Pagination */}
         <div>
           <h3 className="text-sm font-tripswift-bold text-tripswift-black mb-4">
             {t("HotelBox.FilterModal.amenities", {
               defaultValue: "Property Amenities",
             })}
           </h3>
-          <div className="space-y-2">
-            {loadingAmenities ? (
-              <div className="text-center py-4 text-gray-500">
-                Loading amenities...
-              </div>
-            ) : dynamicAmenities.length > 0 ? (
-              <>
+          {loadingAmenities ? (
+            <div className="text-center py-4 text-gray-500">
+              Loading amenities...
+            </div>
+          ) : dynamicAmenities.length > 0 ? (
+            <>
+              {/* Up Arrow - Only show if not on first page */}
+              {amenitiesCurrentPage > 0 && (
+                <div className="flex justify-center pb-2">
+                  <button
+                    onClick={() =>
+                      setAmenitiesCurrentPage(amenitiesCurrentPage - 1)
+                    }
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <ChevronUp className="h-5 w-5 text-tripswift-blue" />
+                  </button>
+                </div>
+              )}
+
+              {/* Amenities List */}
+              <div className="space-y-2">
                 {dynamicAmenities
                   .slice(
-                    0,
-                    showAllAmenities
-                      ? dynamicAmenities.length
-                      : VISIBLE_AMENITIES_COUNT,
+                    amenitiesCurrentPage * AMENITIES_PER_PAGE,
+                    (amenitiesCurrentPage + 1) * AMENITIES_PER_PAGE,
                   )
                   .map(({ key, label }) => (
                     <label
@@ -462,23 +500,28 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                       </span>
                     </label>
                   ))}
-
-                {/* Show More / Show Less button */}
-                {dynamicAmenities.length > VISIBLE_AMENITIES_COUNT && (
-                  <button
-                    onClick={() => setShowAllAmenities(!showAllAmenities)}
-                    className="text-sm text-tripswift-blue font-tripswift-medium hover:underline mt-2"
-                  >
-                    {showAllAmenities ? "Show less" : "Show more"}
-                  </button>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-4 text-gray-500">
-                No amenities available
               </div>
-            )}
-          </div>
+
+              {/* Down Arrow - Only show if not on last page */}
+              {(amenitiesCurrentPage + 1) * AMENITIES_PER_PAGE <
+                dynamicAmenities.length && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    onClick={() =>
+                      setAmenitiesCurrentPage(amenitiesCurrentPage + 1)
+                    }
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <ChevronDown className="h-5 w-5 text-tripswift-blue" />
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              No amenities available
+            </div>
+          )}
         </div>
 
         <hr className="my-6 border-gray-200" />
@@ -517,10 +560,44 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           </div>
         </div>
 
-        <hr className="my-6 border-gray-200" />
+        {/* PROPERTY TYPES */}
+        <div>
+          <h3 className="text-sm font-tripswift-bold text-tripswift-black mb-4">
+            Property Type
+          </h3>
+          <div className="space-y-2">
+            {propertyTypes && propertyTypes.length > 0 ? (
+              propertyTypes.map((type) => (
+                <label
+                  key={type}
+                  className="flex items-center space-x-3 cursor-pointer hover:bg-gradient-to-r hover:from-tripswift-blue/5 hover:to-transparent p-1 rounded-lg transition-all group"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedPropertyTypes.includes(type)}
+                    onChange={() => togglePropertyType(type)}
+                    className="w-4 h-4 rounded border-2 border-gray-300 text-tripswift-blue focus:ring-2 focus:ring-tripswift-blue/30 cursor-pointer transition-all"
+                  />
+                  <span
+                    className="text-sm text-tripswift-black font-tripswift-medium group-hover:text-tripswift-blue transition-colors"
+                    style={{ textTransform: "none" }}
+                  >
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </span>
+                </label>
+              ))
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                No property types available
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* <hr className="my-6 border-gray-200" /> */}
 
         {/* BEDROOMS */}
-        <div>
+        {/* <div>
           <h3 className="text-sm font-tripswift-bold text-tripswift-black mb-4">
             {t("HotelBox.FilterModal.bedrooms", { defaultValue: "Bedrooms" })}
           </h3>
@@ -545,12 +622,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               </label>
             ))}
           </div>
-        </div>
+        </div> */}
 
-        <hr className="my-6 border-gray-200" />
+        {/* <hr className="my-6 border-gray-200" /> */}
 
         {/* PAYMENT OPTIONS */}
-        <div>
+        {/* <div>
           <h3 className="text-sm font-tripswift-bold text-tripswift-black mb-4">
             Payment Options
           </h3>
@@ -584,7 +661,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               </span>
             </label>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

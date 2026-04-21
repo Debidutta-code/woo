@@ -116,7 +116,11 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
       const newWishlistState = !isWishlisted;
       setIsWishlisted(newWishlistState);
 
-      const response = await wishlistAPI.toggleWishlist(hotel.id);
+      const response = await wishlistAPI.toggleWishlist(
+        hotel.id,
+        hotel.propertyCode,
+        hotel.propertyName,
+      );
 
       if (onWishlistToggle) {
         onWishlistToggle(hotel.id, newWishlistState);
@@ -128,17 +132,26 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
         setShowWishlistToast(false);
       }, 2000);
     } catch (error: any) {
-      console.error("Wishlist toggle error:", error);
-
+      // Silent error handling - no console log
       // Revert optimistic update on error
       setIsWishlisted(!isWishlisted);
 
-      toast.error(
-        error.message ||
+      // Show user-friendly message based on error type
+      if (
+        error.message?.toLowerCase().includes("login") ||
+        error.response?.status === 401
+      ) {
+        toast.error("🔐 Please login first to add items to your wishlist", {
+          duration: 4000,
+          icon: "🔐",
+        });
+      } else {
+        toast.error(
           t("HotelListing.HotelCardItem.wishlistError", {
             defaultValue: "Failed to update wishlist",
           }),
-      );
+        );
+      }
     } finally {
       setIsWishlistLoading(false);
       isTogglingRef.current = false;
@@ -372,13 +385,6 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
             <h3 className="text-xl font-tripswift-bold text-gray-900 mb-2 leading-tight">
               {hotel.propertyName}
             </h3>
-            <div className="flex items-center gap-1">
-              {hotel.starRating ? (
-                renderStarRating(hotel.starRating)
-              ) : (
-                <span className="text-xs text-gray-500">No rating</span>
-              )}
-            </div>
           </div>
 
           {/* Location with map link */}

@@ -4,7 +4,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Star, ChevronDown, Filter } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import ReviewPagination from './ReviewPagination';
+import ReviewPagination from "./ReviewPagination";
 
 interface Review {
   _id: string;
@@ -54,7 +54,9 @@ const useReviewFilters = (hotelCode: string) => {
     category: "",
     dateRange: null as { startDate: string; endDate: string } | null,
   });
-  const [sortBy, setSortBy] = useState<"relevant" | "newest" | "oldest" | "highest" | "lowest">("newest");
+  const [sortBy, setSortBy] = useState<
+    "relevant" | "newest" | "oldest" | "highest" | "lowest"
+  >("newest");
   const [loading, setLoading] = useState(true);
 
   // Fetch reviews with pagination
@@ -64,13 +66,33 @@ const useReviewFilters = (hotelCode: string) => {
 
     const fetchReviews = async () => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/review/get?hotelCode=${hotelCode}&page=${currentPage}&limit=${itemsPerPage}`;
+        const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/review/property/${hotelCode}?page=${currentPage}&limit=${itemsPerPage}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch reviews");
 
-        const data: ApiResponse = await res.json();
-        if (data.success) {
-          setRawData(data.data);
+        const response = await res.json();
+
+        if (response.success) {
+          // Transform backend response to frontend expected format
+          const reviews = response.data || [];
+          const total = response.meta?.total || reviews.length;
+          const totalPages = response.meta?.totalPages || 1;
+
+          setRawData({
+            averageRating: calculateAverageRating(reviews),
+            totalReviews: total,
+            customerReview: reviews, // Map backend data to customerReview
+            pagination: {
+              currentPage: currentPage,
+              totalPages: totalPages,
+              totalItems: total,
+              itemsPerPage: itemsPerPage,
+              hasNext: currentPage < totalPages,
+              hasPrev: currentPage > 1,
+            },
+          });
+        } else {
+          throw new Error(response.message || "Failed to fetch reviews");
         }
       } catch (error) {
         console.error("[HotelReviews] Fetch failed:", error);
@@ -84,12 +106,19 @@ const useReviewFilters = (hotelCode: string) => {
             totalItems: 0,
             itemsPerPage: 5,
             hasNext: false,
-            hasPrev: false
-          }
+            hasPrev: false,
+          },
         });
       } finally {
         setLoading(false);
       }
+    };
+
+    // Add this helper function before the useReviewFilters hook
+    const calculateAverageRating = (reviews: Review[]): number => {
+      if (!reviews || reviews.length === 0) return 0;
+      const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+      return Number((sum / reviews.length).toFixed(1));
     };
 
     fetchReviews();
@@ -101,10 +130,15 @@ const useReviewFilters = (hotelCode: string) => {
 
     return rawData.customerReview.filter((review) => {
       // Rating filter (1–5)
-      if (filters.rating && review.rating !== Number(filters.rating)) return false;
+      if (filters.rating && review.rating !== Number(filters.rating))
+        return false;
 
       // Category filter (Superb, Good, Poor)
-      if (filters.category && categorizeRating(review.rating) !== filters.category) return false;
+      if (
+        filters.category &&
+        categorizeRating(review.rating) !== filters.category
+      )
+        return false;
 
       // Date range filter
       if (filters.dateRange) {
@@ -127,11 +161,17 @@ const useReviewFilters = (hotelCode: string) => {
         case "relevant":
           // First by rating (highest first), then by date (newest first)
           if (a.rating !== b.rating) return b.rating - a.rating;
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         case "newest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         case "oldest":
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
         case "highest":
           return b.rating - a.rating;
         case "lowest":
@@ -155,7 +195,8 @@ const useReviewFilters = (hotelCode: string) => {
   }, [rawData]);
 
   const timePeriodStats = useMemo(() => {
-    if (!rawData) return { total: 0, marMay: 0, junAug: 0, sepNov: 0, decFeb: 0 };
+    if (!rawData)
+      return { total: 0, marMay: 0, junAug: 0, sepNov: 0, decFeb: 0 };
     const counts = { marMay: 0, junAug: 0, sepNov: 0, decFeb: 0 };
 
     rawData.customerReview.forEach((r) => {
@@ -190,15 +231,19 @@ const categorizeRating = (rating: number): "Poor" | "Good" | "Superb" => {
   return "Superb";
 };
 
-const getTimePeriod = (dateString: string): "marMay" | "junAug" | "sepNov" | "decFeb" => {
+const getTimePeriod = (
+  dateString: string,
+): "marMay" | "junAug" | "sepNov" | "decFeb" => {
   const month = new Date(dateString).getMonth(); // 0 = Jan
-  if (month >= 2 && month <= 4) return "marMay";    // Mar–May
-  if (month >= 5 && month <= 7) return "junAug";    // Jun–Aug
-  if (month >= 8 && month <= 10) return "sepNov";   // Sep–Nov
+  if (month >= 2 && month <= 4) return "marMay"; // Mar–May
+  if (month >= 5 && month <= 7) return "junAug"; // Jun–Aug
+  if (month >= 8 && month <= 10) return "sepNov"; // Sep–Nov
   return "decFeb"; // Dec, Jan, Feb
 };
 
-const getDateRangeForPeriod = (period: string): { startDate: string; endDate: string } | null => {
+const getDateRangeForPeriod = (
+  period: string,
+): { startDate: string; endDate: string } | null => {
   const year = new Date().getFullYear();
   switch (period) {
     case "mar-may":
@@ -228,7 +273,9 @@ const FilterSelect = ({
   const { t } = useTranslation();
   return (
     <div className="w-full">
-      <h5 className="text-sm font-medium text-gray-700 mb-2 truncate">{t(`Reviews.${label}`) || label}</h5>
+      <h5 className="text-sm font-medium text-gray-700 mb-2 truncate">
+        {t(`Reviews.${label}`) || label}
+      </h5>
       <div className="relative">
         <select
           value={value}
@@ -237,7 +284,9 @@ const FilterSelect = ({
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {opt.count !== undefined ? `${opt.label} (${opt.count})` : opt.label}
+              {opt.count !== undefined
+                ? `${opt.label} (${opt.count})`
+                : opt.label}
             </option>
           ))}
         </select>
@@ -253,7 +302,10 @@ const ReviewCard = ({ review }: { review: Review }) => {
   const { t, i18n } = useTranslation();
 
   return (
-    <div key={review._id} className="border-b border-gray-100 pb-4 last:border-b-0">
+    <div
+      key={review._id}
+      className="border-b border-gray-100 pb-4 last:border-b-0"
+    >
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-tripswift-blue text-tripswift-off-white rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0">
           {review.guestEmail.charAt(0).toUpperCase()}
@@ -267,11 +319,14 @@ const ReviewCard = ({ review }: { review: Review }) => {
               </h6>
               <p className="text-sm text-gray-500">
                 {t("Reviews.reviewedOn", {
-                  date: new Date(review.createdAt).toLocaleDateString(i18n.language, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
+                  date: new Date(review.createdAt).toLocaleDateString(
+                    i18n.language,
+                    {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  ),
                 })}
               </p>
             </div>
@@ -287,7 +342,9 @@ const ReviewCard = ({ review }: { review: Review }) => {
             </div>
           </div>
 
-          <p className="text-gray-700 text-sm leading-relaxed break-words">{review.comment}</p>
+          <p className="text-gray-700 text-sm leading-relaxed break-words">
+            {review.comment}
+          </p>
         </div>
       </div>
     </div>
@@ -312,7 +369,10 @@ const LoadingState = () => {
         <div className="w-32 h-5 bg-gray-200 rounded animate-pulse"></div>
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
+            <div
+              key={i}
+              className="w-16 h-8 bg-gray-200 rounded animate-pulse"
+            ></div>
           ))}
         </div>
       </div>
@@ -345,7 +405,9 @@ const EmptyState = () => {
       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <Star className="h-8 w-8 text-gray-400" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("Reviews.noReviews")}</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        {t("Reviews.noReviews")}
+      </h3>
       <p className="text-gray-600">{t("Reviews.beFirstToReview")}</p>
     </div>
   );
@@ -372,10 +434,12 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
     // Scroll to top of reviews section
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleItemsPerPageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1); // Reset to first page when changing items per page
   };
@@ -393,21 +457,21 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
     reviewScoreOptions.push({
       value: "Superb",
       label: t("Reviews.superb") || "Superb",
-      count: stats.superb
+      count: stats.superb,
     });
   }
   if (stats.good > 0) {
     reviewScoreOptions.push({
       value: "Good",
       label: t("Reviews.good") || "Good",
-      count: stats.good
+      count: stats.good,
     });
   }
   if (stats.poor > 0) {
     reviewScoreOptions.push({
       value: "Poor",
       label: t("Reviews.poor") || "Poor",
-      count: stats.poor
+      count: stats.poor,
     });
   }
 
@@ -428,9 +492,19 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
             value={filters.category || filters.rating}
             onChange={(value) => {
               if (["Poor", "Good", "Superb"].includes(value)) {
-                setFilters((f) => ({ ...f, category: value, rating: "", dateRange: null }));
+                setFilters((f) => ({
+                  ...f,
+                  category: value,
+                  rating: "",
+                  dateRange: null,
+                }));
               } else {
-                setFilters((f) => ({ ...f, rating: value, category: "", dateRange: null }));
+                setFilters((f) => ({
+                  ...f,
+                  rating: value,
+                  category: "",
+                  dateRange: null,
+                }));
               }
             }}
             options={reviewScoreOptions}
@@ -462,11 +536,47 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
               }));
             }}
             options={[
-              { value: "", label: t("Reviews.all") || "All", count: timePeriodStats.total },
-              ...(timePeriodStats.marMay > 0 ? [{ value: "mar-may", label: t("Reviews.marMay") || "Mar-May", count: timePeriodStats.marMay }] : []),
-              ...(timePeriodStats.junAug > 0 ? [{ value: "jun-aug", label: t("Reviews.junAug") || "Jun-Aug", count: timePeriodStats.junAug }] : []),
-              ...(timePeriodStats.sepNov > 0 ? [{ value: "sep-nov", label: t("Reviews.sepNov") || "Sep-Nov", count: timePeriodStats.sepNov }] : []),
-              ...(timePeriodStats.decFeb > 0 ? [{ value: "dec-feb", label: t("Reviews.decFeb") || "Dec-Feb", count: timePeriodStats.decFeb }] : []),
+              {
+                value: "",
+                label: t("Reviews.all") || "All",
+                count: timePeriodStats.total,
+              },
+              ...(timePeriodStats.marMay > 0
+                ? [
+                    {
+                      value: "mar-may",
+                      label: t("Reviews.marMay") || "Mar-May",
+                      count: timePeriodStats.marMay,
+                    },
+                  ]
+                : []),
+              ...(timePeriodStats.junAug > 0
+                ? [
+                    {
+                      value: "jun-aug",
+                      label: t("Reviews.junAug") || "Jun-Aug",
+                      count: timePeriodStats.junAug,
+                    },
+                  ]
+                : []),
+              ...(timePeriodStats.sepNov > 0
+                ? [
+                    {
+                      value: "sep-nov",
+                      label: t("Reviews.sepNov") || "Sep-Nov",
+                      count: timePeriodStats.sepNov,
+                    },
+                  ]
+                : []),
+              ...(timePeriodStats.decFeb > 0
+                ? [
+                    {
+                      value: "dec-feb",
+                      label: t("Reviews.decFeb") || "Dec-Feb",
+                      count: timePeriodStats.decFeb,
+                    },
+                  ]
+                : []),
             ]}
           />
 
@@ -474,14 +584,36 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
             label="sortReviewsBy"
             value={sortBy}
             onChange={(value) =>
-              setSortBy(value as "relevant" | "newest" | "oldest" | "highest" | "lowest")
+              setSortBy(
+                value as
+                  | "relevant"
+                  | "newest"
+                  | "oldest"
+                  | "highest"
+                  | "lowest",
+              )
             }
             options={[
-              { value: "newest", label: t("Reviews.newestFirst") || "Newest first" },
-              { value: "relevant", label: t("Reviews.mostRelevant") || "Most relevant" },
-              { value: "oldest", label: t("Reviews.oldestFirst") || "Oldest first" },
-              { value: "highest", label: t("Reviews.highestRated") || "Highest rated" },
-              { value: "lowest", label: t("Reviews.lowestRated") || "Lowest rated" },
+              {
+                value: "newest",
+                label: t("Reviews.newestFirst") || "Newest first",
+              },
+              {
+                value: "relevant",
+                label: t("Reviews.mostRelevant") || "Most relevant",
+              },
+              {
+                value: "oldest",
+                label: t("Reviews.oldestFirst") || "Oldest first",
+              },
+              {
+                value: "highest",
+                label: t("Reviews.highestRated") || "Highest rated",
+              },
+              {
+                value: "lowest",
+                label: t("Reviews.lowestRated") || "Lowest rated",
+              },
             ]}
           />
         </div>
@@ -495,7 +627,7 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-1">
               <span className="truncate">{filters.category}</span>
               <button
-                onClick={() => setFilters(f => ({ ...f, category: "" }))}
+                onClick={() => setFilters((f) => ({ ...f, category: "" }))}
                 className="ml-1 hover:text-blue-900 flex-shrink-0"
               >
                 ×
@@ -506,7 +638,7 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-1">
               <span className="truncate">Time filter</span>
               <button
-                onClick={() => setFilters(f => ({ ...f, dateRange: null }))}
+                onClick={() => setFilters((f) => ({ ...f, dateRange: null }))}
                 className="ml-1 hover:text-blue-900 flex-shrink-0"
               >
                 ×
@@ -514,7 +646,9 @@ const HotelReviewsSliding: React.FC<HotelReviewsProps> = ({ hotelCode }) => {
             </span>
           )}
           <button
-            onClick={() => setFilters({ rating: "", category: "", dateRange: null })}
+            onClick={() =>
+              setFilters({ rating: "", category: "", dateRange: null })
+            }
             className="text-tripswift-blue hover:text-tripswift-blue underline flex-shrink-0"
           >
             Clear all

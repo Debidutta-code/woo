@@ -20,4 +20,9 @@ searchRouter.route('/property-categories').get(
     searchController.getPropertyCategories.bind(searchController)
 );
 
+searchRouter.route('/property-types').get( 
+    searchController.getPropertyTypes.bind(searchController)
+);
+
+
 export { searchRouter };

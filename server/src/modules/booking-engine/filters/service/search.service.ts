@@ -643,15 +643,29 @@ export class SearchService {
         }
     }
     public async getPropertyCategories() {
-    try {
-        const categories = await this.searchRepository.getPropertyCategories();
-        return {
-            success: true,
-            data: categories,
-        };
-    } catch (error) {
-        console.error('Error in getPropertyCategories service:', error);
-        throw new Error('Failed to fetch property categories');
+        try {
+            const categories =
+                await this.searchRepository.getPropertyCategories();
+            return {
+                success: true,
+                data: categories,
+            };
+        } catch (error) {
+            console.error('Error in getPropertyCategories service:', error);
+            throw new Error('Failed to fetch property categories');
+        }
     }
-}
+    public async getPropertyTypes() {
+        try {
+            const propertyTypes =
+                await this.searchRepository.getPropertyTypes();
+            return {
+                success: true,
+                data: propertyTypes,
+            };
+        } catch (error) {
+            console.error('Error in getPropertyTypes service:', error);
+            throw new Error('Failed to fetch property types');
+        }
+    }
 }

@@ -63,7 +63,7 @@ export const PropertyHeader: React.FC<PropertyHeaderProps> = ({
             hotelCode={propertyCode}
             guestDetails={guestDetails}
           />
-          {propertyDetails?.starRating && (
+          {/* {propertyDetails?.starRating && (
             <div className="flex items-center bg-tripswift-off-white/10 backdrop-blur-sm pl-3.5 pr-4 py-2.5 rounded-xl">
               <Star
                 className={`h-5 w-5 text-yellow-400 ${i18n.language === "ar" ? "ml-2.5" : "mr-2.5"}`}
@@ -74,7 +74,7 @@ export const PropertyHeader: React.FC<PropertyHeaderProps> = ({
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {propertyCode && (
             <button

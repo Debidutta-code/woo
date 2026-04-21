@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { X, Star, ChevronDown } from "lucide-react";
+import { X, Star, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "../ui/card";
 import { useTranslation } from "react-i18next";
 
@@ -35,6 +35,7 @@ export interface FilterModalProps {
   hotelsData?: any[];
   allAmenities?: string[];
   propertyCategories?: string[];
+  propertyTypes?: string[];
 }
 
 export const AMENITIES = [
@@ -52,7 +53,10 @@ export const AMENITIES = [
   { key: "laundry_services", labelKey: "laundry_services" },
   { key: "child_friendly_facilities", labelKey: "child_friendly_facilities" },
   { key: "non_smoking_rooms", labelKey: "non_smoking_rooms" },
-  { key: "facilities_for_disabled_guests", labelKey: "facilities_for_disabled_guests" },
+  {
+    key: "facilities_for_disabled_guests",
+    labelKey: "facilities_for_disabled_guests",
+  },
   { key: "family_rooms", labelKey: "family_rooms" },
 ] as const;
 export const ROOM_AMENITIES_BY_CATEGORY = {
@@ -134,6 +138,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   hotelsData = [],
   allAmenities = [],
   propertyCategories = [],
+  propertyTypes = [],
 }) => {
   const [selectedAmenities, setSelectedAmenities] = useState<{
     [key: string]: boolean;
@@ -183,9 +188,16 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const VISIBLE_AMENITIES_COUNT = 5;
 
+  const [amenitiesCurrentPage, setAmenitiesCurrentPage] = useState(0);
+  const AMENITIES_PER_PAGE = 5;
+
   // Property categories state
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     initialFilters.propertyCategories || [],
+  );
+
+  const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>(
+    initialFilters.propertyTypes || [],
   );
 
   const [expandedSections, setExpandedSections] = useState<{
@@ -194,6 +206,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     priceRange: true,
     propertyAmenities: true,
     propertyCategories: false,
+    propertyTypes: false,
     roomAmenities: false,
     bedType: false,
     roomType: false,
@@ -212,7 +225,9 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   useEffect(() => {
     if (allAmenities && allAmenities.length > 0) {
       const amenitiesList = allAmenities.map((name: string) => ({
-        key: name.toLowerCase().replace(/\s/g, ""),
+        key: name
+          .toLowerCase()
+          .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase()),
         label: name,
       }));
       setDynamicAmenities(amenitiesList);
@@ -245,6 +260,12 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     );
   };
 
+  const togglePropertyType = (type: string) => {
+    setSelectedPropertyTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
+  };
+
   const handleSave = () => {
     onSave({
       amenities: selectedAmenities,
@@ -252,7 +273,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       bedType: selectedBedTypes,
       roomType: selectedRoomTypes,
       star_rating: selectedStarRatings,
-      propertyTypes: initialFilters.propertyTypes || [],
+      propertyTypes: selectedPropertyTypes,
       propertyCategories: selectedCategories,
       special: selectedSpecial,
       bedrooms: selectedBedrooms,
@@ -283,6 +304,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     setMaxPrice(100000);
     setShowAllAmenities(false);
     setSelectedCategories([]);
+    setSelectedPropertyTypes([]);
   };
 
   const toggleAmenity = (amenityKey: string) => {
@@ -553,7 +575,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               )}
             </div>
 
-            {/* PROPERTY AMENITIES - DYNAMIC with Show More */}
+            {/* PROPERTY AMENITIES - DYNAMIC with Pagination */}
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggleSection("propertyAmenities")}
@@ -571,52 +593,72 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 />
               </button>
               {expandedSections.propertyAmenities && (
-                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="p-4">
                   {loadingAmenities ? (
-                    <div className="text-center py-4 text-gray-500 col-span-2 sm:col-span-3">
+                    <div className="text-center py-4 text-gray-500">
                       Loading amenities...
                     </div>
                   ) : dynamicAmenities.length > 0 ? (
                     <>
-                      {dynamicAmenities
-                        .slice(
-                          0,
-                          showAllAmenities
-                            ? dynamicAmenities.length
-                            : VISIBLE_AMENITIES_COUNT,
-                        )
-                        .map(({ key, label }) => (
-                          <label
-                            key={key}
-                            className="flex items-center space-x-2 cursor-pointer"
+                      {/* Up Arrow - Only show if not on first page */}
+                      {amenitiesCurrentPage > 0 && (
+                        <div className="flex justify-center pb-2">
+                          <button
+                            onClick={() =>
+                              setAmenitiesCurrentPage(amenitiesCurrentPage - 1)
+                            }
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                           >
-                            <input
-                              type="checkbox"
-                              checked={selectedAmenities[key] || false}
-                              onChange={() => toggleAmenity(key)}
-                              className="w-4 h-4 rounded border-gray-300 text-tripswift-blue cursor-pointer"
-                            />
-                            <span
-                              className="text-sm text-tripswift-black normal-case"
-                              style={{ textTransform: "none" }}
-                            >
-                              {label}
-                            </span>
-                          </label>
-                        ))}
+                            <ChevronUp className="h-5 w-5 text-tripswift-blue" />
+                          </button>
+                        </div>
+                      )}
 
-                      {/* Show More / Show Less button */}
-                      {dynamicAmenities.length > VISIBLE_AMENITIES_COUNT && (
-                        <button
-                          onClick={() => setShowAllAmenities(!showAllAmenities)}
-                          className="col-span-2 sm:col-span-3 text-sm text-tripswift-blue font-tripswift-medium hover:underline mt-2 text-left"
-                        >
-                          {showAllAmenities ? "Show less" : "Show more"}
-                        </button>
+                      {/* Amenities Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {dynamicAmenities
+                          .slice(
+                            amenitiesCurrentPage * AMENITIES_PER_PAGE,
+                            (amenitiesCurrentPage + 1) * AMENITIES_PER_PAGE,
+                          )
+                          .map(({ key, label }) => (
+                            <label
+                              key={key}
+                              className="flex items-center space-x-2 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedAmenities[key] || false}
+                                onChange={() => toggleAmenity(key)}
+                                className="w-4 h-4 rounded border-gray-300 text-tripswift-blue cursor-pointer"
+                              />
+                              <span
+                                className="text-sm text-tripswift-black normal-case"
+                                style={{ textTransform: "none" }}
+                              >
+                                {label}
+                              </span>
+                            </label>
+                          ))}
+                      </div>
+
+                      {/* Down Arrow - Only show if not on last page */}
+                      {(amenitiesCurrentPage + 1) * AMENITIES_PER_PAGE <
+                        dynamicAmenities.length && (
+                        <div className="flex justify-center pt-2">
+                          <button
+                            onClick={() =>
+                              setAmenitiesCurrentPage(amenitiesCurrentPage + 1)
+                            }
+                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <ChevronDown className="h-5 w-5 text-tripswift-blue" />
+                          </button>
+                        </div>
                       )}
                     </>
                   ) : (
-                    <div className="text-center py-4 text-gray-500 col-span-2 sm:col-span-3">
+                    <div className="text-center py-4 text-gray-500">
                       No amenities available
                     </div>
                   )}
@@ -664,6 +706,52 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   ) : (
                     <div className="text-center py-4 text-gray-500 col-span-2 sm:col-span-3">
                       No categories available
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* PROPERTY TYPES */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => toggleSection("propertyTypes")}
+                className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
+              >
+                <h3 className="font-tripswift-medium text-tripswift-black">
+                  Property Type
+                </h3>
+                <ChevronDown
+                  className={`h-5 w-5 transition-transform ${
+                    expandedSections.propertyTypes ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {expandedSections.propertyTypes && (
+                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {propertyTypes && propertyTypes.length > 0 ? (
+                    propertyTypes.map((type) => (
+                      <label
+                        key={type}
+                        className="flex items-center space-x-2 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedPropertyTypes.includes(type)}
+                          onChange={() => togglePropertyType(type)}
+                          className="w-4 h-4 rounded border-gray-300 text-tripswift-blue cursor-pointer"
+                        />
+                        <span
+                          className="text-sm text-tripswift-black normal-case"
+                          style={{ textTransform: "none" }}
+                        >
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 col-span-2 sm:col-span-3">
+                      No property types available
                     </div>
                   )}
                 </div>
@@ -727,7 +815,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           </div>
 
           {/* STAR RATING */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
               onClick={() => toggleSection("rating")}
               className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
@@ -771,10 +859,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* BEDROOMS */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
               onClick={() => toggleSection("bedrooms")}
               className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
@@ -813,10 +901,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* CUSTOMER REVIEW */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
               onClick={() => toggleSection("customerReview")}
               className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
@@ -861,10 +949,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* PAYMENT OPTIONS */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
               onClick={() => toggleSection("payment")}
               className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex items-center justify-between transition-colors"
@@ -910,7 +998,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 </label>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* SORT BY */}
           <div className="border border-gray-200 rounded-lg overflow-hidden">

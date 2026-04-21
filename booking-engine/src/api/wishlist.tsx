@@ -15,13 +15,21 @@ export const wishlistAPI = {
   /**
    * Toggle a property in/out of wishlist
    */
-  toggleWishlist: async (propertyId: string) => {
+ toggleWishlist: async (propertyId: string, propertyCode?: string, propertyName?: string) => {
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/wishlist/toggle/${propertyId}`,
-        {},
+        `${API_BASE_URL}/booking-engine/wish-list`,
         {
-          headers: getAuthHeaders()
+          propertyId: propertyId,
+          propertyCode: propertyCode || "",
+          propertyName: propertyName || "",
+          roomId: null,
+          roomType: null,
+          roomName: null
+        },
+        {
+          headers: getAuthHeaders(),
+          withCredentials: true 
         }
       );
       return response.data;
@@ -39,7 +47,8 @@ export const wishlistAPI = {
   getWishlistGrouped: async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/wishlist`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        withCredentials: true
       });
       return response.data.data;
     } catch (error: any) {
@@ -58,7 +67,8 @@ export const wishlistAPI = {
       const response = await axios.get(
         `${API_BASE_URL}/wishlist/city/${city}`,
         {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
+          withCredentials: true
         }
       );
       return response.data.data;
@@ -79,7 +89,8 @@ export const wishlistAPI = {
         `${API_BASE_URL}/wishlist/check/${propertyId}`,
         {},
         {
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
+          withCredentials: true
         }
       );
       return response.data.data;
@@ -97,7 +108,8 @@ export const wishlistAPI = {
   getWishlistCount: async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/wishlist/count`, {
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        withCredentials: true
       });
       return response.data.data;
     } catch (error: any) {

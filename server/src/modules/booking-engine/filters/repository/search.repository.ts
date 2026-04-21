@@ -348,7 +348,7 @@ export class SearchRepository {
                 select: { city: true },
                 distinct: ['city'],
             });
-console.log(cities[0])
+            console.log(cities[0]);
             return cities.map(c => ({
                 city: c.city,
                 propertyCount: 0,
@@ -401,6 +401,31 @@ console.log(cities[0])
         } catch (error) {
             console.error('Error fetching property categories:', error);
             throw new Error('Failed to fetch property categories');
+        }
+    }
+
+    /**
+     * Get property types
+     */
+    public async getPropertyTypes() {
+        try {
+            // Fetch distinct property types from master table
+            const propertyTypes = await prisma.masterPropertyType.findMany({
+                where: {
+                    isActive: true,
+                },
+                select: {
+                    propertyTypeName: true,
+                },
+                orderBy: {
+                    propertyTypeName: 'asc',
+                },
+            });
+
+            return propertyTypes.map(t => t.propertyTypeName);
+        } catch (error) {
+            console.error('Error fetching property types:', error);
+            throw new Error('Failed to fetch property types');
         }
     }
 }

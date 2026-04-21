@@ -29,8 +29,6 @@ export class SearchController {
     ): Promise<Response> {
         try {
             const result = await this.searchService.getUniqueCities();
-            console.log("this is error");
-            
             return res.status(200).json(result);
         } catch (error) {
             console.error('Error in getUniqueCities:', error);
@@ -54,16 +52,35 @@ export class SearchController {
         }
     }
 
-    public async getPropertyCategories(req: Request, res: Response): Promise<Response> {
-    try {
-        const result = await this.searchService.getPropertyCategories();
-        return res.status(200).json(result);
-    } catch (error) {
-        console.error('Error fetching property categories:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to fetch property categories',
-        });
+    public async getPropertyCategories(
+        req: Request,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const result = await this.searchService.getPropertyCategories();
+            return res.status(200).json(result);
+        } catch (error) {
+            console.error('Error fetching property categories:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to fetch property categories',
+            });
+        }
     }
-}
+
+    public async getPropertyTypes(
+        req: Request,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const result = await this.searchService.getPropertyTypes();
+            return res.status(200).json(result);
+        } catch (error) {
+            console.error('Error fetching property types:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to fetch property types',
+            });
+        }
+    }
 }
