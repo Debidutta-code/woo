@@ -8,6 +8,17 @@ export class CustomerRepository {
                 data,
             });
         } catch (error) {
+            console.error('[CustomerRepository.createCustomer] Prisma error:', error);
+            const err = error as any;
+            if (err?.code) {
+                if (err.code === 'P2002') {
+                    const target = Array.isArray(err?.meta?.target)
+                        ? err.meta.target.join(', ')
+                        : String(err?.meta?.target || 'unknown field');
+                    throw new Error(`Unique constraint failed on: ${target}`);
+                }
+                throw new Error(`Database error (${err.code}) while creating customer`);
+            }
             throw new Error('Error occure while creating the customer');
         }
     }

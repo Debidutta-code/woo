@@ -16,6 +16,21 @@ export class CustomerController {
     ): Promise<Response> {
         try {
             const payload: ICCustomerS = req.body;
+            if (
+                !payload?.firstName?.trim() ||
+                !payload?.lastName?.trim() ||
+                !payload?.email?.trim() ||
+                !payload?.password?.trim() ||
+                !payload?.mobilePhone?.trim()
+            ) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide first name, last name, email, password and mobile phone'
+                        )
+                    );
+            }
             const emailRegEx = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
             if (!emailRegEx.test(payload.email)) {
                 return res.status(400).json(errorResponse('Provide a valid email address'));

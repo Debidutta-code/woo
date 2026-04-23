@@ -581,10 +581,11 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   const handleConfirmBooking = async () => {
     const accessToken = Cookies.get("accessToken");
     if (!accessToken || !authUser?._id) {
-      Cookies.set("redirectAfterLogin", window.location.href);
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      Cookies.set("redirectAfterLogin", currentPath);
       toast.error(t("Navbar.pleaseLogin"));
       onClose();
-      router.push("/login");
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
       return;
     }
 

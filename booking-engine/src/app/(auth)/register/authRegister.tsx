@@ -41,6 +41,7 @@ const Register: React.FC = () => {
       lastName: { required: true, namePattern: true },
       email: { required: true, email: true },
       password: { required: true, passwordStrength: true },
+      mobilePhone: { required: true },
     },
   );
 
@@ -53,11 +54,11 @@ const Register: React.FC = () => {
     setLoading(true);
     try {
       const response = await registerApi({
-        firstName: values.firstName,
-        lastName: values.lastName,
-        email: values.email,
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+        email: values.email.trim().toLowerCase(),
         password: values.password,
-        mobilePhone: values.mobilePhone,
+        mobilePhone: values.mobilePhone.trim(),
         promotionalEmailEnabled,
       });
 

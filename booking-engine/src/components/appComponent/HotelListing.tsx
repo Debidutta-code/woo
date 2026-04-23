@@ -333,6 +333,11 @@ const HotelListing: React.FC = () => {
         );
       }
 
+      if (filters.propertyTypes && filters.propertyTypes.length > 0) {
+        apiFilters.propertyTypes = filters.propertyTypes;
+        console.log("Selected propertyType:", filters.propertyTypes);
+      }
+
       //console.log("🔍 Fetching hotels with filters:", apiFilters);
 
       const hotelsResponse = await getHotelsByCity(searchTerm, apiFilters);

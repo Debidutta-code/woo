@@ -2,10 +2,13 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const WISHLIST_BASE = `${API_BASE_URL}/booking-engine/wish-list`;
 
 // Helper function to get auth headers
+const getAuthToken = () => Cookies.get("accessToken");
+
 const getAuthHeaders = () => {
-  const token = Cookies.get("accessToken");
+  const token = getAuthToken();
   return token ? {
     Authorization: `Bearer ${token}`,
   } : {};
@@ -17,8 +20,13 @@ export const wishlistAPI = {
    */
  toggleWishlist: async (propertyId: string, propertyCode?: string, propertyName?: string) => {
     try {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error("Please log in to manage your wishlist");
+      }
+
       const response = await axios.post(
-        `${API_BASE_URL}/booking-engine/wish-list`,
+        `${WISHLIST_BASE}`,
         {
           propertyId: propertyId,
           propertyCode: propertyCode || "",
@@ -29,7 +37,7 @@ export const wishlistAPI = {
         },
         {
           headers: getAuthHeaders(),
-          withCredentials: true 
+          withCredentials: true
         }
       );
       return response.data;
@@ -46,11 +54,11 @@ export const wishlistAPI = {
    */
   getWishlistGrouped: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/wishlist`, {
+      const response = await axios.get(`${WISHLIST_BASE}/my`, {
         headers: getAuthHeaders(),
         withCredentials: true
       });
-      return response.data.data;
+      return response.data.data || [];
     } catch (error: any) {
       if (error.response?.status === 401) {
         throw new Error("Please log in to view your wishlist");
@@ -64,14 +72,11 @@ export const wishlistAPI = {
    */
   getWishlistByCity: async (city: string) => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/wishlist/city/${city}`,
-        {
-          headers: getAuthHeaders(),
-          withCredentials: true
-        }
-      );
-      return response.data.data;
+      const items = await wishlistAPI.getWishlistGrouped();
+      return (items || []).filter((item: any) => {
+        const cityName = item?.Property?.propertyAddress?.city || item?.Property?.city;
+        return typeof cityName === "string" && cityName.toLowerCase() === city.toLowerCase();
+      });
     } catch (error: any) {
       if (error.response?.status === 401) {
         throw new Error("Please log in to view your wishlist");
@@ -85,15 +90,8 @@ export const wishlistAPI = {
    */
   checkIfInWishlist: async (propertyId: string) => {
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/wishlist/check/${propertyId}`,
-        {},
-        {
-          headers: getAuthHeaders(),
-          withCredentials: true
-        }
-      );
-      return response.data.data;
+      const items = await wishlistAPI.getWishlistGrouped();
+      return (items || []).some((item: any) => item?.propertyId === propertyId);
     } catch (error: any) {
       if (error.response?.status === 401) {
         throw new Error("Please log in to check wishlist status");
@@ -107,11 +105,8 @@ export const wishlistAPI = {
    */
   getWishlistCount: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/wishlist/count`, {
-        headers: getAuthHeaders(),
-        withCredentials: true
-      });
-      return response.data.data;
+      const items = await wishlistAPI.getWishlistGrouped();
+      return (items || []).length;
     } catch (error: any) {
       if (error.response?.status === 401) {
         throw new Error("Please log in to view wishlist count");

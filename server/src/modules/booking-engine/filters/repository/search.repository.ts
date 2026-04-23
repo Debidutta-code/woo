@@ -218,11 +218,22 @@ export class SearchRepository {
 
             // Property type filter
             if (filters.propertyTypes && filters.propertyTypes.length > 0) {
-                whereConditions.propertyType = {
-                    masterPropertyType: {
-                        propertyTypeName: { in: filters.propertyTypes },
-                    },
-                };
+                const normalizedPropertyTypes = filters.propertyTypes
+                    .map(type => type?.trim())
+                    .filter(Boolean) as string[];
+
+                if (normalizedPropertyTypes.length > 0) {
+                    whereConditions.propertyType = {
+                        masterPropertyType: {
+                            OR: normalizedPropertyTypes.map(type => ({
+                                propertyTypeName: {
+                                    equals: type,
+                                    mode: 'insensitive',
+                                },
+                            })),
+                        },
+                    };
+                }
             }
 
             // Property category filter

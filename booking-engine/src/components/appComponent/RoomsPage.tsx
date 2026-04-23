@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "../../Redux/store";
 import Cookies from "js-cookie";
@@ -50,6 +50,7 @@ import { Bed } from "lucide-react";
 import toast from "react-hot-toast";
 
 const RoomsPage: React.FC = () => {
+  const PENDING_BOOKING_KEY = "pendingBookingAction";
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -71,6 +72,7 @@ const RoomsPage: React.FC = () => {
 >(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
+  const hasTriedBookingResumeRef = useRef(false);
 
   const { propertyDetails, propertyCode, roomAmenities, isPropertyLoading } =
     useProperty({ propertyId });
@@ -173,25 +175,6 @@ const RoomsPage: React.FC = () => {
     router.push(`/payment`);
   };
 
-  const onBookNow = async (room: ConvertedRoom, ratePlan?: RatePlan | Room) => {
-    const token = authState?.accessToken || Cookies.get("accessToken");
-    const isAuthenticated = Boolean(token && (authState?.user || token));
-
-    if (!isAuthenticated) {
-      Cookies.set("redirectAfterLogin", window.location.href);
-      toast.error(t("Navbar.pleaseLogin"));
-      router.push("/login");
-      return;
-    }
-
-    try {
-      await handleBookNow(room, ratePlan);
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong!");
-    }
-  };
-
-  // Helper function to get ratePlanCode safely
   const getRatePlanCode = (ratePlan: RatePlan | Room | null): string => {
     if (!ratePlan) return "";
     if ("ratePlanCode" in ratePlan) {
@@ -202,6 +185,98 @@ const RoomsPage: React.FC = () => {
     }
     return "";
   };
+
+  const onBookNow = async (room: ConvertedRoom, ratePlan?: RatePlan | Room) => {
+    const token = authState?.accessToken || Cookies.get("accessToken");
+    const isAuthenticated = Boolean(token && (authState?.user || token));
+
+    if (!isAuthenticated) {
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      Cookies.set("redirectAfterLogin", currentPath);
+      sessionStorage.setItem(
+        PENDING_BOOKING_KEY,
+        JSON.stringify({
+          roomId: room?._id,
+          ratePlanCode: getRatePlanCode(ratePlan || room?.ratePlans?.[0] || null),
+          redirectPath: currentPath,
+          createdAt: Date.now(),
+        }),
+      );
+      toast.error(t("Navbar.pleaseLogin"));
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+
+    try {
+      await handleBookNow(room, ratePlan);
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong!");
+    }
+  };
+
+  useEffect(() => {
+    if (hasTriedBookingResumeRef.current) return;
+    if (isRoomsLoading || convertedRooms.length === 0 || isModalOpen) return;
+
+    const token = authState?.accessToken || Cookies.get("accessToken");
+    const isAuthenticated = Boolean(token && authState?.user);
+    if (!isAuthenticated) return;
+
+    const pendingActionRaw = sessionStorage.getItem(PENDING_BOOKING_KEY);
+    if (!pendingActionRaw) return;
+
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    try {
+      const pendingAction = JSON.parse(pendingActionRaw);
+      const isExpired =
+        typeof pendingAction?.createdAt === "number" &&
+        Date.now() - pendingAction.createdAt > 30 * 60 * 1000;
+
+      if (
+        isExpired ||
+        !pendingAction?.roomId ||
+        (pendingAction?.redirectPath && pendingAction.redirectPath !== currentPath)
+      ) {
+        sessionStorage.removeItem(PENDING_BOOKING_KEY);
+        hasTriedBookingResumeRef.current = true;
+        return;
+      }
+
+      const selectedRoomForResume = convertedRooms.find(
+        (room) => room._id === pendingAction.roomId,
+      );
+
+      if (!selectedRoomForResume) {
+        sessionStorage.removeItem(PENDING_BOOKING_KEY);
+        hasTriedBookingResumeRef.current = true;
+        return;
+      }
+
+      const selectedRatePlanForResume =
+        selectedRoomForResume.ratePlans?.find(
+          (ratePlan) => ratePlan.ratePlanCode === pendingAction.ratePlanCode,
+        ) || selectedRoomForResume.ratePlans?.[0];
+
+      hasTriedBookingResumeRef.current = true;
+      sessionStorage.removeItem(PENDING_BOOKING_KEY);
+
+      handleBookNow(selectedRoomForResume, selectedRatePlanForResume).catch(
+        () => {
+          toast.error("Unable to resume booking automatically. Please try again.");
+        },
+      );
+    } catch (_error) {
+      sessionStorage.removeItem(PENDING_BOOKING_KEY);
+      hasTriedBookingResumeRef.current = true;
+    }
+  }, [
+    authState?.accessToken,
+    authState?.user,
+    convertedRooms,
+    handleBookNow,
+    isModalOpen,
+    isRoomsLoading,
+  ]);
 
   return (
     <div className="bg-[#F5F7FA] min-h-screen font-noto-sans relative">

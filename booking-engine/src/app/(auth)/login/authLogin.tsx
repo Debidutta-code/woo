@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "../../../Redux/store";
 import { login } from "../../../Redux/slices/auth.slice";
 import { Mail } from "lucide-react";
@@ -31,6 +31,7 @@ const Login: React.FC = () => {
 
   const dispatch = useDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     values,
@@ -79,7 +80,17 @@ const Login: React.FC = () => {
         icon: '👋',
         duration: 3000,
       });
-      const redirectUrl = Cookies.get("redirectAfterLogin") || "/";
+      const queryRedirect = searchParams.get("redirect");
+      const cookieRedirect = Cookies.get("redirectAfterLogin");
+      const sanitizeRedirect = (url?: string | null) => {
+        if (!url) return null;
+        if (!url.startsWith("/") || url.startsWith("//")) return null;
+        return url;
+      };
+      const redirectUrl =
+        sanitizeRedirect(queryRedirect) ||
+        sanitizeRedirect(cookieRedirect) ||
+        "/";
       await dispatch(getUser(loginResult.payload as string));
       Cookies.remove("redirectAfterLogin");
       router.replace(redirectUrl);

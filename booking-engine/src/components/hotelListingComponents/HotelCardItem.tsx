@@ -1,5 +1,7 @@
 // src/components/hotelListingComponents/HotelCardItem.tsx
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import {
   MapPin,
   Star,
@@ -23,6 +25,7 @@ import {
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { wishlistAPI } from "@/api/wishlist";
+import { useSelector } from "@/Redux/store";
 
 export interface Hotel {
   id: string;
@@ -74,6 +77,9 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
   onWishlistToggle,
 }) => {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const authUser = useSelector((state: any) => state.auth?.user);
+  const reduxToken = useSelector((state: any) => state.auth?.accessToken);
   const [isWishlisted, setIsWishlisted] = useState(hotel.isWishlisted || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -105,6 +111,14 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
     e.stopPropagation();
 
     if (isTogglingRef.current || isWishlistLoading) {
+      return;
+    }
+
+    const token = reduxToken || Cookies.get("accessToken");
+    if (!token || !authUser) {
+      Cookies.set("redirectAfterLogin", window.location.href);
+      toast.error("Please login first to add items to your wishlist");
+      router.push("/login");
       return;
     }
 
@@ -141,14 +155,13 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
         error.message?.toLowerCase().includes("login") ||
         error.response?.status === 401
       ) {
-        toast.error("🔐 Please login first to add items to your wishlist", {
-          duration: 4000,
-          icon: "🔐",
-        });
+        Cookies.set("redirectAfterLogin", window.location.href);
+        toast.error("Please login first to add items to your wishlist");
+        router.push("/login");
       } else {
         toast.error(
           t("HotelListing.HotelCardItem.wishlistError", {
-            defaultValue: "Failed to update wishlist",
+            defaultValue: "Failed to update wishlist first login",
           }),
         );
       }

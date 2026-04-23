@@ -15,11 +15,21 @@ export class CustomerService{
     }
     public async createCustomer(data:ICCustomerS):Promise<IApiResponse>{
         try {
+            const normalizedEmail = data.email?.trim().toLowerCase();
+            const normalizedPhone = data.mobilePhone?.trim();
+            const firstName = data.firstName?.trim();
+            const lastName = data.lastName?.trim();
+            const password = data.password?.trim();
+
+            if (!firstName || !lastName || !normalizedEmail || !password || !normalizedPhone) {
+                return errorResponse("Please provide first name, last name, email, password and mobile phone");
+            }
+
             const [customerByEmail,customerByPhone,deletedUserByEmail,deletedUserByPhone]=await Promise.all([
-                this.customerRepository.getCustomerByEmail(data.email),
-                this.customerRepository.getCustomerByPhoneNumber(data.mobilePhone),
-                this.customerRepository.getCustomerByEmail(data.email,true),
-                this.customerRepository.getCustomerByPhoneNumber(data.mobilePhone,true)
+                this.customerRepository.getCustomerByEmail(normalizedEmail),
+                this.customerRepository.getCustomerByPhoneNumber(normalizedPhone),
+                this.customerRepository.getCustomerByEmail(normalizedEmail,true),
+                this.customerRepository.getCustomerByPhoneNumber(normalizedPhone,true)
             ])
             if(customerByEmail){
                 return errorResponse("Customer with this email already exists");
@@ -33,15 +43,27 @@ export class CustomerService{
             if(deletedUserByPhone){
                 return errorResponse("Account with this phone number was deleted previously, please contact support");
             }
-            const password = await createHash(data.password);
-            await this.customerRepository.createCustomer({
-                ...data,
-                referralCode:"",
-                referralLink:"",
-                referralQRCode:"",
-                password:password
+            const hashedPassword = await createHash(password);
+            const createdCustomer = await this.customerRepository.createCustomer({
+                firstName,
+                lastName,
+                email: normalizedEmail,
+                password: hashedPassword,
+                mobilePhone: normalizedPhone,
+                promotionalEmailEnabled: Boolean(data.promotionalEmailEnabled),
+                referralCode: null,
+                referralLink: null,
+                referralQRCode: null,
             });
-            return successResponse("Customer created successfully");
+            return successResponse("Customer created successfully", {
+                id: createdCustomer.id,
+                firstName: createdCustomer.firstName,
+                lastName: createdCustomer.lastName,
+                email: createdCustomer.email,
+                mobilePhone: createdCustomer.mobilePhone,
+                promotionalEmailEnabled: createdCustomer.promotionalEmailEnabled,
+                createdAt: createdCustomer.createdAt,
+            });
         } catch (error) {
             if(error instanceof Error){
                 return errorResponse("Failed to register as customer",error.message);
