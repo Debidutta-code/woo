@@ -125,7 +125,7 @@ const UserProfile: React.FC = () => {
 
   useEffect(() => {
     if (Cookies.get("accessToken")) {
-      dispatch(getUser());
+      dispatch(getUser(undefined));
     }
   }, [dispatch]);
 
@@ -216,7 +216,7 @@ const UserProfile: React.FC = () => {
           ...(updatedUser.password && { password: updatedUser.password }),
         }),
       ).unwrap();
-      await dispatch(getUser());
+      await dispatch(getUser(undefined));
       setUser((prev) => ({
         ...prev,
         firstName: updatedUser.firstName || prev.firstName,
@@ -293,7 +293,7 @@ const UserProfile: React.FC = () => {
           password: newPassword,
         }),
       ).unwrap();
-      await dispatch(getUser());
+      await dispatch(getUser(undefined));
       toast.success(
         t("Profile.passwordUpdatedSuccess", {
           defaultValue: "Password updated successfully",

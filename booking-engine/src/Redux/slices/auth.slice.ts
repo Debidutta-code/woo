@@ -17,6 +17,18 @@ const cookieOptions = {
   sameSite: "strict" as const,
 };
 
+const normalizeUser = (user: any) => {
+  if (!user) return null;
+  const normalizedId = user._id || user.id;
+  return {
+    ...user,
+    _id: normalizedId,
+    id: user.id || normalizedId,
+    phone: user.phone || user.mobilePhone || "",
+    mobilePhone: user.mobilePhone || user.phone || "",
+  };
+};
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -34,9 +46,10 @@ const authSlice = createSlice({
       state: Draft<typeof initialState>,
       action: PayloadAction<typeof initialState.user>,
     ) {
-      state.user = action.payload;
-      if (action.payload) {
-        Cookies.set("userData", JSON.stringify(action.payload), cookieOptions);
+      const normalizedUser = normalizeUser(action.payload);
+      state.user = normalizedUser;
+      if (normalizedUser) {
+        Cookies.set("userData", JSON.stringify(normalizedUser), cookieOptions);
       }
     },
     logout: (state) => {
@@ -51,15 +64,16 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(updateProfile.fulfilled, (state, action) => {
+        const normalizedPayload = normalizeUser(action.payload);
         state.user = {
           ...state.user,
-          _id: action.payload._id,
-          firstName: action.payload.firstName,
-          lastName: action.payload.lastName,
-          email: action.payload.email,
-          phone: action.payload.phone || state.user?.phone,
+          ...normalizedPayload,
         };
-        Cookies.set("userData", JSON.stringify(action.payload), cookieOptions);
+        Cookies.set(
+          "userData",
+          JSON.stringify(normalizeUser(state.user)),
+          cookieOptions,
+        );
       })
       .addCase(updateProfile.pending, (state) => {})
       .addCase(updateProfile.rejected, (state, action) => {
@@ -97,9 +111,15 @@ export const login = createAsyncThunk<
     throw new Error(res.data.error || "Failed to login");
   }
   const token = res.data.data?.accessToken; 
+  const loginUser = res.data.data?.user;
   Cookies.set("accessToken", token, cookieOptions);
   dispatch(setAccessToken(token));
-  await dispatch(getUser());
+  if (loginUser) {
+    dispatch(setUser(normalizeUser(loginUser)));
+  }
+  try {
+    await dispatch(getUser(token));
+  } catch (_error) {}
   return token;
 });
 
@@ -155,7 +175,9 @@ export const googleLogin = createAsyncThunk<
 
       Cookies.set("accessToken", token, cookieOptions);
       dispatch(setAccessToken(token));
-      await dispatch(getUser());
+      try {
+        await dispatch(getUser(token));
+      } catch (_error) {}
 
       return { token };
     } catch (error) {
@@ -185,27 +207,33 @@ export const googleLogin = createAsyncThunk<
 // Get user thunk
 export const getUser = createAsyncThunk<
   void,
-  void,
+  string | undefined,
   { dispatch: AppDispatch; state: RootState }
->("auth/getUser", async (_, { dispatch }) => {
-  let accessToken = Cookies.get("accessToken");
+>("auth/getUser", async (providedToken, { dispatch, getState }) => {
+  const stateToken = getState().auth.accessToken;
+  const accessToken = providedToken || stateToken || Cookies.get("accessToken");
   //console.log(`The access token we get from cookies ${accessToken}`);
   // if (!accessToken) {
   // const token = Cookies.get("accessToken");
   // }
-  if (!accessToken) return;
+  if (!accessToken) {
+    throw new Error("No access token available for getUser");
+  }
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : undefined,
        withCredentials: true, 
     },
   );
 
-  dispatch(setUser(res.data.data));
-  Cookies.set("userData", JSON.stringify(res.data.data), cookieOptions);
+  const normalizedUser = normalizeUser(res.data.data);
+  dispatch(setUser(normalizedUser));
+  Cookies.set("userData", JSON.stringify(normalizedUser), cookieOptions);
 });
 
 // Update profile thunk
@@ -270,6 +298,21 @@ export const deleteAccount = createAsyncThunk<
     return rejectWithValue("Failed to delete account");
   }
 });
+
+export const logoutUser = createAsyncThunk<void, void>(
+  "auth/logoutUser",
+  async () => {
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/logout`,
+        {},
+        { withCredentials: true },
+      );
+    } catch (_error) {
+      // Even if backend logout fails, clear local auth state in UI flow.
+    }
+  },
+);
 
 export const { setAccessToken, logout, setUser } = authSlice.actions;
 export default authSlice.reducer;

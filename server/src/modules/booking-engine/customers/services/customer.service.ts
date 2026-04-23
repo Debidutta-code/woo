@@ -112,7 +112,16 @@ export class CustomerService{
                     config.customerJWTSecret!,
                     config.customerJWTExpiresIn!
                 );
-            return successResponse("Logged in successfully",{accessToken});
+            return successResponse("Logged in successfully",{
+                accessToken,
+                user: {
+                    id: customer.id,
+                    firstName: customer.firstName,
+                    lastName: customer.lastName,
+                    email: customer.email,
+                    mobilePhone: customer.mobilePhone,
+                }
+            });
         } catch (error) {
             if(error instanceof Error){
                 return errorResponse("Failed to login",error.message);

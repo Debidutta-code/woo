@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import { verifyApi } from "../../api/verify";
 import axios from "axios";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 import { ConvertedRoom } from "../../types/room.types";
 import { BookingAddons } from "./BookingAddons";
 
@@ -226,6 +228,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   });
 
   const dispatch = useDispatch();
+  const router = useRouter();
   const { t, i18n } = useTranslation();
 
   const getFinalPrice = async (
@@ -576,6 +579,15 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         //console.log("selected rateplan",selectedRateplan)
 
   const handleConfirmBooking = async () => {
+    const accessToken = Cookies.get("accessToken");
+    if (!accessToken || !authUser?._id) {
+      Cookies.set("redirectAfterLogin", window.location.href);
+      toast.error(t("Navbar.pleaseLogin"));
+      onClose();
+      router.push("/login");
+      return;
+    }
+
     if (isFormUpdated && selectedRoom) {
       //console.log("selected rateplan",selectedRateplan)
       const propertyId =
@@ -617,7 +629,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
             checkIn: checkInDate,
             checkOut: checkOutDate,
             amount: totalPrice, // ← number, not string
-            userId: authUser?._id,
+            userId: authUser._id,
             rooms: guestData?.rooms || 1,
             adults: guestData?.guests || 1,
             children: guestData?.children || 0,

@@ -31,8 +31,11 @@ const HotelDetailsCard = ({ data }: any) => {
 
   const router = useRouter();
   const dispatch = useDispatch();
-  const authUser = useSelector((state: any) => state.authReducer.user);
-  const accessToken = Cookies.get("accessToken");
+  const authUser = useSelector(
+    (state: any) => state.auth?.user || state.authReducer?.user,
+  );
+  const reduxToken = useSelector((state: any) => state.auth?.accessToken);
+  const accessToken = reduxToken || Cookies.get("accessToken");
 
   const roomPrice = Number(data?.map((item: any) => item.room_price))
   const roomID = String(data?.map((item: any) => item._id))
@@ -49,6 +52,13 @@ const HotelDetailsCard = ({ data }: any) => {
   }
 
   const handlePayNowClick = async (payableAmount: any) => {
+    if (!accessToken || !authUser?._id) {
+      Cookies.set("redirectAfterLogin", window.location.href);
+      toast.error("Please login first");
+      router.push("/login");
+      return;
+    }
+
     const response = await axios.post(
       "http://localhost:8020/api/v1/payment/checkout",
       { amount },
@@ -119,11 +129,18 @@ const HotelDetailsCard = ({ data }: any) => {
 
   async function reserved_room(paymentStatus: string) {
     if (paymentStatus === "success") {
+      if (!accessToken || !authUser?._id) {
+        Cookies.set("redirectAfterLogin", window.location.href);
+        toast.error("Please login first");
+        router.push("/login");
+        return;
+      }
+
       let currentDate = new Date().toJSON().slice(0, 10);
       try {
         const requestData = {
           room: roomID,
-          user: authUser._id,
+          user: authUser?._id,
           property: propertyId,
           amount: amount ? amount : roomPrice,
           booking_dates: currentDate,

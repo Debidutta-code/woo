@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "../../Redux/store";
+import Cookies from "js-cookie";
 import {
   setCheckInDate,
   setCheckOutDate,
@@ -60,6 +61,7 @@ const RoomsPage: React.FC = () => {
     checkOutDate,
   } = useSelector((state: any) => state.pmsHotelCard);
   const { guestDetails } = useSelector((state) => state.hotel);
+  const authState = useSelector((state: any) => state.auth);
 
   const [filterType, setFilterType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -172,6 +174,16 @@ const RoomsPage: React.FC = () => {
   };
 
   const onBookNow = async (room: ConvertedRoom, ratePlan?: RatePlan | Room) => {
+    const token = authState?.accessToken || Cookies.get("accessToken");
+    const isAuthenticated = Boolean(token && (authState?.user || token));
+
+    if (!isAuthenticated) {
+      Cookies.set("redirectAfterLogin", window.location.href);
+      toast.error(t("Navbar.pleaseLogin"));
+      router.push("/login");
+      return;
+    }
+
     try {
       await handleBookNow(room, ratePlan);
     } catch (err: any) {

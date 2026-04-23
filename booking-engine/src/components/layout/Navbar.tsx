@@ -15,11 +15,12 @@ import {
   DropdownItem,
   Avatar,
 } from "@nextui-org/react";
-import { logout, getUser } from "../../Redux/slices/auth.slice";
+import { logout, getUser, logoutUser } from "../../Redux/slices/auth.slice";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { ThunkDispatch } from "redux-thunk";
 import { AnyAction } from "redux";
+import { RootState as AppRootState } from "../../Redux/store";
 import { NotificationBell } from "../notifications/NotificationBell";
 import LanguageSwitcher from "../languageSwitcher/LanguageSwitcher";
 import i18next from "i18next";
@@ -29,6 +30,7 @@ import BecomePartnerModal from "../BecomePartner/BecomePartnerModal";
 interface RootState {
   auth: {
     user: UserType | null;
+    accessToken: string;
   };
   notifications: {
     notifications: Notification[];
@@ -54,8 +56,11 @@ const Navbar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const user = useSelector((state: RootState) => state.auth.user);
-  const accessToken = Cookies.get("accessToken");
+  const user = useSelector((state: AppRootState) => state.auth.user);
+  const reduxAccessToken = useSelector(
+    (state: AppRootState) => state.auth.accessToken,
+  );
+  const accessToken = reduxAccessToken || Cookies.get("accessToken");
   const { i18n } = useTranslation();
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
@@ -107,12 +112,12 @@ const Navbar: React.FC = () => {
   };
 
   useEffect(() => {
-    if (accessToken) {
-      dispatch(getUser() as any);
-    } else {
+    if (accessToken && !user) {
+      dispatch(getUser(accessToken) as any);
+    } else if (!accessToken && user) {
       dispatch(logout() as any);
     }
-  }, [dispatch, accessToken]);
+  }, [dispatch, accessToken, user]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -120,6 +125,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     toast.success(t("Navbar.logoutSuccess"));
+    dispatch(logoutUser() as any);
     dispatch(logout() as any);
     router.push("/");
     setIsMenuOpen(false);

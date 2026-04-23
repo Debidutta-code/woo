@@ -7,8 +7,12 @@ export const customerProtect = async (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies?.accessToken;
-    
+    const authHeader = req.headers.authorization;
+    const bearerToken =
+        authHeader && authHeader.startsWith("Bearer ")
+            ? authHeader.split(" ")[1]
+            : null;
+    const token = bearerToken || req.cookies?.accessToken;
 
     if (!token) {
         return res.status(401).json(

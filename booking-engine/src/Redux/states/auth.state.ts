@@ -1,6 +1,8 @@
 export interface User {
   _id: string;
+  id?: string;
   phone: string;
+  mobilePhone?: string;
   firstName: string;
   lastName: string;
   email: string;

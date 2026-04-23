@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useDispatch } from '../../Redux/store';
+import { useDispatch, useSelector } from '../../Redux/store';
 import { getUser } from '../../Redux/slices/auth.slice';
 
 const CheckAuthentication = ({ 
@@ -16,11 +16,13 @@ const CheckAuthentication = ({
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const token = Cookies.get('accessToken');
+    const searchParamsString = searchParams.toString();
+    const reduxToken = useSelector((state) => state.auth.accessToken);
+    const token = reduxToken || Cookies.get('accessToken');
 
     // Function to get the full URL with all query parameters
     const getFullRedirectUrl = () => {
-        const currentParams = new URLSearchParams(searchParams.toString());
+        const currentParams = new URLSearchParams(searchParamsString);
         const fullPath = currentParams.toString() 
             ? `${pathname}?${currentParams.toString()}`
             : pathname;
@@ -35,7 +37,7 @@ const CheckAuthentication = ({
                     const redirectUrl = getFullRedirectUrl();
                     router.push(`/login?redirect=${redirectUrl}`);
                 } else {
-                    await dispatch(getUser());
+                    await dispatch(getUser(token));
                 }
             } catch (error) {
                 //console.log('error while retrieving user', error);
@@ -48,7 +50,7 @@ const CheckAuthentication = ({
         };
     
         retrieveUser();
-    }, []);
+    }, [dispatch, router, pathname, searchParamsString, token, setLoading]);
     
     return <>{children}</>;
 };

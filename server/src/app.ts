@@ -11,7 +11,7 @@ export const app = express();
 app.use(
     cors({
         origin:
-            config.allowedOrigins.length > 0 ? config.allowedOrigins : ['*'],
+            config.allowedOrigins.length > 0 ? config.allowedOrigins : ['http://localhost:3000'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: [
             'Content-Type',

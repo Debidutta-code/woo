@@ -43,9 +43,12 @@ export class CustomerController {
             if (!result.success) {
                 return res.status(400).json(result);
             }
+            const isProduction = process.env.NODE_ENV === 'production';
             res.cookie('accessToken', result.data.accessToken, {
                 httpOnly: true,
-                secure: true,
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
             });
             return res.status(200).json(result);
         } catch (error) {
@@ -97,7 +100,12 @@ export class CustomerController {
             const customerId = req.Customer!.id;
             const result = await this.customerService.deleteUser(customerId);
             if (result.success) {
-                res.clearCookie('accessToken');
+                const isProduction = process.env.NODE_ENV === 'production';
+                res.clearCookie('accessToken', {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: isProduction ? 'none' : 'lax',
+                });
             }
             return res.status(result.success ? 200 : 400).json(result);
         } catch (error) {
@@ -112,7 +120,12 @@ export class CustomerController {
         _req: Request,
         res: Response
     ): Promise<Response> {
-        res.clearCookie('accessToken');
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+        });
         return res.status(200).json({ success: true, message: 'Logged out successfully' });
     }
 }

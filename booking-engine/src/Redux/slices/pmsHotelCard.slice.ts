@@ -161,8 +161,11 @@ export const getUser =
           withCredentials: true, 
         });
         const user = res?.data?.data;
+        const userId = user?._id || user?.id;
         //console.log("API response user:", user);
-        dispatch(setUserId(user._id));
+        if (userId) {
+          dispatch(setUserId(userId));
+        }
         //console.log("2 setUserId called with:", user._id);
       } catch (error) {
         console.error("Error fetching user data:", error);

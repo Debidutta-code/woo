@@ -34,7 +34,8 @@ export const createSetupIntent = async (guestData: any, token?: string) => {
       {
         headers: token ? {
           Authorization: `Bearer ${token}`,
-        } : {}
+        } : {},
+        withCredentials: true,
       }
     );
 
@@ -65,6 +66,7 @@ export const confirmBookingWithStoredCard = async (payload: any, token: string) 
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        withCredentials: true,
       }
     );
 

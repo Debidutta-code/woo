@@ -17,7 +17,7 @@ import FormInput from "../../../components/auth/FormInput";
 import PasswordInput from "../../../components/auth/PasswordInput";
 import AuthButton from "../../../components/auth/AuthButton";
 import { useFormValidation } from "../../../components/auth/hooks/useFormValidation";
-import { getUser } from "../../../Redux/slices/pmsHotelCard.slice";
+import { getUser } from "../../../Redux/slices/auth.slice";
 import ForgotPassword from "./ForgotPassword";
 import UpdatePassword from "./UpdatePassword";
 
@@ -80,7 +80,7 @@ const Login: React.FC = () => {
         duration: 3000,
       });
       const redirectUrl = Cookies.get("redirectAfterLogin") || "/";
-      await dispatch(getUser());
+      await dispatch(getUser(loginResult.payload as string));
       Cookies.remove("redirectAfterLogin");
       router.replace(redirectUrl);
     } catch (error: any) {
