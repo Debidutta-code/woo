@@ -14,13 +14,21 @@ router.route('/').post(
     }),
     promoCodeController.createPromoCode.bind(promoCodeController)
 );
-router.route('verify').post(
+router.route('/verify').post(
     attachPropertyDetails({
         identifierType: 'code',
         key: 'propertyCode',
         source: 'body',
     }),
     promoCodeController.validatePromoCodeController.bind(promoCodeController)
+);
+router.route('/search').get(
+    attachPropertyDetails({
+        identifierType: 'code',
+        key: 'propertyCode',
+        source: 'query',
+    }),
+    promoCodeController.getPromoCodesByPropertyCode.bind(promoCodeController)
 );
 router
     .route('/:id')

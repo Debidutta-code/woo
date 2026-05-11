@@ -2,6 +2,50 @@ import { prisma } from '../../../../config';
 import { ICCustomerR, ICustomer, IUCustomer } from '../types';
 
 export class CustomerRepository {
+    public async getCustomerBookingDetails(
+        email: string,
+        page: number,
+        limit: number,
+        filterData?: string
+    ): Promise<{ bookings: any[]; totalBookings: number }> {
+        try {
+            const normalizedFilter = (filterData || '').toLowerCase().trim();
+            const now = new Date();
+            const whereClause: any = {
+                bookingUserEmail: email,
+            };
+
+            if (normalizedFilter === 'cancelled') {
+                whereClause.bookingStatus = 'cancelled';
+            } else if (normalizedFilter === 'upcoming') {
+                whereClause.bookingStatus = { not: 'cancelled' };
+                whereClause.checkInDate = { gte: now };
+            } else if (normalizedFilter === 'completed') {
+                whereClause.bookingStatus = { not: 'cancelled' };
+                whereClause.checkOutDate = { lt: now };
+            }
+
+            const [bookings, totalBookings] = await Promise.all([
+                prisma.reservation.findMany({
+                    where: whereClause,
+                    skip: (page - 1) * limit,
+                    take: limit,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        reservationGuests: true,
+                    },
+                }),
+                prisma.reservation.count({
+                    where: whereClause,
+                }),
+            ]);
+
+            return { bookings, totalBookings };
+        } catch (error) {
+            throw new Error('Error occure while fetching customer bookings');
+        }
+    }
+
     public async createCustomer(data: ICCustomerR): Promise<ICustomer> {
         try {
             return await prisma.customers.create({

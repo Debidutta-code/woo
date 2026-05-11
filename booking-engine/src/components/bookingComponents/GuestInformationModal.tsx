@@ -58,6 +58,7 @@ interface GuestInformationModalProps {
   onClose: () => void;
   selectedRoom: ConvertedRoom | null;
   selectedRateplan:string;
+  parsedAddons?: any[];
   checkInDate: string;
   checkOutDate: string;
   onConfirmBooking: (formData: {
@@ -146,6 +147,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   onClose,
   selectedRoom,
   selectedRateplan,
+  parsedAddons = [],
   checkInDate,
   checkOutDate,
   onConfirmBooking,
@@ -205,11 +207,13 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [emailAlreadyVerified, setEmailAlreadyVerified] = useState(false);
   const hotelCode = useSelector((state: any) => state.pmsHotelCard.hotelCode);
+  const reduxPropertyId = useSelector(
+    (state: any) => state.pmsHotelCard.property_id
+  );
 
   const [activeSection, setActiveSection] = useState<"details" | "review">(
     "details"
   );
-  const [selectedAddons, setSelectedAddons] = useState<any[]>([]);
   const [finalPrice, setFinalPrice] = useState<FinalPrice | null>({
     totalAmount: 0,
     numberOfNights: 0,
@@ -230,13 +234,16 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   const dispatch = useDispatch();
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const authAccessToken = useSelector(
+    (state: any) => state.auth?.accessToken || state.auth?.token
+  );
 
   const getFinalPrice = async (
     selectedRoom: any,
     checkInDate: string,
     checkOutDate: string,
     guestData: any,
-    parsedAddons: any[] = selectedAddons
+    addonsPayload: any[] = parsedAddons
   ) => {
     try {
       // //console.log("selected room",selectedRoom)
@@ -255,12 +262,66 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
           childAges: [],
           guestDistribution: [{ adults: guestData?.guests || 1, children: guestData?.children || 0, childAges: [] }],
           promoCode: "",
-          ...(parsedAddons.length > 0 && { parsedAddons }),
+          ...(addonsPayload.length > 0 && { parsedAddons: addonsPayload }),
         },
         { withCredentials: true }
       );
       if (finalPriceResponse.data.success) {
-        setFinalPrice(finalPriceResponse.data.data);
+        const apiData = finalPriceResponse.data.data || {};
+        const amountBeforeTax = Number(apiData.amountBeforeTax || 0);
+        const totalAddonAmount = Number(apiData.totalAddonAmount || 0);
+        const totalAmount = Number(apiData.totalAmount || 0);
+        const taxedAmount = Number(apiData.taxedAmount || 0);
+        const dailyPriceBrakeDown = Array.isArray(apiData.dailyPriceBrakeDown)
+          ? apiData.dailyPriceBrakeDown
+          : [];
+        const taxBrakeDown = Array.isArray(apiData.taxBrakeDown)
+          ? apiData.taxBrakeDown
+          : [];
+
+        setFinalPrice({
+          ...apiData,
+          totalAmount,
+          amountBeforeTax,
+          totalAddonAmount,
+          totalTax: taxedAmount,
+          currencyCode:
+            apiData.currencyCode ||
+            dailyPriceBrakeDown[0]?.currencyCode ||
+            "USD",
+          breakdown: {
+            totalBaseAmount: amountBeforeTax,
+            totalAdditionalCharges: Number(
+              dailyPriceBrakeDown.reduce(
+                (sum: number, day: any) =>
+                  sum + Number(day?.additionalChargesAmount || 0),
+                0
+              )
+            ),
+            totalAmount,
+            numberOfNights: dailyPriceBrakeDown.length || 1,
+            averagePerNight:
+              (dailyPriceBrakeDown.length || 0) > 0
+                ? totalAmount / dailyPriceBrakeDown.length
+                : totalAmount,
+          },
+          dailyBreakdown: dailyPriceBrakeDown.map((day: any) => ({
+            date: day.date,
+            dayOfWeek: day.date,
+            ratePlanCode: selectedRateplan,
+            baseRate: Number(day.baseChargesAmount || 0),
+            additionalCharges: Number(day.additionalChargesAmount || 0),
+            totalPerRoom: Number(day.totalAmount || 0),
+            totalForAllRooms: Number(day.totalAmount || 0),
+            currencyCode: day.currencyCode || apiData.currencyCode || "USD",
+            childrenChargesBreakdown: [],
+          })),
+          tax: taxBrakeDown.map((taxItem: any) => ({
+            name: taxItem.name,
+            amount: Number(taxItem.taxedAmount || 0),
+            type: "tax",
+          })),
+        } as FinalPrice);
       } else {
         // setErrorMessage(finalPriceResponse.data.message);
         toast.error(finalPriceResponse.data.message);
@@ -320,9 +381,15 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
 
   useEffect(() => {
     if (isOpen && selectedRoom && checkInDate && checkOutDate && guestData) {
-      getFinalPrice(selectedRoom, checkInDate, checkOutDate, guestData);
+      getFinalPrice(
+        selectedRoom,
+        checkInDate,
+        checkOutDate,
+        guestData,
+        parsedAddons
+      );
     }
-  }, [isOpen, selectedRoom, checkInDate, checkOutDate, guestData]);
+  }, [isOpen, selectedRoom, checkInDate, checkOutDate, guestData, parsedAddons]);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -393,9 +460,11 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
     setIsEmailVerifying(true);
     try {
       const response = await verifyApi.sendEmailOtp(email);
+      const status = response?.status;
+      const message = String(response?.message || "").toLowerCase();
 
       // Check if email is already verified
-      if (response.status === "verified") {
+      if (status === "verified") {
         toast.success(
           t("BookingComponents.GuestInformationModal.emailAlreadyVerified")
         );
@@ -404,12 +473,25 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         setEmailOtpSent(false);
         setEmailCountdown(0);
         setEmailOtp("");
-      } else if (response.status === "pending") {
-        toast.success(t("BookingComponents.GuestInformationModal.otpSent"));
+      } else if (
+        status === "pending" ||
+        response?.success === true ||
+        message.includes("otp sent")
+      ) {
+        toast.success(
+          response?.message || t("BookingComponents.GuestInformationModal.otpSent")
+        );
         setEmailOtpSent(true);
         setEmailCountdown(300);
         setEmailVerified(false);
         setEmailAlreadyVerified(false); // Reset this flag for new verifications
+      } else {
+        // Backward-compatible fallback: if request succeeded but no status flag,
+        // still show OTP input and verify button.
+        setEmailOtpSent(true);
+        setEmailCountdown(300);
+        setEmailVerified(false);
+        setEmailAlreadyVerified(false);
       }
     } catch (err: any) {
       toast.error(
@@ -529,13 +611,12 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
       valid = false;
     }
 
-    // Email verification bypassed - allow proceeding without verification
-    // if (!emailVerified) {
-    //   newErrors["email"] = t(
-    //     "BookingComponents.GuestInformationModal.emailNotVerified"
-    //   );
-    //   valid = false;
-    // }
+    if (!emailVerified) {
+      newErrors["email"] = t(
+        "BookingComponents.GuestInformationModal.emailNotVerified"
+      );
+      valid = false;
+    }
 
     // if (!phoneVerified) {
     //   newErrors["phone"] = t(
@@ -579,8 +660,8 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         //console.log("selected rateplan",selectedRateplan)
 
   const handleConfirmBooking = async () => {
-    const accessToken = Cookies.get("accessToken");
-    if (!accessToken || !authUser?._id) {
+    const accessToken = authAccessToken || Cookies.get("accessToken");
+    if (!accessToken) {
       const currentPath = `${window.location.pathname}${window.location.search}`;
       Cookies.set("redirectAfterLogin", currentPath);
       toast.error(t("Navbar.pleaseLogin"));
@@ -591,15 +672,20 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
 
     if (isFormUpdated && selectedRoom) {
       //console.log("selected rateplan",selectedRateplan)
-      const propertyId =
-        selectedRoom.propertyInfo_id ||
-        selectedRoom.property_id ||
-        selectedRoom.propertyId ||
-        hotelCode ||
-        "";
+      const isUuid = (value: string) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          value || ""
+        );
+      const candidatePropertyIds = [
+        selectedRoom.propertyInfo_id,
+        selectedRoom.property_id,
+        selectedRoom.propertyId,
+        reduxPropertyId,
+      ].filter(Boolean) as string[];
+      const propertyId = candidatePropertyIds.find((id) => isUuid(id)) || "";
       if (!propertyId) {
         toast.error(
-          t("BookingComponents.GuestInformationModal.propertyInfoMissing")
+          "Property ID is invalid. Please reopen the hotel from listing."
         );
         return;
       }
@@ -630,7 +716,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
             checkIn: checkInDate,
             checkOut: checkOutDate,
             amount: totalPrice, // ← number, not string
-            userId: authUser._id,
+            userId: authUser?._id,
             rooms: guestData?.rooms || 1,
             adults: guestData?.guests || 1,
             children: guestData?.children || 0,
@@ -1444,7 +1530,8 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
                           {finalPrice.dailyBreakdown?.[0]?.currencyCode ||
                             "USD"}{" "}
                           {(
-                            finalPrice.breakdown?.totalAdditionalCharges || 0
+                            (finalPrice.breakdown?.totalAdditionalCharges || 0) +
+                            (finalPrice.totalAddonAmount || 0)
                           ).toLocaleString()}
                         </span>
                       </div>

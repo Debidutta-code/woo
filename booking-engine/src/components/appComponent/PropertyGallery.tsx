@@ -17,11 +17,17 @@ import { PropertyDetails } from "../../types/room.types";
 interface PropertyGalleryProps {
   propertyDetails: PropertyDetails | null;
   isLoading: boolean;
+  isWishlisted: boolean;
+  isWishlistLoading: boolean;
+  onWishlistToggle: (e: React.MouseEvent) => void;
 }
 
 export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
   propertyDetails,
   isLoading,
+  isWishlisted,
+  isWishlistLoading,
+  onWishlistToggle,
 }) => {
   const { t } = useTranslation();
   const [selectedImage, setSelectedImage] = useState<number>(0);
@@ -360,14 +366,23 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
 
         {/* Heart/Wishlist button - Top right corner */}
         <button
-          className="absolute top-4 right-4 bg-tripswift-off-white/90 backdrop-blur-sm rounded-full p-2.5 shadow-lg bg-white duration-300 z-10 border border-white/20"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Add your wishlist toggle handler here
-            // handleToggleWishlist(e);
-          }}
+          disabled={isWishlistLoading}
+          className={`absolute top-4 right-4 bg-tripswift-off-white/90 backdrop-blur-sm rounded-full p-2.5 shadow-lg bg-white duration-300 z-10 border border-white/20 ${
+            isWishlistLoading ? "cursor-not-allowed opacity-80" : ""
+          }`}
+          onClick={onWishlistToggle}
         >
-          <Heart className="h-5 w-5 text-gray-700 hover:text-red-500 transition-colors duration-300" />
+          {isWishlistLoading ? (
+            <div className="h-5 w-5 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
+          ) : (
+            <Heart
+              className={`h-5 w-5 transition-colors duration-300 ${
+                isWishlisted
+                  ? "text-red-500 fill-red-500"
+                  : "text-gray-700 hover:text-red-500"
+              }`}
+            />
+          )}
         </button>
         <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white text-xs font-tripswift-medium px-2.5 py-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10 border border-white/20">
           Click to view
@@ -420,4 +435,3 @@ export const PropertyGallery: React.FC<PropertyGalleryProps> = ({
     </>
   );
 };
-

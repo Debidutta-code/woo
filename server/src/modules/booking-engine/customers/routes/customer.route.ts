@@ -11,6 +11,12 @@ router.post('/login', customerController.loginCustomer.bind(customerController))
 router.post('/logout', customerController.logoutCustomer.bind(customerController));
 
 // Protected routes
+router.get(
+    '/booking/details/:customerId',
+    customerProtect,
+    customerController.getCustomerBookingDetails.bind(customerController)
+);
+
 router.route('/me').get(customerProtect, customerController.getProfile.bind(customerController))
   .put(customerProtect, customerController.updateProfile.bind(customerController))
   .delete(customerProtect, customerController.deleteAccount.bind(customerController));

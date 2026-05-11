@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios"; // 👈 ADD THIS IMPORT
 import { getHotelsByCity } from "../../api/hotel";
+import { wishlistAPI } from "@/api/wishlist";
 import FilterModal, { FilterState } from "../hotelBox/FilterModal";
 import {
   setPropertyId,
@@ -137,6 +138,11 @@ const HotelListing: React.FC = () => {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { guestDetails } = useSelector((state) => state.hotel);
   const destination = searchParams.get("destination");
+
+  const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value || ""
+    );
   const location = searchParams.get("location");
   const checkinDate = searchParams.get("checkin");
   const checkoutDate = searchParams.get("checkout");
@@ -341,10 +347,28 @@ const HotelListing: React.FC = () => {
       //console.log("🔍 Fetching hotels with filters:", apiFilters);
 
       const hotelsResponse = await getHotelsByCity(searchTerm, apiFilters);
+      let mergedHotels = hotelsResponse.data || [];
+      try {
+        const wishlistItems = await wishlistAPI.getWishlistGrouped();
+        const wishlistPropertyIds = new Set(
+          (wishlistItems || []).map((item: any) => item?.propertyId).filter(Boolean),
+        );
+        mergedHotels = mergedHotels.map((hotel) => ({
+          ...hotel,
+          isWishlisted:
+            wishlistPropertyIds.has(hotel.id) ||
+            wishlistPropertyIds.has((hotel as any).propertyId),
+        }));
+      } catch (_error) {
+        // Ignore wishlist sync failure for non-authenticated users.
+      }
 
-      setHotelData(hotelsResponse);
+      setHotelData({
+        ...hotelsResponse,
+        data: mergedHotels,
+      });
       // Store hotels data for dynamic amenities
-      setHotelsData(hotelsResponse.data);
+      setHotelsData(mergedHotels);
 
       //console.log(`Hotels fetched for ${searchTerm}:`, hotelsResponse.data);
 
@@ -425,8 +449,25 @@ const HotelListing: React.FC = () => {
     try {
       setViewRoomLoading(hotelId);
 
-      if (hotelId) {
-        dispatch(setPropertyId(hotelId));
+      const matchedHotel = hotelData.data.find(
+        (hotel: any) => hotel.id === hotelId || hotel.propertyCode === hotelId
+      );
+      const resolvedPropertyId =
+        (isUuid(hotelId) && hotelId) ||
+        (matchedHotel && isUuid((matchedHotel as any).id)
+          ? (matchedHotel as any).id
+          : "") ||
+        (matchedHotel && isUuid((matchedHotel as any).propertyId)
+          ? (matchedHotel as any).propertyId
+          : "");
+
+      if (!resolvedPropertyId) {
+        toast.error("Invalid property id. Please retry from listing.");
+        return;
+      }
+
+      if (resolvedPropertyId) {
+        dispatch(setPropertyId(resolvedPropertyId));
       }
       if (checkinDate) {
         dispatch(setCheckInDate(checkinDate));
@@ -452,7 +493,7 @@ const HotelListing: React.FC = () => {
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      router.push(`/hotel?id=${hotelId}&${guestParams}`);
+      router.push(`/hotel?id=${resolvedPropertyId}&${guestParams}`);
     } catch (error) {
       console.error("Error navigating to hotel:", error);
       toast.error("Failed to view room. Please try again.");

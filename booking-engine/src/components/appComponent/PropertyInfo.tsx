@@ -28,11 +28,17 @@ import { PropertyGallery } from "./PropertyGallery";
 interface PropertyInfoProps {
   propertyDetails: PropertyDetails | null;
   isLoading: boolean;
+  isWishlisted: boolean;
+  isWishlistLoading: boolean;
+  onWishlistToggle: (e: React.MouseEvent) => void;
 }
 
 export const PropertyInfo: React.FC<PropertyInfoProps> = ({
   propertyDetails,
   isLoading,
+  isWishlisted,
+  isWishlistLoading,
+  onWishlistToggle,
 }) => {
   const { t, i18n } = useTranslation();
   const [showFullDescription, setShowFullDescription] =
@@ -134,6 +140,9 @@ export const PropertyInfo: React.FC<PropertyInfoProps> = ({
         <PropertyGallery
           propertyDetails={propertyDetails}
           isLoading={isLoading}
+          isWishlisted={isWishlisted}
+          isWishlistLoading={isWishlistLoading}
+          onWishlistToggle={onWishlistToggle}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">

@@ -93,6 +93,34 @@ export class PromoCodeController {
                 .json(errorResponse('An unexpected error occurred'));
         }
     }
+    public async getPromoCodesByPropertyCode(
+        req: PropertyRequest,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const propertyId = req.property?.id;
+            if (!propertyId) {
+                return res
+                    .status(400)
+                    .json(errorResponse('Property ID is required'));
+            }
+            const result =
+                await this.promoCodeService.getAllPromoCodesByPropertyId(
+                    propertyId
+                );
+            if (result.success) {
+                return res.status(200).json(result);
+            }
+            return res.status(400).json(result);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(500).json(errorResponse(error.message));
+            }
+            return res
+                .status(500)
+                .json(errorResponse('An unexpected error occurred'));
+        }
+    }
 
     private validatePromoCodeData(
         promoCodeData: ICreatePromoCode
@@ -182,21 +210,22 @@ export class PromoCodeController {
         res: Response
     ): Promise<Response> {
         try {
-            const { promocode } = req.body;
+            const { promocode, bookingAmount } = req.body;
             const propertyId = req.property?.id;
             if (!propertyId) {
                 return res
                     .status(400)
                     .json(errorResponse('Property Id verification failed'));
             }
-            if (promocode) {
+            if (!promocode) {
                 return res
                     .status(400)
                     .json(errorResponse('Promocode required for verification'));
             }
             const serRes = await this.promoCodeService.validatePromoCode(
                 propertyId,
-                promocode
+                promocode,
+                bookingAmount
             );
             return res.status(serRes.success ? 200 : 400).json(serRes);
         } catch (error) {

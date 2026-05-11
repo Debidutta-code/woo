@@ -5,10 +5,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 const WISHLIST_BASE = `${API_BASE_URL}/booking-engine/wish-list`;
 
 // Helper function to get auth headers
-const getAuthToken = () => Cookies.get("accessToken");
+const getAuthToken = (providedToken?: string) =>
+  providedToken || Cookies.get("accessToken");
 
-const getAuthHeaders = () => {
-  const token = getAuthToken();
+const getAuthHeaders = (providedToken?: string) => {
+  const token = getAuthToken(providedToken);
   return token ? {
     Authorization: `Bearer ${token}`,
   } : {};
@@ -18,9 +19,14 @@ export const wishlistAPI = {
   /**
    * Toggle a property in/out of wishlist
    */
- toggleWishlist: async (propertyId: string, propertyCode?: string, propertyName?: string) => {
+ toggleWishlist: async (
+    propertyId: string,
+    propertyCode?: string,
+    propertyName?: string,
+    tokenOverride?: string,
+  ) => {
     try {
-      const token = getAuthToken();
+      const token = getAuthToken(tokenOverride);
       if (!token) {
         throw new Error("Please log in to manage your wishlist");
       }
@@ -36,7 +42,7 @@ export const wishlistAPI = {
           roomName: null
         },
         {
-          headers: getAuthHeaders(),
+          headers: getAuthHeaders(token),
           withCredentials: true
         }
       );

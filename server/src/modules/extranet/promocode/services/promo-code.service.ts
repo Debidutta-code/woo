@@ -58,7 +58,8 @@ export class PromoCodeService {
     }
     public async validatePromoCode(
         propertyId: string,
-        code: string
+        code: string,
+        bookingAmount?: number
     ): Promise<IApiResponse> {
         try {
             const daoRes =
@@ -72,7 +73,59 @@ export class PromoCodeService {
                     'promocod validation failed'
                 );
             }
-            return successResponse('Promocode Verified successfully');
+            if (!daoRes.isActive || daoRes.isDeleted) {
+                return errorResponse('Invalid promocode', 'promocod validation failed');
+            }
+
+            const now = new Date();
+            if (
+                (daoRes.validFrom && now < new Date(daoRes.validFrom)) ||
+                (daoRes.validTo && now > new Date(daoRes.validTo))
+            ) {
+                return errorResponse('Promocode expired or not yet active');
+            }
+
+            const baseAmount = Number(bookingAmount ?? 0);
+            let discountAmount = 0;
+
+            if (baseAmount > 0) {
+                if (
+                    daoRes.minBookingAmount !== null &&
+                    baseAmount < Number(daoRes.minBookingAmount)
+                ) {
+                    return errorResponse(
+                        `Minimum booking amount required is ${daoRes.minBookingAmount}`
+                    );
+                }
+
+                if (daoRes.discountType === 'percentage') {
+                    discountAmount =
+                        baseAmount * (Number(daoRes.discountValue) / 100);
+                } else {
+                    discountAmount = Number(daoRes.discountValue);
+                }
+
+                if (
+                    daoRes.maxDiscountAmount !== null &&
+                    discountAmount > Number(daoRes.maxDiscountAmount)
+                ) {
+                    discountAmount = Number(daoRes.maxDiscountAmount);
+                }
+
+                discountAmount = Math.min(discountAmount, baseAmount);
+            }
+
+            const finalAmount = Math.max(baseAmount - discountAmount, 0);
+
+            return successResponse('Promocode Verified successfully', {
+                isValid: true,
+                code: daoRes.code,
+                discountType: daoRes.discountType,
+                discountValue: Number(daoRes.discountValue),
+                baseAmount: Number(baseAmount.toFixed(2)),
+                discountAmount: Number(discountAmount.toFixed(2)),
+                finalAmount: Number(finalAmount.toFixed(2)),
+            });
         } catch (error) {
             if (error instanceof Error) {
                 return errorResponse(

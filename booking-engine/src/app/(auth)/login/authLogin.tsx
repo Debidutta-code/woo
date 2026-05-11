@@ -20,6 +20,7 @@ import { useFormValidation } from "../../../components/auth/hooks/useFormValidat
 import { getUser } from "../../../Redux/slices/auth.slice";
 import ForgotPassword from "./ForgotPassword";
 import UpdatePassword from "./UpdatePassword";
+import { wishlistAPI } from "@/api/wishlist";
 
 const Login: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -91,7 +92,29 @@ const Login: React.FC = () => {
         sanitizeRedirect(queryRedirect) ||
         sanitizeRedirect(cookieRedirect) ||
         "/";
+      const pendingWishlistAction = Cookies.get("pendingWishlistAction");
       await dispatch(getUser(loginResult.payload as string));
+      if (pendingWishlistAction) {
+        try {
+          const parsedAction = JSON.parse(pendingWishlistAction);
+          if (parsedAction?.propertyId) {
+            await wishlistAPI.toggleWishlist(
+              parsedAction.propertyId,
+              parsedAction.propertyCode,
+              parsedAction.propertyName,
+              loginResult.payload as string,
+            );
+            Cookies.set("wishlistRecentlyAdded", parsedAction.propertyId);
+          }
+          const sourceRedirect = sanitizeRedirect(parsedAction?.sourcePath);
+          Cookies.remove("pendingWishlistAction");
+          Cookies.remove("redirectAfterLogin");
+          router.replace(sourceRedirect || redirectUrl);
+          return;
+        } catch (_wishlistError) {
+          Cookies.remove("pendingWishlistAction");
+        }
+      }
       Cookies.remove("redirectAfterLogin");
       router.replace(redirectUrl);
     } catch (error: any) {

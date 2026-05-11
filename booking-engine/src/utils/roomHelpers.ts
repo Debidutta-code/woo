@@ -137,22 +137,45 @@ export const convertAmenities = (
     // Found amenities for room type
   }
 
-  // Extract amenities from all categories
-  Object.values(amenitiesForRoomType).forEach((category: any) => {
-    Object.entries(category).forEach(([key, value]) => {
-      if (value === true || (typeof value === "string" && value !== "")) {
-        // Handle special case for 'bed' which has string values like "double" or "single"
-        const readableName =
-          key === "bed"
-            ? `Bed: ${value}`
-            : key
-                .replace(/([A-Z])/g, " $1")
-                .replace(/^./, (str) => str.toUpperCase())
-                .trim();
-        roomAmenitiesList.push(readableName);
-      }
+  // Support both legacy nested-object amenities and array-based amenities from backend.
+  if (Array.isArray(amenitiesForRoomType)) {
+    roomAmenitiesList = amenitiesForRoomType
+      .filter((item) => typeof item === "string" && item.trim() !== "")
+      .map((item) => item.trim());
+  } else if (
+    amenitiesForRoomType &&
+    typeof amenitiesForRoomType === "object"
+  ) {
+    Object.values(amenitiesForRoomType).forEach((category: any) => {
+      if (!category || typeof category !== "object") return;
+      Object.entries(category).forEach(([key, value]) => {
+        if (value === true || (typeof value === "string" && value !== "")) {
+          // Handle special case for 'bed' which has string values like "double" or "single"
+          const readableName =
+            key === "bed"
+              ? `Bed: ${value}`
+              : key
+                  .replace(/([A-Z])/g, " $1")
+                  .replace(/^./, (str) => str.toUpperCase())
+                  .trim();
+          roomAmenitiesList.push(readableName);
+        }
+      });
     });
-  });
+  }
+
+  // Final fallback: use room-level amenities if mapping by room type didn't produce values.
+  if (roomAmenitiesList.length === 0 && Array.isArray(room.amenities)) {
+    roomAmenitiesList = room.amenities
+      .map((item) =>
+        typeof item === "string"
+          ? item
+          : item && typeof item === "object" && "name" in item
+            ? String((item as any).name || "")
+            : ""
+      )
+      .filter((item) => item.trim() !== "");
+  }
 
   // Remove duplicates (e.g., combine similar amenities)
   roomAmenitiesList = Array.from(new Set(roomAmenitiesList));
@@ -334,4 +357,3 @@ export const getRoomTypes = (rooms: Room[] | null): string[] => {
   const types = new Set(rooms.map((room) => room.room_type));
   return ["all", ...Array.from(types)];
 };
-

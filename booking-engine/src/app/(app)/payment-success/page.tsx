@@ -30,7 +30,7 @@ export default function PaymentSuccess() {
   // Redux state (fallback if session data not available)
   const reduxState = useSelector((state: any) => state.pmsHotelCard);
   const authUser = useSelector((state: any) => state.auth.user);
-  const bookingState = useSelector((state: any) => state.booking);
+  const bookingState = useSelector((state: any) => state.booking || {});
 
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState(
@@ -116,7 +116,7 @@ export default function PaymentSuccess() {
         }
       } else {
         // No session ID, try to use Redux state
-        if (bookingState.bookingCode) {
+        if (bookingState?.bookingCode) {
           // Use booking state from Redux (set by payment page after Fikafi/N-Genius)
           setBookingData({
             hotelName: bookingState.hotelName || reduxState.hotelName,

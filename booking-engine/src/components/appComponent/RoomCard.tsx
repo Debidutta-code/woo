@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "../../Redux/store";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,6 @@ import {
   FaWifi,
   FaSnowflake,
   FaBed,
-  FaChild,
   FaUser,
   FaTree,
   FaCheckCircle,
@@ -46,7 +45,6 @@ import {
 import {
   calculatePriceForGuests,
   calculateDiscountPercentage,
-  isFreeCancellation,
   formatCurrency,
 } from "../../components/appComponent/transformUtils";
 import {
@@ -73,7 +71,11 @@ export type RoomData = Room;
 interface RoomCardProps {
   data: Room;
   ratePlans?: RatePlan[];
-  onBookNow: (ratePlan: RatePlan | Room) => void;
+  onBookNow: (
+    ratePlan: RatePlan | Room,
+    parsedAddons?: any[],
+    includedAddons?: string[]
+  ) => void;
   isLoadingPrice?: boolean;
   guestDetails?: any;
   roomAmenities?: any;
@@ -99,17 +101,48 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   }>({});
   const [selectedAddons, setSelectedAddons] = useState<AvailableAddon[]>([]);
   const [addonsModalClosedViaAddButton, setAddonsModalClosedViaAddButton] = useState(false);
+  const isContinuingWithAddonsRef = useRef(false);
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1617104678098-de229db51175?q=80&w=1514&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
-  // Derive policy type from rate_plan_code
-  const isNonRefundable =
-    data.rate_plan_code?.toLowerCase().includes("non-refundable") ||
-    data.rate_plan_code?.toLowerCase().includes("nonrefundable");
+  // Derive policy dynamically from backend cancellation policy first, then fallback to rate plan code.
+  const allRatePlans = [...(ratePlans || []), ...(data.ratePlans || [])];
+  const backendCancellationPolicy = allRatePlans
+    .map((plan: any) => {
+      const rawPolicy =
+        plan?.cancellationPolicy ??
+        plan?.cancellation_policy ??
+        plan?.policy?.cancellationPolicy ??
+        "";
+      if (typeof rawPolicy === "string") return rawPolicy.trim();
+      if (rawPolicy && typeof rawPolicy === "object") {
+        // Support APIs that return policy as a structured object.
+        return Object.values(rawPolicy)
+          .map((v) => (typeof v === "string" ? v.trim() : ""))
+          .filter(Boolean)
+          .join(". ");
+      }
+      return "";
+    })
+    .find((policy: string) => policy.length > 0) || "";
+  const primaryRatePlan = allRatePlans[0];
+  const policySourceText =
+    backendCancellationPolicy ||
+    primaryRatePlan?.ratePlanCode ||
+    data.rate_plan_code ||
+    "";
+  const isNonRefundable = /non[\s-]?refundable/i.test(policySourceText);
   const policyType = isNonRefundable ? "NonRefundable" : "Flexible";
   const policyStyling = getPolicyStyling(policyType);
-  const policyBulletPoints = getPolicyBulletPoints(policyType, t);
+  const policyBulletPoints =
+    backendCancellationPolicy.length > 0
+      ? backendCancellationPolicy
+          .split(/\r?\n|(?<=\.)\s+/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((text) => ({ text, color: "text-gray-700" }))
+      : getPolicyBulletPoints(policyType, t);
 
   const normalizeString = (str: string): string => {
     return str
@@ -303,17 +336,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       });
     }
 
-    const defaultAmenities = [
-      {
-        icon: <FaBed className="text-tripswift-blue" />,
-        name: t("RoomsPage.RoomCard.defaultamenities.kingBed"),
-      },
-      {
-        icon: <FaBath className="text-tripswift-blue" />,
-        name: t("RoomsPage.RoomCard.defaultamenities.bathroom"),
-      },
-    ];
-    return defaultAmenities;
+    return [];
   };
 
   const getIconComponent = (category: string, displayName: string) => {
@@ -408,6 +431,17 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     }
   };
 
+  const roomAmenitiesList = getRoomAmenities();
+  const roomVideoUrl =
+    data.video && typeof data.video === "object" ? data.video.url : "";
+  const mediaItems = [
+    ...(data.image && data.image.length > 0
+      ? data.image.map((url) => ({ type: "image" as const, url }))
+      : [{ type: "image" as const, url: DEFAULT_IMAGE }]),
+    ...(roomVideoUrl ? [{ type: "video" as const, url: roomVideoUrl }] : []),
+  ];
+  const currentMedia = mediaItems[currentImageIndex] || mediaItems[0];
+
   useEffect(() => {
     if (showPolicyModal) {
       document.body.style.overflow = "hidden";
@@ -418,6 +452,12 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       document.body.style.overflow = "unset";
     };
   }, [showPolicyModal]);
+
+  useEffect(() => {
+    if (currentImageIndex >= mediaItems.length) {
+      setCurrentImageIndex(0);
+    }
+  }, [currentImageIndex, mediaItems.length]);
 
   // Use ratePlans if provided, otherwise use single null for room
   const displayRatePlans =
@@ -473,14 +513,36 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       "ratePlanCode" in ratePlan ? ratePlan.ratePlanCode : data.room_name;
 
     try {
+      isContinuingWithAddonsRef.current = true;
       // Store selected addons in session/context before proceeding
       setSelectedAddons(addons);
+
+      const groupedAddons = addons.reduce((acc, addon) => {
+        if (!acc[addon.addonId]) {
+          acc[addon.addonId] = {};
+        }
+        const dateKey = new Date(addon.date).toISOString();
+        acc[addon.addonId][dateKey] = (acc[addon.addonId][dateKey] || 0) + 1;
+        return acc;
+      }, {} as Record<string, Record<string, number>>);
+
+      const parsedAddons = Object.entries(groupedAddons).map(
+        ([addOnId, availabilityMap]) => ({
+          addOnId,
+          availability: Object.entries(availabilityMap).map(
+            ([date, quantity]) => ({
+              date,
+              quantity,
+            })
+          ),
+        })
+      );
       
       // Mark that modal was closed via Add button to prevent duplicate booking
       setAddonsModalClosedViaAddButton(true);
       
       // Call the original onBookNow
-      await onBookNow(ratePlan);
+      await onBookNow(ratePlan, parsedAddons);
       
       // Clear the temporary storage
       delete (window as any).__selectedRatePlan;
@@ -493,6 +555,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
   const handleAddonsModalClose = async () => {
     setShowAddonsModal(false);
+    if (isContinuingWithAddonsRef.current) {
+      isContinuingWithAddonsRef.current = false;
+      return;
+    }
     const ratePlan = (window as any).__selectedRatePlan;
     const key =
       "ratePlanCode" in (ratePlan || {})
@@ -534,32 +600,36 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 );
               })()}
 
-              <Image
-                src={
-                  data.image && data.image.length > 0
-                    ? data.image[currentImageIndex]
-                    : DEFAULT_IMAGE
-                }
-                alt={`${data.room_name || "Room"} image ${
-                  currentImageIndex + 1
-                }`}
-                layout="fill"
-                objectFit="cover"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null;
-                  target.src = DEFAULT_IMAGE;
-                }}
-              />
+              {currentMedia?.type === "video" ? (
+                <video
+                  className="w-full h-full object-cover"
+                  controls
+                  playsInline
+                  preload="metadata"
+                  src={currentMedia.url}
+                />
+              ) : (
+                <Image
+                  src={currentMedia?.url || DEFAULT_IMAGE}
+                  alt={`${data.room_name || "Room"} image ${currentImageIndex + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.onerror = null;
+                    target.src = DEFAULT_IMAGE;
+                  }}
+                />
+              )}
 
-              {data.image && data.image.length > 1 && (
+              {mediaItems.length > 1 && (
                 <>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) =>
-                        prev === 0 ? data.image!.length - 1 : prev - 1,
+                        prev === 0 ? mediaItems.length - 1 : prev - 1,
                       );
                     }}
                     className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 bg-white/95 hover:bg-white text-gray-700 rounded-full p-1.5 sm:p-2 shadow-lg transition-colors duration-300 z-10"
@@ -572,7 +642,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) =>
-                        prev === data.image!.length - 1 ? 0 : prev + 1,
+                        prev === mediaItems.length - 1 ? 0 : prev + 1,
                       );
                     }}
                     className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 bg-white/95 hover:bg-white text-gray-700 rounded-full p-1.5 sm:p-2 shadow-lg transition-colors duration-300 z-10"
@@ -583,9 +653,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 </>
               )}
 
-              {data.image && data.image.length > 1 && (
+              {mediaItems.length > 1 && (
                 <div className="absolute bottom-2 right-2 z-20 bg-black/80 text-white text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full">
-                  {currentImageIndex + 1}/{data.image.length}
+                  {currentImageIndex + 1}/{mediaItems.length}
                 </div>
               )}
 
@@ -594,6 +664,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                   See photos
                 </button>
               </div>
+
             </div>
 
             {/* Room Details Below Image */}
@@ -612,17 +683,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 <div className="flex items-center gap-1">
                   <FaUser className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
                   <span className="whitespace-nowrap">
-                    Max {data.max_number_of_adults || data.max_occupancy} adults
+                    Max occupancy {data.max_occupancy || data.max_number_of_adults || 0}
                   </span>
                 </div>
-                {(data.max_number_of_children || 0) > 0 && (
-                  <div className="flex items-center gap-1">
-                    <FaChild className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                    <span className="whitespace-nowrap">
-                      {data.max_number_of_children} children
-                    </span>
-                  </div>
-                )}
                 {data.room_view && (
                   <div className="flex items-center gap-1">
                     <span className="text-gray-600 text-xs sm:text-sm">
@@ -633,19 +696,27 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               </div>
 
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mb-2 sm:mb-3">
-                {getRoomAmenities()
-                  .slice(0, 6)
-                  .map((amenity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-1 text-[11px] sm:text-xs text-gray-700"
-                    >
-                      {React.cloneElement(amenity.icon, {
-                        className: "h-3 w-3 text-gray-500 flex-shrink-0",
-                      })}
-                      <span className="truncate">{amenity.name}</span>
-                    </div>
-                  ))}
+                {roomAmenitiesList.length > 0 ? (
+                  roomAmenitiesList
+                    .slice(0, 6)
+                    .map((amenity, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 text-[11px] sm:text-xs text-gray-700"
+                      >
+                        {React.cloneElement(amenity.icon, {
+                          className: "h-3 w-3 text-gray-500 flex-shrink-0",
+                        })}
+                        <span className="truncate">{amenity.name}</span>
+                      </div>
+                    ))
+                ) : (
+                  <p className="col-span-2 text-xs text-gray-500">
+                    {t("RoomsPage.noAmenitiesSpecified", {
+                      defaultValue: "No amenities available for this room.",
+                    })}
+                  </p>
+                )}
               </div>
 
               <button
@@ -692,20 +763,28 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                           Amenities
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                          {getRoomAmenities().map((amenity, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-2 text-xs sm:text-sm text-gray-700"
-                            >
-                              {React.cloneElement(amenity.icon, {
-                                className:
-                                  "h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0",
+                          {roomAmenitiesList.length > 0 ? (
+                            roomAmenitiesList.map((amenity, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-2 text-xs sm:text-sm text-gray-700"
+                              >
+                                {React.cloneElement(amenity.icon, {
+                                  className:
+                                    "h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0",
+                                })}
+                                <span className="break-words">
+                                  {amenity.name}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs sm:text-sm text-gray-500">
+                              {t("RoomsPage.noAmenitiesSpecified", {
+                                defaultValue: "No amenities available for this room.",
                               })}
-                              <span className="break-words">
-                                {amenity.name}
-                              </span>
-                            </div>
-                          ))}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -740,15 +819,29 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
               // Calculate price for current guest count
               const price =
-                ratePlan && ratePlan.totalPrice
-                  ? ratePlan.totalPrice
+                ratePlan &&
+                ((ratePlan as any).totalAmount ||
+                  (ratePlan as any).baseAmountPerNight ||
+                  (ratePlan as any).totalPrice)
+                  ? Number(
+                      (ratePlan as any).totalAmount ||
+                        (ratePlan as any).baseAmountPerNight ||
+                        (ratePlan as any).totalPrice
+                    )
                   : data.baseAmount || data.room_price || 0;
 
               // Find all prices for discount calculation
               // Find all prices for discount calculation
               const allPrices = displayRatePlans.map((rp) =>
-                rp && rp.totalPrice
-                  ? rp.totalPrice
+                rp &&
+                ((rp as any).totalAmount ||
+                  (rp as any).baseAmountPerNight ||
+                  (rp as any).totalPrice)
+                  ? Number(
+                      (rp as any).totalAmount ||
+                        (rp as any).baseAmountPerNight ||
+                        (rp as any).totalPrice
+                    )
                   : data.baseAmount || data.room_price || 0,
               );
               const lowestPrice = Math.min(...allPrices);
@@ -767,9 +860,11 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 "ratePlanCode" in currentRatePlan
                   ? currentRatePlan.ratePlanCode
                   : currentRatePlan.rate_plan_code;
-              const hasFreeCancellation = isFreeCancellation(
-                ratePlanCode || "",
-              );
+              const ratePlanDisplayName =
+                "ratePlanName" in currentRatePlan &&
+                currentRatePlan.ratePlanName
+                  ? currentRatePlan.ratePlanName
+                  : ratePlanCode;
               const isNonRefundable =
                 (ratePlanCode || "").toLowerCase().includes("non-refundable") ||
                 (ratePlanCode || "").toLowerCase().includes("nonrefundable");
@@ -810,13 +905,6 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
                     {/* Benefits/Features */}
                     <div className="space-y-1 mb-2">
-                      {hasFreeCancellation && (
-                        <div className="flex items-center gap-1 text-xs sm:text-sm text-green-600">
-                          <FaCheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
-                          <span className="font-medium">Free Cancellation</span>
-                        </div>
-                      )}
-
                       {isNonRefundable && (
                         <div className="flex items-center gap-1 text-xs sm:text-sm text-red-600">
                           <FaTimes className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
@@ -862,7 +950,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                       </span>
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-[10px] sm:text-xs text-gray-600 break-all">
-                          {ratePlanCode || "Standard"}
+                          {ratePlanDisplayName || "Standard"}
                         </span>
                       </div>
                     </div>
@@ -1058,10 +1146,18 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 <ul className="list-disc pl-4 sm:pl-5 space-y-1 sm:space-y-1.5 text-xs sm:text-sm">
                   {policyBulletPoints.map((point, idx) => (
                     <li key={idx} className="leading-relaxed">
-                      <span className={`font-medium ${point.color}`}>
-                        {point.text.split(":")[0]}:
-                      </span>
-                      <span className="ml-1">{point.text.split(":")[1]}</span>
+                      {point.text.includes(":") ? (
+                        <>
+                          <span className={`font-medium ${point.color}`}>
+                            {point.text.split(":")[0]}:
+                          </span>
+                          <span className="ml-1">
+                            {point.text.split(":").slice(1).join(":").trim()}
+                          </span>
+                        </>
+                      ) : (
+                        <span className={point.color}>{point.text}</span>
+                      )}
                     </li>
                   ))}
                 </ul>

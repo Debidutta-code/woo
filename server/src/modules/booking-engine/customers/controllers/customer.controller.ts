@@ -143,4 +143,43 @@ export class CustomerController {
         });
         return res.status(200).json({ success: true, message: 'Logged out successfully' });
     }
+
+    public async getCustomerBookingDetails(
+        req: CustomerRequest,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const customerId = req.params.customerId;
+            const loggedInCustomerId = req.Customer?.id;
+
+            if (!loggedInCustomerId) {
+                return res.status(401).json(errorResponse('Please login to continue'));
+            }
+
+            if (!customerId) {
+                return res.status(400).json(errorResponse('Customer id is required'));
+            }
+
+            if (loggedInCustomerId !== customerId) {
+                return res.status(403).json(errorResponse('Unauthorized to access booking details'));
+            }
+
+            const page = parseInt((req.query.page as string) || '1', 10);
+            const limit = parseInt((req.query.limit as string) || '6', 10);
+            const filterData = (req.query.filterData as string) || '';
+
+            const result = await this.customerService.getCustomerBookingDetails(
+                customerId,
+                page > 0 ? page : 1,
+                limit > 0 ? limit : 6,
+                filterData
+            );
+            return res.status(result.success ? 200 : 400).json(result);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(500).json(errorResponse('Failed to fetch booking details', error.message));
+            }
+            return res.status(500).json(errorResponse('Failed to fetch booking details', 'Unknown error'));
+        }
+    }
 }

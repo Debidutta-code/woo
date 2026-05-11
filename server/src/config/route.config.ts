@@ -9,6 +9,8 @@ import { AppError } from '../common/utils/error.util';
 import { currencyRoutes } from '../infrastructure/currency-maping/routes';
 import { bookingEngineRouter } from '../modules/booking-engine/routes';
 import { extranetRouter } from '../modules/extranet/routes';
+import { reservationRoute } from '../modules/extranet/reservation/routes';
+import customerOtpRouter from '../infrastructure/sms-email-service/routes/route';
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
     app.head('/status', (_, res: Response) => res.status(200).end());
@@ -27,7 +29,10 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/init', initRouter);
 
     apiV1Router.use('/extranet', extranetRouter);
+    apiV1Router.use('/pms/front-office/reservations', reservationRoute);
     apiV1Router.use('/booking-engine', bookingEngineRouter);
+    apiV1Router.use('/booking', bookingEngineRouter);
+    apiV1Router.use('/customers', customerOtpRouter);
     apiV1Router.use('/agency', agencyMainRouter);
     apiV1Router.use('/fikafi', fikafiPaymentRoutes);
 

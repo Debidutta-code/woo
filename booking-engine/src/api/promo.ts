@@ -14,8 +14,12 @@ export const validatePromoCode = async (
 
   try {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/pms/property/promo/validate`,
-      payload,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/extranet/promo-codes/verify`,
+      {
+        promocode: payload.code,
+        propertyCode: payload.propertyId,
+        bookingAmount: payload.bookingAmount,
+      },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -49,9 +53,8 @@ export const getAvailablePromoCodes = async (
   accessToken: string
 ) => {
   try {
-    const { data } = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/pms/property/promo/search?propertyId=${propertyId}`,
-      {},
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/extranet/promo-codes/search?propertyCode=${propertyId}`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,

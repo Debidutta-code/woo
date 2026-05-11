@@ -2,9 +2,14 @@ import { Request, Response } from 'express';
 import { emailService } from '../service';
 
 export const sendOtp = async (req: Request, res: Response) => {
-    const { email, purpose } = req.body;
+    const { email, purpose, identifier, type } = req.body;
+    const normalizedEmail = email || identifier;
+    const normalizedPurpose =
+        (purpose || type) === 'mail_verification'
+            ? 'email_verification'
+            : (purpose || type);
 
-    if (!email) {
+    if (!normalizedEmail) {
         return res.status(400).json({
             success: false,
             message: 'Email is required.',
@@ -12,7 +17,7 @@ export const sendOtp = async (req: Request, res: Response) => {
     }
 
     // Default purpose to email_verification if not provided
-    const otpPurpose = purpose || 'email_verification';
+    const otpPurpose = normalizedPurpose || 'email_verification';
 
     // Validate purpose
     if (
@@ -26,7 +31,7 @@ export const sendOtp = async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await emailService.sendOTPEmail(email, otpPurpose);
+        const result = await emailService.sendOTPEmail(normalizedEmail, otpPurpose);
 
         if (!result.success) {
             return res.status(429).json({
@@ -49,9 +54,14 @@ export const sendOtp = async (req: Request, res: Response) => {
 };
 
 export const verifyOtp = async (req: Request, res: Response) => {
-    const { email, otp, purpose } = req.body;
+    const { email, otp, purpose, identifier, type } = req.body;
+    const normalizedEmail = email || identifier;
+    const normalizedPurpose =
+        (purpose || type) === 'mail_verification'
+            ? 'email_verification'
+            : (purpose || type);
 
-    if (!email || !otp) {
+    if (!normalizedEmail || !otp) {
         return res.status(400).json({
             success: false,
             message: 'Email and OTP are required.',
@@ -59,10 +69,10 @@ export const verifyOtp = async (req: Request, res: Response) => {
     }
 
     // Default purpose to email_verification if not provided
-    const otpPurpose = purpose || 'email_verification';
+    const otpPurpose = normalizedPurpose || 'email_verification';
 
     try {
-        const result = await emailService.verifyOTP(email, otp, otpPurpose);
+        const result = await emailService.verifyOTP(normalizedEmail, otp, otpPurpose);
 
         if (!result.success) {
             return res.status(400).json({

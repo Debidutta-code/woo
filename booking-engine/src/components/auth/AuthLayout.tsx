@@ -10,6 +10,8 @@ import { googleLogin } from "../../Redux/slices/auth.slice";
 import toast from "react-hot-toast"
 import { AppDispatch } from "../../Redux/store";
 import { useSearchParams } from "next/navigation";
+import Cookies from "js-cookie";
+import { wishlistAPI } from "@/api/wishlist";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -89,7 +91,42 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
             duration: 3000,
           }
         );
-        router.push("/");
+        const token = (result as any)?.payload?.token;
+        const queryRedirect = searchParams.get("redirect");
+        const cookieRedirect = Cookies.get("redirectAfterLogin");
+        const sanitizeRedirect = (url?: string | null) => {
+          if (!url) return null;
+          if (!url.startsWith("/") || url.startsWith("//")) return null;
+          return url;
+        };
+        const redirectUrl =
+          sanitizeRedirect(queryRedirect) ||
+          sanitizeRedirect(cookieRedirect) ||
+          "/";
+        const pendingWishlistAction = Cookies.get("pendingWishlistAction");
+        if (token && pendingWishlistAction) {
+          try {
+            const parsedAction = JSON.parse(pendingWishlistAction);
+            if (parsedAction?.propertyId) {
+              await wishlistAPI.toggleWishlist(
+                parsedAction.propertyId,
+                parsedAction.propertyCode,
+                parsedAction.propertyName,
+                token,
+              );
+              Cookies.set("wishlistRecentlyAdded", parsedAction.propertyId);
+            }
+            const sourceRedirect = sanitizeRedirect(parsedAction?.sourcePath);
+            Cookies.remove("pendingWishlistAction");
+            Cookies.remove("redirectAfterLogin");
+            router.push(sourceRedirect || redirectUrl);
+            return;
+          } catch (_wishlistError) {
+            Cookies.remove("pendingWishlistAction");
+          }
+        }
+        Cookies.remove("redirectAfterLogin");
+        router.push(redirectUrl);
       } else {
         console.error("❌ Step 3: Google login failed - No auth code received");
         toast.error(

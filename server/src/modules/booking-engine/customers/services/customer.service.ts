@@ -151,4 +151,60 @@ export class CustomerService{
             return errorResponse("Failed to login","Unknown error occurred");
         }
     }
+
+    public async getCustomerBookingDetails(
+        customerId: string,
+        page: number = 1,
+        limit: number = 6,
+        filterData?: string
+    ): Promise<IApiResponse> {
+        try {
+            const customer = await this.customerRepository.getCustomerById(customerId);
+            if (!customer) {
+                return errorResponse('Customer not found');
+            }
+
+            const { bookings, totalBookings } =
+                await this.customerRepository.getCustomerBookingDetails(
+                    customer.email,
+                    page,
+                    limit,
+                    filterData
+                );
+
+            const mappedBookings = bookings.map((booking: any) => ({
+                _id: booking.id,
+                reservationId: booking.id,
+                paymentType: booking.paymentMethod,
+                paymentMethod: booking.paymentMethod,
+                hotelCode: booking.propertyCode,
+                hotelName: booking.hotelName,
+                ratePlanCode: booking.ratePlanCode,
+                roomTypeCode: booking.roomTypeCode,
+                checkInDate: booking.checkInDate,
+                checkOutDate: booking.checkOutDate,
+                guestDetails: booking.reservationGuests || [],
+                email: booking.bookingUserEmail,
+                phone: booking.bookingUserPhone || '',
+                numberOfRooms: 1,
+                totalAmount: booking.amount,
+                currencyCode: booking.currencyCode,
+                userId: customer.id,
+                createdAt: booking.createdAt,
+                status: booking.bookingStatus,
+            }));
+
+            return successResponse('Bookings fetched successfully', {
+                bookings: mappedBookings,
+                totalBookings,
+                totalPages: Math.ceil(totalBookings / limit) || 1,
+                currentPage: page,
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                return errorResponse('Failed to fetch customer bookings', error.message);
+            }
+            return errorResponse('Failed to fetch customer bookings', 'Unknown error occurred');
+        }
+    }
 }

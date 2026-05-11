@@ -5,10 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "../../Redux/store";
 import Cookies from "js-cookie";
 import {
+  setAmount,
   setCheckInDate,
   setCheckOutDate,
   setCurrency,
+  setGuestDetails as setPmsGuestDetails,
+  setPropertyId,
   setRatePlanCode,
+  setRoomId,
   setRoomType,
   setHotelCode,
   setHotelName,
@@ -48,6 +52,7 @@ import {
 import LoadingSkeleton from "../hotelListingComponents/LoadingSkeleton";
 import { Bed } from "lucide-react";
 import toast from "react-hot-toast";
+import { wishlistAPI } from "@/api/wishlist";
 
 const RoomsPage: React.FC = () => {
   const PENDING_BOOKING_KEY = "pendingBookingAction";
@@ -70,8 +75,11 @@ const RoomsPage: React.FC = () => {
   const [selectedRatePlan, setSelectedRatePlan] = useState<
     RatePlan | Room | null
 >(null);
+  const [selectedParsedAddons, setSelectedParsedAddons] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+  const [isWishlistLoading, setIsWishlistLoading] = useState<boolean>(false);
   const hasTriedBookingResumeRef = useRef(false);
 
   const { propertyDetails, propertyCode, roomAmenities, isPropertyLoading } =
@@ -100,6 +108,13 @@ const RoomsPage: React.FC = () => {
     setSelectedRatePlan,
     setIsModalOpen,
   });
+
+  useEffect(() => {
+    const urlPropertyId = searchParams.get("id");
+    if (urlPropertyId && urlPropertyId !== propertyId) {
+      dispatch(setPropertyId(urlPropertyId));
+    }
+  }, [searchParams, propertyId, dispatch]);
 
   useEffect(() => {
     const roomsParam = searchParams.get("rooms");
@@ -172,6 +187,29 @@ const RoomsPage: React.FC = () => {
   };
 
   const confirmBooking = (formData: any) => {
+    // Keep payment page prerequisites in Redux before navigation.
+    dispatch(setAmount(Number(formData?.amount || 0)));
+    dispatch(setPropertyId(formData?.propertyId || ""));
+    dispatch(setRoomId(formData?.roomId || ""));
+    dispatch(setCheckInDate(formData?.checkIn || ""));
+    dispatch(setCheckOutDate(formData?.checkOut || ""));
+    dispatch(setRatePlanCode(formData?.ratePlanCode || ""));
+    dispatch(setRoomType(formData?.roomType || ""));
+    dispatch(setCurrency(formData?.currency || ""));
+    dispatch(setHotelName(formData?.hotelName || ""));
+
+    dispatch(
+      setPmsGuestDetails({
+        guests: formData?.guests || [],
+        email: formData?.email || "",
+        phone: formData?.phone || "",
+        rooms: formData?.rooms || 1,
+        adults: formData?.adults || 1,
+        children: formData?.children || 0,
+        infants: formData?.infants || 0,
+      })
+    );
+
     router.push(`/payment`);
   };
 
@@ -186,7 +224,11 @@ const RoomsPage: React.FC = () => {
     return "";
   };
 
-  const onBookNow = async (room: ConvertedRoom, ratePlan?: RatePlan | Room) => {
+  const onBookNow = async (
+    room: ConvertedRoom,
+    ratePlan?: RatePlan | Room,
+    parsedAddons: any[] = []
+  ) => {
     const token = authState?.accessToken || Cookies.get("accessToken");
     const isAuthenticated = Boolean(token && (authState?.user || token));
 
@@ -208,7 +250,8 @@ const RoomsPage: React.FC = () => {
     }
 
     try {
-      await handleBookNow(room, ratePlan);
+      setSelectedParsedAddons(parsedAddons);
+      await handleBookNow(room, ratePlan, parsedAddons);
     } catch (err: any) {
       toast.error(err.message || "Something went wrong!");
     }
@@ -278,6 +321,65 @@ const RoomsPage: React.FC = () => {
     isRoomsLoading,
   ]);
 
+  useEffect(() => {
+    const syncWishlistStatus = async () => {
+      if (!propertyDetails?.id) return;
+      const token = authState?.accessToken || Cookies.get("accessToken");
+      if (!token) {
+        setIsWishlisted(false);
+        return;
+      }
+      try {
+        const inWishlist = await wishlistAPI.checkIfInWishlist(propertyDetails.id);
+        setIsWishlisted(Boolean(inWishlist));
+      } catch (_error) {
+        setIsWishlisted(false);
+      }
+    };
+
+    syncWishlistStatus();
+  }, [propertyDetails?.id, authState?.accessToken]);
+
+  const handlePropertyWishlistToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!propertyDetails?.id) return;
+
+    const token = authState?.accessToken || Cookies.get("accessToken");
+    if (!token) {
+      const sourcePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      Cookies.set("redirectAfterLogin", sourcePath);
+      Cookies.set(
+        "pendingWishlistAction",
+        JSON.stringify({
+          propertyId: propertyDetails.id,
+          propertyCode: propertyDetails.propertyCode,
+          propertyName: propertyDetails.propertyName,
+          sourcePath,
+        }),
+      );
+      toast.error("Please login first to add items to your wishlist");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      setIsWishlistLoading(true);
+      const nextState = !isWishlisted;
+      setIsWishlisted(nextState);
+      await wishlistAPI.toggleWishlist(
+        propertyDetails.id,
+        propertyDetails.propertyCode,
+        propertyDetails.propertyName,
+        token,
+      );
+    } catch (_error) {
+      setIsWishlisted((prev) => !prev);
+      toast.error("Failed to update wishlist. Please try again.");
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
+
   return (
     <div className="bg-[#F5F7FA] min-h-screen font-noto-sans relative">
       <RoomNotAvailable
@@ -298,7 +400,13 @@ const RoomsPage: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-4 lg:py-6">
-        <PropertyInfo propertyDetails={propertyDetails} isLoading={isPropertyLoading} />
+        <PropertyInfo
+          propertyDetails={propertyDetails}
+          isLoading={isPropertyLoading}
+          isWishlisted={isWishlisted}
+          isWishlistLoading={isWishlistLoading}
+          onWishlistToggle={handlePropertyWishlistToggle}
+        />
 
         <RoomFilters
           roomTypes={roomTypes}
@@ -369,7 +477,9 @@ const RoomsPage: React.FC = () => {
                   <RoomCard
                     data={roomCardData}
                     ratePlans={room.ratePlans}
-                    onBookNow={(ratePlan) => onBookNow(room, ratePlan)}
+                    onBookNow={(ratePlan, parsedAddons) =>
+                      onBookNow(room, ratePlan, parsedAddons || [])
+                    }
                     isLoadingPrice={isFetchingPrice}
                     guestDetails={guestDetails}
                     propertyCode={propertyCode}
@@ -408,6 +518,7 @@ const RoomsPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         selectedRoom={selectedRoom}
         selectedRateplan={getRatePlanCode(selectedRatePlan)}
+        parsedAddons={selectedParsedAddons}
         checkInDate={checkInDate}
         checkOutDate={checkOutDate}
         onConfirmBooking={confirmBooking}

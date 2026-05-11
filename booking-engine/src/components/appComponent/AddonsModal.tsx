@@ -50,6 +50,15 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
     return groups;
   }, [addons]);
 
+  const getInStayEntries = (entries: AvailableAddon[]) => {
+    const stayStart = new Date(startDate);
+    const stayEnd = new Date(endDate);
+    return entries.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= stayStart && entryDate < stayEnd;
+    });
+  };
+
   useEffect(() => {
     if (isOpen) fetchAddons();
   }, [isOpen, propertyCode, startDate, endDate, ratePlanCode]);
@@ -88,7 +97,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
     const selected: AvailableAddon[] = [];
     Object.entries(quantities).forEach(([addonId, qty]) => {
       if (qty > 0) {
-        const entries = groupedAddons[addonId] || [];
+        const entries = getInStayEntries(groupedAddons[addonId] || []);
         for (let i = 0; i < qty; i++) {
           selected.push(...entries);
         }
@@ -105,7 +114,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
 
   const totalPrice = Object.entries(quantities).reduce((sum, [addonId, qty]) => {
     if (qty <= 0) return sum;
-    const entries = groupedAddons[addonId] || [];
+    const entries = getInStayEntries(groupedAddons[addonId] || []);
     const unitPrice = entries.reduce((acc, e) => acc + e.price, 0);
     return sum + unitPrice * qty;
   }, 0);
@@ -222,7 +231,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
               {Object.entries(groupedAddons).map(([addonId, addonEntries]) => {
                 const first = addonEntries[0];
                 const qty = quantities[addonId] || 0;
-                const unitPrice = addonEntries.reduce(
+                const unitPrice = getInStayEntries(addonEntries).reduce(
                   (sum, e) => sum + e.price,
                   0
                 );

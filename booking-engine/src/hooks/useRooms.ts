@@ -91,6 +91,7 @@ export const useRooms = ({
               currency_code: room.currencyCode,
               ratePlans: room.ratePlans,
               image: room.images,
+              video: room.video,
               amenities: room.amenities,
               available_rooms: room.availabilityCount,
               rate_plan_code: room.ratePlans?.[0]?.ratePlanCode || "",
@@ -215,21 +216,21 @@ export const useBookRoom = ({
   );
 
   const handleBookNow = useCallback(
-    async (room: ConvertedRoom, selectedRatePlan?: RatePlan | Room) => {
+    async (
+      room: ConvertedRoom,
+      selectedRatePlan?: RatePlan | Room,
+      _parsedAddons: any[] = []
+    ) => {
       if (!room.has_valid_rate) return;
       const ratePlan =
         selectedRatePlan || (room.ratePlans && room.ratePlans[0]);
       if (!ratePlan) return;
-
-      const priceAvailable = await checkPriceBeforeBooking(room, ratePlan);
-      if (!priceAvailable) return;
 
       setSelectedRoom(room);
       setSelectedRatePlan(ratePlan);
       setIsModalOpen(true);
     },
     [
-      checkPriceBeforeBooking,
       setSelectedRoom,
       setSelectedRatePlan,
       setIsModalOpen,

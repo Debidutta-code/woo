@@ -78,8 +78,9 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const authUser = useSelector((state: any) => state.auth?.user);
-  const reduxToken = useSelector((state: any) => state.auth?.accessToken);
+  const reduxToken = useSelector(
+    (state: any) => state.auth?.accessToken || state.authReducer?.accessToken,
+  );
   const [isWishlisted, setIsWishlisted] = useState(hotel.isWishlisted || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -101,6 +102,17 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
     }
   }, [hotel.isWishlisted]);
 
+  useEffect(() => {
+    const recentlyWishlisted = Cookies.get("wishlistRecentlyAdded");
+    if (recentlyWishlisted === hotel.id) {
+      setIsWishlisted(true);
+      if (onWishlistToggle) {
+        onWishlistToggle(hotel.id, true);
+      }
+      Cookies.remove("wishlistRecentlyAdded");
+    }
+  }, [hotel.id, onWishlistToggle]);
+
   // Reset image index when hotel changes
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -115,8 +127,18 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
     }
 
     const token = reduxToken || Cookies.get("accessToken");
-    if (!token || !authUser) {
-      Cookies.set("redirectAfterLogin", window.location.href);
+    if (!token) {
+      const sourcePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      Cookies.set("redirectAfterLogin", sourcePath);
+      Cookies.set(
+        "pendingWishlistAction",
+        JSON.stringify({
+          propertyId: hotel.id,
+          propertyCode: hotel.propertyCode,
+          propertyName: hotel.propertyName,
+          sourcePath,
+        }),
+      );
       toast.error("Please login first to add items to your wishlist");
       router.push("/login");
       return;
@@ -130,10 +152,11 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
       const newWishlistState = !isWishlisted;
       setIsWishlisted(newWishlistState);
 
-      const response = await wishlistAPI.toggleWishlist(
+      await wishlistAPI.toggleWishlist(
         hotel.id,
         hotel.propertyCode,
         hotel.propertyName,
+        token,
       );
 
       if (onWishlistToggle) {
@@ -151,17 +174,35 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
       setIsWishlisted(!isWishlisted);
 
       // Show user-friendly message based on error type
-      if (
-        error.message?.toLowerCase().includes("login") ||
-        error.response?.status === 401
-      ) {
-        Cookies.set("redirectAfterLogin", window.location.href);
+      const normalizedMessage =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "";
+      const isAuthError =
+        error?.response?.status === 401 ||
+        error?.response?.status === 403 ||
+        normalizedMessage.toLowerCase().includes("login") ||
+        normalizedMessage.toLowerCase().includes("token");
+
+      if (isAuthError) {
+        const sourcePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        Cookies.set("redirectAfterLogin", sourcePath);
+        Cookies.set(
+          "pendingWishlistAction",
+          JSON.stringify({
+            propertyId: hotel.id,
+            propertyCode: hotel.propertyCode,
+            propertyName: hotel.propertyName,
+            sourcePath,
+          }),
+        );
         toast.error("Please login first to add items to your wishlist");
         router.push("/login");
       } else {
         toast.error(
           t("HotelListing.HotelCardItem.wishlistError", {
-            defaultValue: "Failed to update wishlist first login",
+            defaultValue: "Failed to update wishlist. Please try again.",
           }),
         );
       }

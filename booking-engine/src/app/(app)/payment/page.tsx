@@ -1,23 +1,23 @@
 "use client";
 
 import CheckAuthentication from "../../../components/checkAuthentication/CheckAuth";
-import PayAtHotelFunction from "../../../components/paymentComponents/PayAtHotelFunction";
 import PaymentOptionSelector from "../../../components/paymentComponents/PaymentOptionSelector";
 import PayWithCryptoQR from "../../../components/paymentComponents/payWithCrypto/PayWithCryptoQR";
 import { formatDate, calculateNights } from "../../../utils/dateUtils";
-import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { Shield, CreditCard, CheckCircle, Clock, CalendarRange, Users, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { RootState } from "@/Redux/store";
+import { RootState, useDispatch } from "@/Redux/store";
 import { getAvailablePromoCodes, validatePromoCode } from "@/api/promo";
 import PromoCodeInput from "../../../components/paymentComponents/PromoCodeInput";
 import PayWithRazorpay from "@/components/paymentComponents/razorPayment/razorPayment";
 import PayOnlineFunction from "@/components/paymentComponents/stripePayment/stripePayment";
+import { createReservation } from "@/api/booking";
+import { setFinalAmount, setOriginalAmount, setPaymentMethod, setPromoCode, setPromoCodeName } from "@/Redux/slices/pmsHotelCard.slice";
 
 interface AppliedPromo {
   code: string;
@@ -28,6 +28,8 @@ interface AppliedPromo {
 
 function PaymentPageContent() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [paymentOption, setPaymentOption] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -71,6 +73,7 @@ function PaymentPageContent() {
   const numericAmount = amount || 0;
   const [availablePromos, setAvailablePromos] = useState<any[]>([]);
   const [isLoadingPromos, setIsLoadingPromos] = useState(false);
+  const [isPayAtHotelSubmitting, setIsPayAtHotelSubmitting] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const finalAmount = appliedPromo?.finalAmount ?? numericAmount;
@@ -106,11 +109,12 @@ function PaymentPageContent() {
 
   useEffect(() => {
     const fetchPromoCodes = async () => {
-      if (!propertyId || !accessToken) return;
+      const promoPropertyCode = hotelCode || propertyId;
+      if (!promoPropertyCode || !accessToken) return;
 
       setIsLoadingPromos(true);
       try {
-        const response = await getAvailablePromoCodes(propertyId, accessToken);
+        const response = await getAvailablePromoCodes(promoPropertyCode, accessToken);
 
         // Handle the response structure
         if (response.success && response.data) {
@@ -127,7 +131,7 @@ function PaymentPageContent() {
     };
 
     fetchPromoCodes();
-  }, [propertyId, accessToken]);
+  }, [hotelCode, propertyId, accessToken]);
 
   const handlePromoApply = async (code: string) => {
     if (!accessToken) {
@@ -139,32 +143,37 @@ function PaymentPageContent() {
         {
           code,
           bookingAmount: amount,
-          propertyId: propertyId,
+          propertyId: hotelCode || propertyId,
         },
         accessToken
       );
 
-      if (result.success && result.isValid && result.data?.discountAmount > 0) {
+      const promoData = result?.data ?? result;
+      const isValidPromo = Boolean(promoData?.isValid);
+      const discountAmount = Number(promoData?.discountAmount ?? 0);
+      const finalPromoAmount = Number(promoData?.finalAmount ?? amount);
+
+      if (result?.success && isValidPromo && discountAmount > 0) {
         const promoDetails = availablePromos.find(p => p.code === code);
 
         setAppliedPromo({
           code,
           codeName: promoDetails?.codeName,
-          discount: result.data.discountAmount,
-          finalAmount: result.data.finalAmount,
+          discount: discountAmount,
+          finalAmount: finalPromoAmount,
         });
         return {
           success: true,
-          discount: result.data.discountAmount,
-          finalAmount: result.data.finalAmount,
-          message: result.message
-        };
-      } else {
-        return {
-          success: false,
-          error: result.message || t("Payment.promoCode.invalid")
+          discount: discountAmount,
+          finalAmount: finalPromoAmount,
+          message: result?.message
         };
       }
+
+      return {
+        success: false,
+        error: result?.message || t("Payment.promoCode.invalid")
+      };
     } catch (err: any) {
       return {
         success: false,
@@ -178,21 +187,89 @@ function PaymentPageContent() {
     setError(null);
 
     try {
-      // Initialize Stripe only for payAtHotel option
-      if (!stripePromise && option === 'payAtHotel') {
-        if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined) {
-          throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not defined");
+      // Initialize Stripe only for payOnline option
+      if (!stripePromise && option === 'payOnline') {
+        const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY;
+        if (!stripePublicKey || !stripePublicKey.trim()) {
+          throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is missing or empty");
         }
-        setStripePromise(loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY));
+        setStripePromise(loadStripe(stripePublicKey));
       }
 
       setPaymentOption(option);
     } catch (err: any) {
       console.error("Payment initialization error:", err);
-      setError(err.response?.data?.message || "Failed to initialize payment method");
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to initialize payment method"
+      );
       setPaymentOption(null);
     } finally {
       setIsInitializing(false);
+    }
+  };
+
+  const handlePayAtHotelConfirm = async () => {
+    try {
+      setIsPayAtHotelSubmitting(true);
+      setError(null);
+
+      const safeTaxAmount = Number(totalTax || 0);
+      const safeTotalAmount = Number(finalAmount || 0);
+      const safeAmountBeforeTax = Math.max(0, safeTotalAmount - safeTaxAmount);
+      const safeRequestedRooms = Number(rooms || 1);
+
+      const reservationPayload = {
+            startDate: checkIn,
+            endDate: checkOut,
+            propertyCode: hotelCode,
+            hotelName,
+            roomTypeCode: roomType,
+            ratePlanCode,
+            finalPrice: {
+              amountBeforeTax: safeAmountBeforeTax,
+              taxedAmount: safeTaxAmount,
+              totalAmount: safeTotalAmount,
+              currentChargeableAmount: 0,
+              latterpayableAmount: safeTotalAmount,
+              totalAddonAmount: 0,
+              totalPromotionAmount: 0,
+              promoCodeDiscount: appliedPromo?.discount || 0,
+              loyalityDiscount: 0,
+              dailyPriceBrakeDown: [],
+              taxBrakeDown: [],
+              requestedRooms: safeRequestedRooms,
+              addonBrakeDown: [],
+              promotionBrakeDown: [],
+            currency: currency?.toUpperCase() || "INR",
+            email,
+            phone,
+            paymentMethod: "payAtHotel",
+            bookingSource: "direct",
+            promoCode: appliedPromo?.code || null,
+          },
+          guestDetails: (guests || []).map((guest: any) => ({
+            firstName: guest?.firstName || "",
+            lastName: guest?.lastName || "",
+            dob: guest?.dob || "",
+            type: guest?.type || "adult",
+          })),
+      };
+
+      await createReservation(reservationPayload, accessToken || undefined);
+
+      dispatch(setPaymentMethod("payAtHotel"));
+      dispatch(setOriginalAmount(amount));
+      dispatch(setFinalAmount(finalAmount));
+      dispatch(setPromoCode(appliedPromo?.code || null));
+      dispatch(setPromoCodeName(appliedPromo?.codeName || null));
+
+      router.push("/payment-success");
+    } catch (err: any) {
+      setError(err?.message || "Failed to confirm booking. Please try again.");
+    } finally {
+      setIsPayAtHotelSubmitting(false);
     }
   };
 
@@ -336,7 +413,9 @@ function PaymentPageContent() {
 
                     {paymentOption && !isInitializing && !error && (
   <div className="mt-6">
-    {paymentOption === "payAtHotel" && stripePromise ? (
+    {paymentOption === "payAtHotel" ? (
+      <>
+      {/* Card option intentionally disabled for Pay at Hotel.
       <Elements
         stripe={stripePromise}
         options={{
@@ -357,6 +436,23 @@ function PaymentPageContent() {
           }}
         />
       </Elements>
+      */}
+      <div className="rounded-xl border border-tripswift-blue/20 bg-tripswift-blue/5 p-5">
+        <p className="text-sm text-tripswift-black/80 mb-4">
+          {t("Payment.PaymentPageContent.priceDetails.payAtHotelInfo")}
+        </p>
+        <button
+          type="button"
+          onClick={handlePayAtHotelConfirm}
+          disabled={isPayAtHotelSubmitting}
+          className="w-full sm:w-auto px-5 py-3 rounded-lg bg-tripswift-blue text-tripswift-off-white hover:bg-tripswift-blue/90 transition-all duration-300"
+        >
+          {isPayAtHotelSubmitting
+            ? "Confirming..."
+            : t("Payment.PaymentComponents.PayAtHotelFunction.confirmBooking")}
+        </button>
+      </div>
+      </>
     ) : paymentOption === "payOnline" ? (
       // NEW: Pay Online Component
       <PayOnlineFunction

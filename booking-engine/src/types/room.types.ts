@@ -40,6 +40,10 @@ export interface Room {
   room_unit?: string;
   number_of_nights?: number;
   total_price_for_stay?: number;
+  video?: {
+    url: string;
+    thumbnail?: string | null;
+  } | null;
 }
 
 export interface RatePlan {
@@ -118,7 +122,10 @@ export interface PropertyDetails {
     smokingPolicy: string;
     floor: number;
     images: string[];
-    video: string | null;
+    video: {
+      url: string;
+      thumbnail?: string | null;
+    } | null;
     view360Link: string | null;
     amenities: string[];
     availabilityCount: number;
@@ -205,4 +212,3 @@ export interface ConvertedRoom {
   amenities: Amenity[];
   default_image_url: string;
 }
-

@@ -21,7 +21,11 @@ export const createReservation = async (payload: any, token?: string) => {
       error.message?.includes('jwt')) {
       throw new Error("Authentication error. Please log in again and try.");
     }
-    throw new Error(error?.response?.data?.message || "Failed to create reservation");
+    throw new Error(
+      error?.response?.data?.error ||
+      error?.response?.data?.message ||
+      "Failed to create reservation"
+    );
   }
 };
 

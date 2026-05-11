@@ -15,6 +15,7 @@ bookingEngineRouter.use('/filters', filterRouter);
 bookingEngineRouter.use('/fetch-rooms', fetchRooms);
 bookingEngineRouter.use('/get-price', pricingRouter);
 bookingEngineRouter.use('/customer', customerRouter);
+bookingEngineRouter.use('/customers', customerRouter);
 bookingEngineRouter.use('/review', reviewRouter);
 bookingEngineRouter.use('/wish-list', wishListRouter);
 bookingEngineRouter.use('/problem-ticket', problemTicketRouter);
