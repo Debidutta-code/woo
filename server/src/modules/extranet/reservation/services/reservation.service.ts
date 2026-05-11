@@ -28,7 +28,14 @@ import { RTReservationPushService } from '../../../integrations/rate-tiger/servi
 import { CurrencyCode } from '../../tax-system/interfaces/tourist-tax.type';
 import { BookingStatus } from '../types/reservation.type';
 import { ngeniusService } from '../../payment/services/ngenius.service';
-import { errorResponse, IApiResponse, nowUTC, successResponse, toUTC, toUTCDate } from '../../../../common/utils';
+import {
+    errorResponse,
+    IApiResponse,
+    nowUTC,
+    successResponse,
+    toUTC,
+    toUTCDate,
+} from '../../../../common/utils';
 import { ReservationEmailService } from '../../../../infrastructure/sms-email-service/service';
 
 export class ReservationService {
@@ -316,11 +323,29 @@ export class ReservationService {
                 paymentMethod,
                 bookingSource,
                 agencyId,
+                customerId: customerIdInput,
             } = bookingDetails;
 
             const propertyId = await this.getPropertyIdByCode(propertyCode);
             if (!propertyId) {
                 return errorResponse('Property not found');
+            }
+
+            let resolvedCustomerId = String(customerIdInput ?? '').trim();
+            if (!resolvedCustomerId && email) {
+                const customerRecord = await prisma.customers.findFirst({
+                    where: {
+                        email: String(email).trim(),
+                        isDeleted: false,
+                    },
+                    select: { id: true },
+                });
+                resolvedCustomerId = customerRecord?.id ?? '';
+            }
+            if (!resolvedCustomerId) {
+                return errorResponse(
+                    'Customer account is required for this booking. Log in with the same email as your reservation, or pass customerId in bookingDetails.'
+                );
             }
 
             const primaryGuestData = guestDetails[0];
@@ -357,7 +382,7 @@ export class ReservationService {
 
                 const newGuest =
                     await this.guestRepository.createGuest(newGuestPayload);
-                primaryGuestId = newGuest.id;
+                primaryGuestId = (newGuest as { id: string }).id;
             }
 
             const bookingCode = await this.generateBookingCode(propertyCode);
@@ -474,6 +499,7 @@ export class ReservationService {
                 ),
                 promoId: null,
                 agencyId: agencyId || null,
+                customerId: resolvedCustomerId,
             };
             if (
                 activeIntegrationType &&

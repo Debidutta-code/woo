@@ -219,13 +219,34 @@ function PaymentPageContent() {
       const safeTotalAmount = Number(finalAmount || 0);
       const safeAmountBeforeTax = Math.max(0, safeTotalAmount - safeTaxAmount);
       const safeRequestedRooms = Number(rooms || 1);
+      const currencyUpper = (currency || "INR").toUpperCase();
 
+      const customerId = String(authUser?.id ?? authUser?._id ?? "").trim();
+      if (!customerId) {
+        setError("Please log in to complete your booking.");
+        setIsPayAtHotelSubmitting(false);
+        return;
+      }
+
+      const guestDetailsList = (guests || []).map((guest: any) => ({
+        firstName: guest?.firstName || "",
+        lastName: guest?.lastName || "",
+        dob: guest?.dob || "",
+        type: guest?.type || "adult",
+      }));
+
+      // POST /pms/front-office/reservations expects `data.bookingDetails` (see
+      // server attachPropertyDetails: `data.bookingDetails.propertyCode`).
+      // A flat payload caused 400 "Property identifier not found".
       const reservationPayload = {
+        data: {
+          bookingDetails: {
             startDate: checkIn,
             endDate: checkOut,
             propertyCode: hotelCode,
-            hotelName,
+            hotelName: hotelName || "",
             roomTypeCode: roomType,
+            numberOfRooms: safeRequestedRooms,
             ratePlanCode,
             finalPrice: {
               amountBeforeTax: safeAmountBeforeTax,
@@ -242,19 +263,25 @@ function PaymentPageContent() {
               requestedRooms: safeRequestedRooms,
               addonBrakeDown: [],
               promotionBrakeDown: [],
-            currency: currency?.toUpperCase() || "INR",
+              currencyCode: currencyUpper,
+            },
+            currency: currencyUpper,
             email,
             phone,
+            customerId,
+            guests: {
+              adults: Number(adults || 1),
+              children: Number(children || 0),
+              rooms: safeRequestedRooms,
+            },
+            guestDetails: guestDetailsList,
             paymentMethod: "payAtHotel",
-            bookingSource: "direct",
+            bookingSource: "direct" as const,
             promoCode: appliedPromo?.code || null,
+            refundAmount: null,
           },
-          guestDetails: (guests || []).map((guest: any) => ({
-            firstName: guest?.firstName || "",
-            lastName: guest?.lastName || "",
-            dob: guest?.dob || "",
-            type: guest?.type || "adult",
-          })),
+          guestDetails: guestDetailsList,
+        },
       };
 
       await createReservation(reservationPayload, accessToken || undefined);

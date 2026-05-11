@@ -1,7 +1,13 @@
 import { Response, Request } from 'express';
 
 import { ReservationService } from '../services';
-import { CustomRequest, errorResponse, PropertyRequest } from '../../../../common/utils';
+import {
+    CustomRequest,
+    decodeToken,
+    errorResponse,
+    PropertyRequest,
+} from '../../../../common/utils';
+import { config } from '../../../../config';
 
 export class ReservationController {
     private reservationService: ReservationService;
@@ -38,6 +44,26 @@ export class ReservationController {
                             'Invalid payload - at least one guest is required'
                         )
                     );
+            }
+
+            const authHeader = req.headers.authorization;
+            const bearerToken =
+                authHeader && authHeader.startsWith('Bearer ')
+                    ? authHeader.split(' ')[1]
+                    : null;
+            if (bearerToken && config.customerJWTSecret) {
+                try {
+                    const decoded = await decodeToken(
+                        bearerToken,
+                        config.customerJWTSecret
+                    );
+                    if (decoded?.id) {
+                        body.data.bookingDetails.customerId =
+                            body.data.bookingDetails.customerId || decoded.id;
+                    }
+                } catch {
+                    /* booking-engine JWT not present or invalid — optional */
+                }
             }
 
             //console.log("Creating reservation with data:", JSON.stringify(body.data, null, 2));

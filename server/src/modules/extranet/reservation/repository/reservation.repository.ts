@@ -20,8 +20,14 @@ import {
 export class ReservationRepository {
     public async createReservation(data: ICReservation) {
         try {
+            if (!data.customerId?.trim()) {
+                throw new Error('customerId is required to create a reservation');
+            }
             return await prisma.reservation.create({
-                data,
+                data: {
+                    ...data,
+                    customerId: data.customerId.trim(),
+                } as any,
                 include: {
                     primaryGuest: true,
                     priceBreakdowns: true,

@@ -19,6 +19,8 @@ const PaymentCallbackPage = () => {
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const booking = useSelector((state: RootState) => state.booking);
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   const [status, setStatus] = useState<"checking" | "success" | "failed" | "error">("checking");
   const [message, setMessage] = useState("Verifying your payment...");
@@ -102,6 +104,7 @@ const PaymentCallbackPage = () => {
               currency: currentBooking.finalPrice?.dailyBreakdown?.[0]?.currencyCode || "AED",
               email: currentBooking.email,
               phone: currentBooking.phone,
+              customerId: String(authUser?.id ?? authUser?._id ?? "").trim() || undefined,
               guests: currentBooking.guests,
               guestDetails: currentBooking.guestDetails,
               ratePlanCode: currentBooking.ratePlanCode,
@@ -111,6 +114,12 @@ const PaymentCallbackPage = () => {
             guestDetails: currentBooking.guestDetails,
           },
         };
+      }
+
+      const cid = String(authUser?.id ?? authUser?._id ?? "").trim();
+      if (bookingData?.data?.bookingDetails && cid) {
+        bookingData.data.bookingDetails.customerId =
+          bookingData.data.bookingDetails.customerId || cid;
       }
 
       // Attach payment info to booking
@@ -128,6 +137,9 @@ const PaymentCallbackPage = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(accessToken
+              ? { Authorization: `Bearer ${accessToken}` }
+              : {}),
           },
           body: JSON.stringify(bookingData),
         }
@@ -166,7 +178,7 @@ const PaymentCallbackPage = () => {
         id: "booking-error",
       });
     }
-  }, [dispatch, router]);
+  }, [dispatch, router, authUser, accessToken]);
 
   // Handle payment status updates from socket
   const handlePaymentUpdate = useCallback((update: any) => {

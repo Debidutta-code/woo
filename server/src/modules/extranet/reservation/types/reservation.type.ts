@@ -60,6 +60,8 @@ export interface IBookingDetails {
     };
     guestDetails: IGuestDetail[];
     paymentMethod: string;
+    /** Booking-engine `customers.id` (required by DB `reservations.customer_id`) */
+    customerId?: string;
     selectedAddons?: IBookingAddonCreate[];
     selectedPromotions?: IReservationPromotionCreate[];
     agencyId?: string | null;
@@ -162,6 +164,8 @@ export interface ICReservation {
     timezone: string;
     deviceTypes: DeviceType;
     agencyId?: string | null; // ✅ ADD THIS
+    /** Present on new rows; optional on type for legacy reads before Prisma select includes it */
+    customerId?: string;
 }
 
 export interface IReservation extends ICReservation {

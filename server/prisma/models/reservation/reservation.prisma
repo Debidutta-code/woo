@@ -23,6 +23,10 @@ model Reservation {
     primaryGuestId String     @map("primary_guest_id") @db.VarChar(36)
     primaryGuest   Guests     @relation("ReservationPrimaryGuest", fields: [primaryGuestId], references: [id])
 
+    // Booking-engine customer (Postgres `customers` table)
+    customerId String   @map("customer_id") @db.VarChar(36)
+    customer   Customers @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
     // Guest Data
     guests           Json    @map("guests")
     bookingUserEmail String  @map("booking_user_email") @db.VarChar(150)
@@ -78,5 +82,6 @@ model Reservation {
     @@index([bookingStatus])
     @@index([bookingSource])
     @@index([primaryGuestId])
+    @@index([customerId])
     @@map("reservations")
 }
