@@ -432,6 +432,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   };
 
   const roomAmenitiesList = getRoomAmenities();
+  const topRateRowAmenities = roomAmenitiesList
+    .map((amenity) => amenity?.name)
+    .filter(Boolean)
+    .slice(0, 2);
   const roomVideoUrl =
     data.video && typeof data.video === "object" ? data.video.url : "";
   const mediaItems = [
@@ -924,10 +928,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
                     {/* Additional Info */}
                     <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2 text-[10px] sm:text-xs text-gray-600">
-                      <span className="whitespace-nowrap">
-                        ✓ Instant confirmation
-                      </span>
-                      <span className="whitespace-nowrap">✓ Free WiFi</span>
+                      {topRateRowAmenities.map((amenityName, amenityIndex) => (
+                        <span
+                          key={`${uniqueKey}-amenity-${amenityIndex}`}
+                          className="whitespace-nowrap"
+                        >
+                          ✓ {amenityName}
+                        </span>
+                      ))}
                       {data?.number_of_nights && (
                         <span className="whitespace-nowrap">
                           • {data.number_of_nights} night
@@ -1028,9 +1036,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                         </div>
                       )}
 
-                      <div className="text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3">
+                      {/* <div className="text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3">
                         Per night • Taxes excluded
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="flex flex-col items-end w-auto md:w-full">

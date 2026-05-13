@@ -34,6 +34,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
   currencyCode = "USD",
   onAddonsSelected,
 }) => {
+  const PRIMARY_COLOR = "#076DB3";
   const { t } = useTranslation();
   const [addons, setAddons] = useState<AvailableAddon[]>([]);
   const [loading, setLoading] = useState(false);
@@ -160,7 +161,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
               style={{
                 width: 40,
                 height: 40,
-                background: "linear-gradient(135deg, #1E90FF 0%, #0056D2 100%)",
+                background: PRIMARY_COLOR,
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -200,7 +201,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {loading && (
             <div className="flex items-center justify-center py-16">
-              <FaSpinner className="animate-spin h-7 w-7 text-blue-600 mr-3" />
+              <FaSpinner className="animate-spin h-7 w-7 mr-3" style={{ color: PRIMARY_COLOR }} />
               <span className="text-gray-500 text-sm">Loading add-ons…</span>
             </div>
           )}
@@ -253,10 +254,10 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
                     key={addonId}
                     className="border rounded-2xl overflow-hidden transition-all"
                     style={{
-                      borderColor: qty > 0 ? "#1E90FF" : "#E5E7EB",
+                      borderColor: qty > 0 ? PRIMARY_COLOR : "#E5E7EB",
                       boxShadow:
                         qty > 0
-                          ? "0 0 0 2px rgba(30,144,255,0.15)"
+                          ? "0 0 0 2px rgba(7,109,179,0.15)"
                           : "0 1px 3px rgba(0,0,0,0.06)",
                     }}
                   >
@@ -322,8 +323,8 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
                           style={{
                             width: 30,
                             height: 30,
-                            borderColor: qty > 0 ? "#1E90FF" : "#D1D5DB",
-                            color: qty > 0 ? "#1E90FF" : "#9CA3AF",
+                            borderColor: qty > 0 ? PRIMARY_COLOR : "#D1D5DB",
+                            color: qty > 0 ? PRIMARY_COLOR : "#9CA3AF",
                             cursor: qty === 0 ? "not-allowed" : "pointer",
                           }}
                         >
@@ -337,7 +338,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
                           style={{
                             minWidth: 20,
                             textAlign: "center",
-                            color: qty > 0 ? "#1E90FF" : "#374151",
+                            color: qty > 0 ? PRIMARY_COLOR : "#374151",
                           }}
                         >
                           {qty}
@@ -349,7 +350,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
                           style={{
                             width: 30,
                             height: 30,
-                            background: "#1E90FF",
+                            background: PRIMARY_COLOR,
                           }}
                         >
                           <span className="text-base leading-none font-bold">
@@ -385,7 +386,7 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
             ) : (
               <span className="font-semibold text-gray-800">
                 {totalSelected} add-on{totalSelected !== 1 ? "s" : ""} ·{" "}
-                <span className="text-blue-600">
+                <span style={{ color: PRIMARY_COLOR }}>
                   {currencyCode} {totalPrice.toFixed(2)}
                 </span>
               </span>
@@ -406,12 +407,12 @@ export const AddonsModal: React.FC<AddonsModalProps> = ({
               style={{
                 background:
                   totalSelected > 0
-                    ? "linear-gradient(135deg, #1E90FF 0%, #0056D2 100%)"
+                    ? PRIMARY_COLOR
                     : "#D1D5DB",
                 cursor: totalSelected === 0 ? "default" : "pointer",
                 boxShadow:
                   totalSelected > 0
-                    ? "0 4px 14px rgba(30,144,255,0.35)"
+                    ? "0 4px 14px rgba(7,109,179,0.35)"
                     : "none",
               }}
             >
