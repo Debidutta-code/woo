@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 
 interface RootState {
   auth: {
+    accessToken: string;
     user: {
       _id: string;
       firstName: string;
@@ -82,7 +83,7 @@ export default function BookingTabs() {
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const authUser = useSelector((state: RootState) => state.auth.user);
-  const token = Cookies.get("accessToken");
+  const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
 
   const currentTabData = bookingsCache[activeTab];
@@ -119,15 +120,19 @@ export default function BookingTabs() {
       try {
         setLoading(true);
         setError(null);
+        const accessToken = reduxToken || Cookies.get("accessToken");
 
         //console.log(`Fetching bookings for tab: ${tab}, page: ${page}, filterData:`, tab === 'all' ? '' : tab);
 
         const response = await axios.get<PaginationResponse>(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking/customers/booking/details/${authUser._id}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: accessToken
+              ? {
+                  Authorization: `Bearer ${accessToken}`,
+                }
+              : undefined,
+            withCredentials: true,
             params: {
               page: page,
               limit: itemsPerPage,
@@ -142,12 +147,14 @@ export default function BookingTabs() {
         //   totalPages: response.data.totalPages
         // });
 
+        const responseData = response.data.data || response.data;
+
         setBookingsCache((prev) => ({
           ...prev,
           [tab]: {
-            bookings: response.data.bookings || [],
-            totalBookings: response.data.totalBookings || 0,
-            totalPages: response.data.totalPages || 1,
+            bookings: responseData.bookings || [],
+            totalBookings: responseData.totalBookings || 0,
+            totalPages: responseData.totalPages || 1,
             currentPage: page,
             loaded: true,
           },
@@ -171,7 +178,7 @@ export default function BookingTabs() {
         }));
       }
     },
-    [authUser, token, itemsPerPage, t],
+    [authUser, reduxToken, itemsPerPage, t],
   );
 
   useEffect(() => {

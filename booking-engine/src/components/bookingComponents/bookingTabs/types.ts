@@ -55,11 +55,22 @@ export interface Booking {
   taxValue?: number;
 }
 
-export interface PaginationResponse {
+export interface PaginationData {
   bookings: Booking[];
   totalBookings: number;
   totalPages: number;
   currentPage: number;
+}
+
+export interface PaginationResponse {
+  success: boolean;
+  message: string;
+  data: PaginationData;
+  // Legacy flat structure support
+  bookings?: Booking[];
+  totalBookings?: number;
+  totalPages?: number;
+  currentPage?: number;
 }
 
 export type BookingTabType = 'all' | 'upcoming' | 'completed' | 'cancelled';
