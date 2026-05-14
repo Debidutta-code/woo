@@ -12,6 +12,7 @@ import hotelReducer from "./slices/hotelcard.slice";
 import pmsHotelCardReducer from "./slices/pmsHotelCard.slice";
 import paymentReducer from "./slices/payment.slice";
 import notificationReducer from './slices/notification.slice';
+import bookingReducer from "./slices/bookingSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import chatReducer from './slices/chatbot.slice'; 
 import storage from "./storage";
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   hotel: hotelReducer,
   pmsHotelCard: pmsHotelCardReducer,
   payment: paymentReducer,
+  booking: bookingReducer,
   notifications: notificationReducer,
   chat: chatReducer,
 });

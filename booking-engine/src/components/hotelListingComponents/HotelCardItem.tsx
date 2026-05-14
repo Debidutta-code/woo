@@ -81,6 +81,7 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
   const reduxToken = useSelector(
     (state: any) => state.auth?.accessToken || state.authReducer?.accessToken,
   );
+  const accessToken = reduxToken || Cookies.get("accessToken");
   const [isWishlisted, setIsWishlisted] = useState(hotel.isWishlisted || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -98,11 +99,12 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
   // Sync wishlist state
   useEffect(() => {
     if (!isTogglingRef.current) {
-      setIsWishlisted(hotel.isWishlisted || false);
+      setIsWishlisted(Boolean(accessToken) && Boolean(hotel.isWishlisted));
     }
-  }, [hotel.isWishlisted]);
+  }, [hotel.isWishlisted, accessToken]);
 
   useEffect(() => {
+    if (!accessToken) return;
     const recentlyWishlisted = Cookies.get("wishlistRecentlyAdded");
     if (recentlyWishlisted === hotel.id) {
       setIsWishlisted(true);
@@ -111,7 +113,46 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
       }
       Cookies.remove("wishlistRecentlyAdded");
     }
-  }, [hotel.id, onWishlistToggle]);
+  }, [hotel.id, onWishlistToggle, accessToken]);
+
+  // Process pending wishlist action immediately after login when user returns
+  useEffect(() => {
+    if (!accessToken || isTogglingRef.current || isWishlistLoading) return;
+
+    const pendingWishlistAction = Cookies.get("pendingWishlistAction");
+    if (!pendingWishlistAction) return;
+
+    try {
+      const parsedAction = JSON.parse(pendingWishlistAction);
+      if (parsedAction?.propertyId !== hotel.id) return;
+
+      isTogglingRef.current = true;
+      setIsWishlistLoading(true);
+
+      wishlistAPI
+        .toggleWishlist(
+          parsedAction.propertyId,
+          parsedAction.propertyCode,
+          parsedAction.propertyName,
+          accessToken,
+        )
+        .then(() => {
+          setIsWishlisted(true);
+          onWishlistToggle?.(hotel.id, true);
+          Cookies.set("wishlistRecentlyAdded", hotel.id);
+          Cookies.remove("pendingWishlistAction");
+        })
+        .catch(() => {
+          // Keep pending action so auth page flow can retry.
+        })
+        .finally(() => {
+          setIsWishlistLoading(false);
+          isTogglingRef.current = false;
+        });
+    } catch (_error) {
+      Cookies.remove("pendingWishlistAction");
+    }
+  }, [accessToken, hotel.id, hotel.propertyCode, hotel.propertyName, isWishlistLoading, onWishlistToggle]);
 
   // Reset image index when hotel changes
   useEffect(() => {
@@ -126,7 +167,7 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
       return;
     }
 
-    const token = reduxToken || Cookies.get("accessToken");
+    const token = accessToken;
     if (!token) {
       const sourcePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       Cookies.set("redirectAfterLogin", sourcePath);

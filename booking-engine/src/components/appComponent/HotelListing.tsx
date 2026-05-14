@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios"; // 👈 ADD THIS IMPORT
+import Cookies from "js-cookie";
 import { getHotelsByCity } from "../../api/hotel";
 import { wishlistAPI } from "@/api/wishlist";
 import FilterModal, { FilterState } from "../hotelBox/FilterModal";
@@ -348,19 +349,27 @@ const HotelListing: React.FC = () => {
 
       const hotelsResponse = await getHotelsByCity(searchTerm, apiFilters);
       let mergedHotels = hotelsResponse.data || [];
-      try {
-        const wishlistItems = await wishlistAPI.getWishlistGrouped();
-        const wishlistPropertyIds = new Set(
-          (wishlistItems || []).map((item: any) => item?.propertyId).filter(Boolean),
-        );
+      const accessToken = Cookies.get("accessToken");
+      if (accessToken) {
+        try {
+          const wishlistItems = await wishlistAPI.getWishlistGrouped();
+          const wishlistPropertyIds = new Set(
+            (wishlistItems || []).map((item: any) => item?.propertyId).filter(Boolean),
+          );
+          mergedHotels = mergedHotels.map((hotel) => ({
+            ...hotel,
+            isWishlisted:
+              wishlistPropertyIds.has(hotel.id) ||
+              wishlistPropertyIds.has((hotel as any).propertyId),
+          }));
+        } catch (_error) {
+          // Ignore wishlist sync failure for authenticated users.
+        }
+      } else {
         mergedHotels = mergedHotels.map((hotel) => ({
           ...hotel,
-          isWishlisted:
-            wishlistPropertyIds.has(hotel.id) ||
-            wishlistPropertyIds.has((hotel as any).propertyId),
+          isWishlisted: false,
         }));
-      } catch (_error) {
-        // Ignore wishlist sync failure for non-authenticated users.
       }
 
       setHotelData({

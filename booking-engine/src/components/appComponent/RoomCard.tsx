@@ -864,11 +864,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 "ratePlanCode" in currentRatePlan
                   ? currentRatePlan.ratePlanCode
                   : currentRatePlan.rate_plan_code;
-              const ratePlanDisplayName =
+              const rawRatePlanDisplayName =
                 "ratePlanName" in currentRatePlan &&
                 currentRatePlan.ratePlanName
                   ? currentRatePlan.ratePlanName
                   : ratePlanCode;
+              const ratePlanDisplayName =
+                typeof rawRatePlanDisplayName === "string"
+                  ? rawRatePlanDisplayName
+                  : String(rawRatePlanDisplayName ?? "");
               const isNonRefundable =
                 (ratePlanCode || "").toLowerCase().includes("non-refundable") ||
                 (ratePlanCode || "").toLowerCase().includes("nonrefundable");
