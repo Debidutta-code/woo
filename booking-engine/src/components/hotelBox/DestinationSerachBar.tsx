@@ -103,21 +103,6 @@ const CompactSearchBar: React.FC<CompactSearchBarProps> = ({
   } | null>(null);
   const MAX_RECENT_SEARCHES = 5;
 
-  // Load recent searches from localStorage on component mount
-  useEffect(() => {
-    const storedSearches = localStorage.getItem("recentHotelSearches");
-    if (storedSearches) {
-      try {
-        const parsedSearches = JSON.parse(storedSearches);
-        if (Array.isArray(parsedSearches)) {
-          setRecentSearches(parsedSearches);
-        }
-      } catch (error) {
-        console.error("Error parsing recent searches:", error);
-      }
-    }
-  }, []);
-
   // Update state when props change
   useEffect(() => {
     if (initialLocation) {
@@ -227,10 +212,6 @@ const CompactSearchBar: React.FC<CompactSearchBarProps> = ({
     ].slice(0, MAX_RECENT_SEARCHES);
 
     setRecentSearches(updatedSearches);
-    localStorage.setItem(
-      "recentHotelSearches",
-      JSON.stringify(updatedSearches),
-    );
   };
 
   // Improved selection handler to prevent blur conflict

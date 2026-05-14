@@ -20,6 +20,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { formatDate } from "../../../utils/dateUtils";
 import RebookModal from '../bookAgain/RebookModal';
+import { useRouter } from 'next/navigation';
 
 interface BookingCardProps {
   booking: Booking;
@@ -39,6 +40,7 @@ const BookingCard: React.FC<BookingCardProps> = ({
   onBookAgain = () => { },
 }) => {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
 
   // Get primary guest name (first guest or fallback to booking.email)
   const primaryGuest = booking.guestDetails && booking.guestDetails.length > 0
@@ -57,7 +59,13 @@ const BookingCard: React.FC<BookingCardProps> = ({
     : 'Unknown';
 
   const isPastOrTodayCheckIn = new Date(booking.checkInDate).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0);
+  const isPastOrTodayCheckOut = new Date(booking.checkOutDate).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0);
   const [isRebookModalOpen, setIsRebookModalOpen] = useState(false);
+
+  const handleWriteReview = () => {
+    if (!booking.reservationId) return;
+    router.push(`/review?reservationId=${encodeURIComponent(booking.reservationId)}`);
+  };
 
   return (
     <div className="bg-tripswift-off-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-gray-100 group font-noto-sans">
@@ -192,6 +200,17 @@ const BookingCard: React.FC<BookingCardProps> = ({
 
         {isPastOrTodayCheckIn && (
           <>
+            {isPastOrTodayCheckOut && booking.status !== "Cancelled" && (
+              <button
+                className="w-full mt-3 py-2.5 px-4 rounded-lg bg-tripswift-off-white hover:bg-gray-100 text-tripswift-blue border border-tripswift-blue/30 font-tripswift-medium transition-all duration-300 flex items-center justify-center text-sm"
+                onClick={handleWriteReview}
+                disabled={!booking.reservationId}
+              >
+                <FaTicketAlt className={`${i18n.language === "ar" ? "ml-2" : "mr-2"}`} />
+                {t("BookingTabs.BookingCard.writeReview", { defaultValue: "Write a review" })}
+              </button>
+            )}
+
             <button
               className="w-full mt-3 py-2.5 px-4 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-tripswift-medium shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center text-sm"
               onClick={() => setIsRebookModalOpen(true)}
