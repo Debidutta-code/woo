@@ -547,34 +547,32 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
 
         {/* Right section - Enhanced rating and pricing */}
         <div className="lg:w-1.5/6 p-5 bg-gray-50/50 flex flex-col justify-between">
-          {/* Top section - Rating badge */}
-          <div className="mb-4">
-            <div className="inline-flex items-center justify-between gap-3 w-full">
-              <div className="flex flex-col items-start">
-                <div className="text-sm font-tripswift-bold text-gray-700 mb-0.5">
-                  {hasReviews
-                    ? t("HotelListing.HotelCardItem.average", {
-                        defaultValue: "Average",
-                      })
-                    : t("HotelListing.HotelCardItem.noRating", {
-                        defaultValue: "No rating",
-                      })}
+          {/* Top section - Rating badge (preserve spacing even when hidden) */}
+          <div className="mb-4 min-h-[54px]">
+            {hasReviews && averageRating > 0 && (
+              <div className="inline-flex items-center justify-between gap-3 w-full">
+                <div className="flex flex-col items-start">
+                  <div className="text-sm font-tripswift-bold text-gray-700 mb-0.5">
+                    {t("HotelListing.HotelCardItem.average", {
+                      defaultValue: "Average",
+                    })}
+                  </div>
+                  <div className="text-xs text-gray-500 font-tripswift-medium">
+                    {totalReviews}{" "}
+                    {totalReviews === 1
+                      ? t("HotelListing.HotelCardItem.review", {
+                          defaultValue: "review",
+                        })
+                      : t("HotelListing.HotelCardItem.reviews", {
+                          defaultValue: "reviews",
+                        })}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500 font-tripswift-medium">
-                  {totalReviews}{" "}
-                  {totalReviews === 1
-                    ? t("HotelListing.HotelCardItem.review", {
-                        defaultValue: "review",
-                      })
-                    : t("HotelListing.HotelCardItem.reviews", {
-                        defaultValue: "reviews",
-                      })}
+                <div className="bg-tripswift-blue text-white text-lg font-tripswift-extrabold rounded-br-xl rounded-t-xl rounded-bl-none px-2 py-1 text-center min-w-[50px] shadow-md">
+                  {averageRating.toFixed(1)}
                 </div>
               </div>
-              <div className="bg-tripswift-blue text-white text-lg font-tripswift-extrabold rounded-br-xl rounded-t-xl rounded-bl-none px-2 py-1 text-center min-w-[50px] shadow-md">
-                {averageRating.toFixed(1)}
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Limited availability badge */}

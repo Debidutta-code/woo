@@ -138,6 +138,7 @@ const HotelListing: React.FC = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { guestDetails } = useSelector((state) => state.hotel);
+  const reduxAccessToken = useSelector((state) => state.auth?.accessToken);
   const destination = searchParams.get("destination");
 
   const isUuid = (value: string) =>
@@ -349,18 +350,20 @@ const HotelListing: React.FC = () => {
 
       const hotelsResponse = await getHotelsByCity(searchTerm, apiFilters);
       let mergedHotels = hotelsResponse.data || [];
-      const accessToken = Cookies.get("accessToken");
+      const accessToken = reduxAccessToken || Cookies.get("accessToken");
       if (accessToken) {
         try {
-          const wishlistItems = await wishlistAPI.getWishlistGrouped();
+          const wishlistItems = await wishlistAPI.getWishlistGrouped(accessToken);
           const wishlistPropertyIds = new Set(
-            (wishlistItems || []).map((item: any) => item?.propertyId).filter(Boolean),
+            (wishlistItems || [])
+              .map((item: any) => String(item?.propertyId || ""))
+              .filter(Boolean),
           );
           mergedHotels = mergedHotels.map((hotel) => ({
             ...hotel,
             isWishlisted:
-              wishlistPropertyIds.has(hotel.id) ||
-              wishlistPropertyIds.has((hotel as any).propertyId),
+              wishlistPropertyIds.has(String(hotel.id || "")) ||
+              wishlistPropertyIds.has(String((hotel as any).propertyId || "")),
           }));
         } catch (_error) {
           // Ignore wishlist sync failure for authenticated users.

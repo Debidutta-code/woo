@@ -10,6 +10,7 @@ import { format, addDays } from "date-fns";
 import { getExplorDestinations } from "./api";
 import { IExplorDestination } from "./types";
 import toast from "react-hot-toast";
+import { getUniqueCities } from "./api/unique-cities.api";
 
 
 export function Destination() {
@@ -21,29 +22,71 @@ export function Destination() {
   const [error, setError] = useState<string | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1200&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?q=80&w=1200&auto=format&fit=crop",
+  ];
+
+  const fetchCityFallbackDestinations = async (): Promise<IExplorDestination[]> => {
+    const cities = await getUniqueCities();
+
+    return cities
+      .filter((item: any) => typeof item?.city === "string" && item.city.trim().length > 0)
+      .map((item: any, index: number) => ({
+        id: `city-${index + 1}`,
+        destinationName: item.city.trim(),
+        destinationImage: fallbackImages[index % fallbackImages.length],
+        slNo: index + 1,
+      }));
+  };
   // Fetch unique cities from API
   useEffect(() => {
     fetchDestinations();
-  }, [t]);
+  }, []);
 
   const fetchDestinations = async () => {
     try {
       setLoading(true);
       const response = await getExplorDestinations();
-      console.log(response)
-      if(response.success){
+      if(response.success && Array.isArray(response.data) && response.data.length > 0){
         setDestinations(response.data);
-      }else{
-        toast.error(response.message);
+      } else {
+        const fallbackDestinations = await fetchCityFallbackDestinations();
+        setDestinations(fallbackDestinations);
+        if (!fallbackDestinations.length && response?.message) {
+          toast.error(response.message);
+        }
       }
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          t("HomeSections.AllHotelLists.errorMessage", {
-            defaultValue: "An error occurred while fetching destinations",
-          });
-        setError(errorMessage);
+        try {
+          const fallbackDestinations = await fetchCityFallbackDestinations();
+          setDestinations(fallbackDestinations);
+          if (!fallbackDestinations.length) {
+            const errorMessage =
+              err.response?.data?.message ||
+              err.message ||
+              t("HomeSections.AllHotelLists.errorMessage", {
+                defaultValue: "An error occurred while fetching destinations",
+              });
+            setError(errorMessage);
+          } else {
+            setError(null);
+          }
+        } catch (fallbackError: any) {
+          const errorMessage =
+            fallbackError?.response?.data?.message ||
+            err?.response?.data?.message ||
+            fallbackError?.message ||
+            err?.message ||
+            t("HomeSections.AllHotelLists.errorMessage", {
+              defaultValue: "An error occurred while fetching destinations",
+            });
+          setError(errorMessage);
+        }
       }finally{
         setLoading(false)
       }

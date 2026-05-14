@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Star, MapPin, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -12,6 +11,7 @@ import {
 } from "../../Redux/slices/pmsHotelCard.slice";
 import { format, addDays } from "date-fns";
 import { getHotelsByCity } from "../../api/hotel";
+import { getUniqueCities } from "./api/unique-cities.api";
 interface PropertyAmenities {
   wifi?: boolean;
   restaurant?: boolean;
@@ -75,17 +75,18 @@ export function PopularHotels() {
     fetchCities();
   }, []);
 
+  // Fetch properties whenever city changes (including initial default city)
+  useEffect(() => {
+    if (!selectedCity) return;
+    fetchProperties(selectedCity);
+  }, [selectedCity]);
+
   const fetchCities = async () => {
     try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/filters/search/unique-cities`,
-      );
-      const data = response.data;
-      if (data.status === "success") {
-        setCities(data.data);
-        if (data.data.length > 0) {
-          setSelectedCity(data.data[0].city);
-        }
+      const data = await getUniqueCities();
+      setCities(data);
+      if (data.length > 0) {
+        setSelectedCity(data[0].city);
       }
     } catch (error) {
       console.error("Error fetching cities:", error);

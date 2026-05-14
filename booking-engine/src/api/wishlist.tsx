@@ -58,10 +58,10 @@ export const wishlistAPI = {
   /**
    * Get wishlist grouped by cities
    */
-  getWishlistGrouped: async () => {
+  getWishlistGrouped: async (tokenOverride?: string) => {
     try {
       const response = await axios.get(`${WISHLIST_BASE}/my`, {
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders(tokenOverride),
         withCredentials: true
       });
       return response.data.data || [];
@@ -76,9 +76,9 @@ export const wishlistAPI = {
   /**
    * Get wishlist properties for a specific city
    */
-  getWishlistByCity: async (city: string) => {
+  getWishlistByCity: async (city: string, tokenOverride?: string) => {
     try {
-      const items = await wishlistAPI.getWishlistGrouped();
+      const items = await wishlistAPI.getWishlistGrouped(tokenOverride);
       return (items || []).filter((item: any) => {
         const cityName = item?.Property?.propertyAddress?.city || item?.Property?.city;
         return typeof cityName === "string" && cityName.toLowerCase() === city.toLowerCase();
@@ -94,9 +94,9 @@ export const wishlistAPI = {
   /**
    * Check if property is in wishlist
    */
-  checkIfInWishlist: async (propertyId: string) => {
+  checkIfInWishlist: async (propertyId: string, tokenOverride?: string) => {
     try {
-      const items = await wishlistAPI.getWishlistGrouped();
+      const items = await wishlistAPI.getWishlistGrouped(tokenOverride);
       return (items || []).some((item: any) => item?.propertyId === propertyId);
     } catch (error: any) {
       if (error.response?.status === 401) {
@@ -109,9 +109,9 @@ export const wishlistAPI = {
   /**
    * Get wishlist count
    */
-  getWishlistCount: async () => {
+  getWishlistCount: async (tokenOverride?: string) => {
     try {
-      const items = await wishlistAPI.getWishlistGrouped();
+      const items = await wishlistAPI.getWishlistGrouped(tokenOverride);
       return (items || []).length;
     } catch (error: any) {
       if (error.response?.status === 401) {

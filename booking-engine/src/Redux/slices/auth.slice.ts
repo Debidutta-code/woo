@@ -40,7 +40,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.accessToken = action.payload;
       Cookies.set("accessToken", action.payload, cookieOptions);
-      Cookies.set("isAuthenticated", "true", cookieOptions);
     },
     setUser(
       state: Draft<typeof initialState>,
@@ -48,17 +47,12 @@ const authSlice = createSlice({
     ) {
       const normalizedUser = normalizeUser(action.payload);
       state.user = normalizedUser;
-      if (normalizedUser) {
-        Cookies.set("userData", JSON.stringify(normalizedUser), cookieOptions);
-      }
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.accessToken = "";
       Cookies.remove("accessToken");
-      Cookies.remove("isAuthenticated");
-      Cookies.remove("userData");
     },
   },
   extraReducers: (builder) => {
@@ -69,11 +63,6 @@ const authSlice = createSlice({
           ...state.user,
           ...normalizedPayload,
         };
-        Cookies.set(
-          "userData",
-          JSON.stringify(normalizeUser(state.user)),
-          cookieOptions,
-        );
       })
       .addCase(updateProfile.pending, (state) => {})
       .addCase(updateProfile.rejected, (state, action) => {
@@ -83,7 +72,6 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.accessToken = action.payload.token;
         Cookies.set("accessToken", action.payload.token);
-        Cookies.set("isAuthenticated", "true");
       })
       .addCase(googleLogin.rejected, (state, action) => {
         state.isAuthenticated = false;
@@ -233,7 +221,6 @@ export const getUser = createAsyncThunk<
 
   const normalizedUser = normalizeUser(res.data.data);
   dispatch(setUser(normalizedUser));
-  Cookies.set("userData", JSON.stringify(normalizedUser), cookieOptions);
 });
 
 // Update profile thunk
@@ -250,13 +237,16 @@ export const updateProfile = createAsyncThunk<
 >("auth/updateProfile", async (data, { rejectWithValue }) => {
   try {
     const token = Cookies.get("accessToken") || "";
-    const response = await axios.patch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/update`,
+    const response = await axios.put(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
       data,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+        withCredentials: true,
       },
     );
     return response.data.data;
@@ -281,11 +271,21 @@ export const deleteAccount = createAsyncThunk<
     description: string;
   },
   { dispatch: AppDispatch; state: RootState }
->("auth/deleteAccount", async (data, { dispatch, rejectWithValue }) => {
+>("auth/deleteAccount", async (data, { dispatch, rejectWithValue, getState }) => {
   try {
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/customers/delete-form`,
-      data,
+    const stateToken = getState().auth.accessToken;
+    const token = stateToken || Cookies.get("accessToken") || "";
+    if (!token) {
+      return rejectWithValue("No access token found. Please login again.");
+    }
+    const response = await axios.delete(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      },
     );
     dispatch(logout());
     return response.data;
