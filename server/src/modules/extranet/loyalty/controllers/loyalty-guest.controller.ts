@@ -313,4 +313,53 @@ export class LoyaltyGuestController {
                 );
         }
     }
+
+    /**
+     * Get customer-facing loyalty config for booking engine
+     * GET /api/v1/extranet/loyalty/guest/customer-config/:propertyId
+     */
+    public async getCustomerLoyaltyConfig(
+        req: CustomRequest,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const { propertyId } = req.params;
+
+            if (!propertyId) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Invalid Request',
+                            'Property ID is required'
+                        )
+                    );
+            }
+
+            const result =
+                await this.loyaltyGuestService.getCustomerLoyaltyConfig(
+                    propertyId
+                );
+            return res.status(result.success ? 200 : 404).json(result);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res
+                    .status(500)
+                    .json(
+                        errorResponse(
+                            'Failed to fetch customer loyalty config',
+                            error.message
+                        )
+                    );
+            }
+            return res
+                .status(500)
+                .json(
+                    errorResponse(
+                        'Internal Server Error',
+                        'Failed to fetch customer loyalty config'
+                    )
+                );
+        }
+    }
 }

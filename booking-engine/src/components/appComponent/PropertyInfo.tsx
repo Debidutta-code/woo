@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { PropertyDetails } from "../../types/room.types";
 import { getFormattedAddress } from "../../utils/roomHelpers";
 import { PropertyGallery } from "./PropertyGallery";
+import LoyaltyJoinCard from "./LoyaltyJoinCard";
 
 interface PropertyInfoProps {
   propertyDetails: PropertyDetails | null;
@@ -273,6 +274,12 @@ export const PropertyInfo: React.FC<PropertyInfoProps> = ({
             )}
           </div>
         </div>
+        {propertyDetails?.id && (
+          <LoyaltyJoinCard
+            propertyId={propertyDetails.id}
+            propertyName={propertyDetails.propertyName}
+          />
+        )}
       </div>
     </div>
   );

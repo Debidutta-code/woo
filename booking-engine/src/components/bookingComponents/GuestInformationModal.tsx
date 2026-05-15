@@ -135,6 +135,7 @@ interface FinalPrice {
   // Add-on and promotion fields
   totalAddonAmount?: number;
   totalPromotionAmount?: number;
+  loyalityDiscount?: number;
   currentChargeableAmount?: number;
   latterpayableAmount?: number;
   currencyCode?: string;
@@ -238,6 +239,21 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
     (state: any) => state.auth?.accessToken || state.auth?.token
   );
 
+  const getValidPropertyId = (): string => {
+    const isUuid = (value: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        value || ""
+      );
+    const candidatePropertyIds = [
+      selectedRoom?.propertyInfo_id,
+      selectedRoom?.property_id,
+      selectedRoom?.propertyId,
+      reduxPropertyId,
+    ].filter(Boolean) as string[];
+    return candidatePropertyIds.find((id) => isUuid(id)) || "";
+  };
+
+
   const getFinalPrice = async (
     selectedRoom: any,
     checkInDate: string,
@@ -262,6 +278,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
           childAges: [],
           guestDistribution: [{ adults: guestData?.guests || 1, children: guestData?.children || 0, childAges: [] }],
           promoCode: "",
+          guestEmail: email?.trim() || guestData?.email?.trim() || "",
           ...(addonsPayload.length > 0 && { parsedAddons: addonsPayload }),
         },
         { withCredentials: true }
@@ -271,6 +288,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         const amountBeforeTax = Number(apiData.amountBeforeTax || 0);
         const totalAddonAmount = Number(apiData.totalAddonAmount || 0);
         const totalAmount = Number(apiData.totalAmount || 0);
+        const loyalityDiscount = Number(apiData.loyalityDiscount || 0);
         const taxedAmount = Number(apiData.taxedAmount || 0);
         const dailyPriceBrakeDown = Array.isArray(apiData.dailyPriceBrakeDown)
           ? apiData.dailyPriceBrakeDown
@@ -282,6 +300,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         setFinalPrice({
           ...apiData,
           totalAmount,
+          loyalityDiscount,
           amountBeforeTax,
           totalAddonAmount,
           totalTax: taxedAmount,
@@ -627,6 +646,12 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
     setErrors(newErrors);
     if (!valid) return;
 
+    const propertyId = getValidPropertyId();
+    if (!propertyId) {
+      toast.error("Property ID is invalid. Please reopen the hotel from listing.");
+      return;
+    }
+
     setIsLoading(true); // Set loading state to show loader
     try {
       // setUpdateMessage(
@@ -672,17 +697,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
 
     if (isFormUpdated && selectedRoom) {
       //console.log("selected rateplan",selectedRateplan)
-      const isUuid = (value: string) =>
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-          value || ""
-        );
-      const candidatePropertyIds = [
-        selectedRoom.propertyInfo_id,
-        selectedRoom.property_id,
-        selectedRoom.propertyId,
-        reduxPropertyId,
-      ].filter(Boolean) as string[];
-      const propertyId = candidatePropertyIds.find((id) => isUuid(id)) || "";
+      const propertyId = getValidPropertyId();
       if (!propertyId) {
         toast.error(
           "Property ID is invalid. Please reopen the hotel from listing."
@@ -1535,6 +1550,22 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
                           ).toLocaleString()}
                         </span>
                       </div>
+
+                      {Number(finalPrice.loyalityDiscount || 0) > 0 && (
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-sm text-green-700">
+                            Loyalty Discount:
+                          </span>
+                          <span className="text-sm font-tripswift-medium text-green-700 tabular-nums">
+                            -{" "}
+                            {finalPrice.dailyBreakdown?.[0]?.currencyCode ||
+                              "USD"}{" "}
+                            {Number(
+                              finalPrice.loyalityDiscount || 0
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Subtotal (before tax) - Only show if tax data exists */}
                       {finalPrice.tax &&

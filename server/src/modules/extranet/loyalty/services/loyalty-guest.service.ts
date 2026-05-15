@@ -281,4 +281,50 @@ export class LoyaltyGuestService {
             return errorResponse('Failed to fetch loyalty guest');
         }
     }
+
+    public async getCustomerLoyaltyConfig(
+        propertyId: string
+    ): Promise<IApiResponse> {
+        try {
+            const activeConfig =
+                await this.loyaltyGuestRepository.getCustomerLoyaltyConfigByProperty(
+                    propertyId
+                );
+
+            if (!activeConfig || !activeConfig.CreationLoyaltyConfig) {
+                return errorResponse(
+                    'No active loyalty configuration found for this property'
+                );
+            }
+
+            const creationConfig = activeConfig.CreationLoyaltyConfig;
+            const fields =
+                await this.loyaltyGuestRepository.getCustomerVisibleFieldsByProgram(
+                    creationConfig.id
+                );
+
+            return successResponse('Customer loyalty config fetched successfully', {
+                propertyId: activeConfig.propertyId,
+                discountType: creationConfig.loyaltyDiscountType,
+                discountValue: creationConfig.discountValue,
+                currencyCode: creationConfig.currencyCode,
+                discountImage:
+                    activeConfig.loyalityConfigLogo ||
+                    creationConfig.BasicLoyaltyProgram?.logo?.[0] ||
+                    null,
+                terms: creationConfig.loyaltyConditions || [],
+                specialTerms: creationConfig.loyaltySpecialConditions || [],
+                loyaltyProgramId: creationConfig.id,
+                fields: fields || [],
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                return errorResponse(
+                    'Failed to fetch customer loyalty config',
+                    error.message
+                );
+            }
+            return errorResponse('Failed to fetch customer loyalty config');
+        }
+    }
 }

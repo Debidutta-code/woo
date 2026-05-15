@@ -54,4 +54,12 @@ router
         )
     );
 
+router
+    .route('/customer-config/:propertyId')
+    .get(
+        loyaltyGuestController.getCustomerLoyaltyConfig.bind(
+            loyaltyGuestController
+        )
+    );
+
 export default router;

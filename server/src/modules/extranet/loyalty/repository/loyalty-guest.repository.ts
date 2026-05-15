@@ -208,4 +208,75 @@ export class LoyaltyGuestRepository {
             throw new Error('Failed to add guest');
         }
     }
+
+    public async getCustomerLoyaltyConfigByProperty(propertyId: string): Promise<any> {
+        try {
+            return await prisma.propertyLoyaltyConfig.findUnique({
+                where: {
+                    propertyId,
+                    isActive: true,
+                },
+                include: {
+                    CreationLoyaltyConfig: {
+                        include: {
+                            BasicLoyaltyProgram: {
+                                select: {
+                                    logo: true,
+                                    isActive: true,
+                                },
+                            },
+                            loyaltyConditions: {
+                                where: {
+                                    isDeleted: false,
+                                    isActive: true,
+                                },
+                                select: {
+                                    id: true,
+                                    text: true,
+                                    language: true,
+                                },
+                            },
+                            loyaltySpecialConditions: {
+                                where: {
+                                    isDeleted: false,
+                                    isActive: true,
+                                },
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    subTitle: true,
+                                    language: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        } catch (error) {
+            throw new Error('Failed to get customer loyalty config');
+        }
+    }
+
+    public async getCustomerVisibleFieldsByProgram(
+        loyaltyProgramId: string
+    ): Promise<any[]> {
+        try {
+            return await prisma.loyaltyProgramFieldConfig.findMany({
+                where: {
+                    loyaltyProgramId,
+                    visibleInCustomerForm: true,
+                },
+                select: {
+                    id: true,
+                    fieldName: true,
+                    required: true,
+                    visibleInCustomerForm: true,
+                    visibleInRegistration: true,
+                    masterRegistrationFieldId: true,
+                },
+            });
+        } catch (error) {
+            throw new Error('Failed to get customer visible loyalty fields');
+        }
+    }
 }
