@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import HelpCenterTab from "@/components/helpCenter/HelpCenterTab";
+import { wishlistAPI } from "@/api/wishlist";
 import {
   User,
   Heart,
@@ -44,6 +45,8 @@ import {
   StatsCard,
 } from "./UserProfileComponents";
 
+const WISHLIST_CACHE_KEY = "wishlistItemsCache";
+
 /**
  * Interface for User Profile
  */
@@ -73,6 +76,19 @@ interface Notification {
     offerCode?: string;
   };
 }
+interface WishlistItem {
+  id?: string;
+  propertyId?: string;
+  propertyName?: string;
+  propertyCode?: string;
+  Property?: {
+    propertyName?: string;
+    propertyAddress?: {
+      city?: string;
+      country?: string;
+    };
+  };
+}
 
 /**
  * @returns @UserProfile
@@ -83,7 +99,9 @@ const UserProfile: React.FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { user: authUser } = useSelector((state: RootState) => state.auth);
+  const { user: authUser, accessToken: reduxAccessToken } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const { notifications, unreadCount, isLoading } = useSelector(
     (state: RootState) => state.notifications,
   );
@@ -97,6 +115,12 @@ const UserProfile: React.FC = () => {
   >("overview");
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [removingPropertyId, setRemovingPropertyId] = useState<string | null>(
+    null,
+  );
 
   const [notificationSettings, setNotificationSettings] = useState({
     email: true,
@@ -145,6 +169,69 @@ const UserProfile: React.FC = () => {
     }
   }, [authUser, dispatch]);
 
+  useEffect(() => {
+    const loadWishlistCount = async () => {
+      const token = reduxAccessToken || Cookies.get("accessToken");
+      if (!token) return;
+      try {
+        const count = await wishlistAPI.getWishlistCount(token);
+        setWishlistCount(Number(count) || 0);
+      } catch (_error) {
+        setWishlistCount(0);
+      }
+    };
+
+    loadWishlistCount();
+  }, [authUser?._id, reduxAccessToken]);
+
+  useEffect(() => {
+    const loadWishlist = async () => {
+      if (activeTab !== "preferences") return;
+      const token = reduxAccessToken || Cookies.get("accessToken");
+      if (!token) return;
+
+      setWishlistLoading(true);
+      try {
+        const items = await wishlistAPI.getWishlistGrouped(token);
+        const normalizedItems = Array.isArray(items) ? items : [];
+        if (normalizedItems.length > 0) {
+          setWishlistItems(normalizedItems);
+          setWishlistCount(normalizedItems.length);
+          return;
+        }
+
+        const cachedRaw =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem(WISHLIST_CACHE_KEY)
+            : null;
+        const cachedItems = cachedRaw ? JSON.parse(cachedRaw) : [];
+        const safeCachedItems = Array.isArray(cachedItems) ? cachedItems : [];
+        setWishlistItems(safeCachedItems);
+        setWishlistCount(safeCachedItems.length);
+      } catch (_error) {
+        const cachedRaw =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem(WISHLIST_CACHE_KEY)
+            : null;
+        const cachedItems = cachedRaw ? JSON.parse(cachedRaw) : [];
+        const safeCachedItems = Array.isArray(cachedItems) ? cachedItems : [];
+        setWishlistItems(safeCachedItems);
+        setWishlistCount(safeCachedItems.length);
+        if (safeCachedItems.length === 0) {
+          toast.error(
+            t("Profile.wishlistLoadFailed", {
+              defaultValue: "Failed to load wishlist",
+            }),
+          );
+        }
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    loadWishlist();
+  }, [activeTab, t, reduxAccessToken]);
+
   const stats = [
     {
       icon: Calendar,
@@ -161,7 +248,7 @@ const UserProfile: React.FC = () => {
     {
       icon: Bookmark,
       title: t("Profile.savedPlaces", { defaultValue: "Saved Places" }),
-      value: "47",
+      value: String(wishlistCount),
       description: t("Profile.wishlisted", { defaultValue: "Wishlisted" }),
     },
   ];
@@ -552,6 +639,122 @@ const UserProfile: React.FC = () => {
         );
       case "help":
         return <HelpCenterTab />;
+      case "preferences":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--color-secondary-black)]">
+                {t("Profile.preferences", { defaultValue: "Preferences" })}
+              </h2>
+              <p className="text-sm text-[var(--color-secondary-black)]/60 mt-1">
+                {t("Profile.savedPlaces", { defaultValue: "Saved Places" })}:{" "}
+                {wishlistItems.length}
+              </p>
+            </div>
+            <Card className="p-4 sm:p-6">
+              {wishlistLoading ? (
+                <p className="text-sm text-[var(--color-secondary-black)]/60">
+                  {t("Profile.loadingWishlist", {
+                    defaultValue: "Loading wishlist...",
+                  })}
+                </p>
+              ) : wishlistItems.length === 0 ? (
+                <p className="text-sm text-[var(--color-secondary-black)]/60">
+                  {t("Profile.emptyWishlist", {
+                    defaultValue: "No wishlist properties saved yet.",
+                  })}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {wishlistItems.map((item, index) => {
+                    const propertyId = String(item.propertyId || "");
+                    const name =
+                      item.propertyName ||
+                      item.Property?.propertyName ||
+                      `Property ${index + 1}`;
+                    const isRemoving = removingPropertyId === propertyId;
+
+                    return (
+                      <div
+                        key={item.id || `${propertyId}-${index}`}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-gray-200 rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm sm:text-base font-semibold text-[var(--color-secondary-black)] truncate">
+                            {name}
+                          </p>
+                          {item.propertyCode ? (
+                            <p className="text-xs text-[var(--color-secondary-black)]/50 mt-1">
+                              {t("Profile.propertyCode", { defaultValue: "Code" })}: {item.propertyCode}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/hotel?id=${propertyId}`)}
+                            disabled={!propertyId}
+                          >
+                            {t("common.view", { defaultValue: "View" })}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            disabled={!propertyId || isRemoving}
+                            onClick={async () => {
+                              if (!propertyId) return;
+                              try {
+                                setRemovingPropertyId(propertyId);
+                                const token =
+                                  reduxAccessToken || Cookies.get("accessToken");
+                                await wishlistAPI.toggleWishlist(
+                                  propertyId,
+                                  item.propertyCode || "",
+                                  name,
+                                  token,
+                                );
+                                setWishlistItems((prev) =>
+                                  prev.filter((wishlistItem) => {
+                                    const shouldKeep =
+                                      String(wishlistItem.propertyId || "") !==
+                                      propertyId;
+                                    return shouldKeep;
+                                  }),
+                                );
+                                setWishlistCount((prev) =>
+                                  Math.max(prev - 1, 0),
+                                );
+                                toast.success(
+                                  t("Profile.removedFromWishlist", {
+                                    defaultValue: "Removed from wishlist",
+                                  }),
+                                );
+                              } catch (_error) {
+                                toast.error(
+                                  t("Profile.wishlistUpdateFailed", {
+                                    defaultValue:
+                                      "Failed to update wishlist. Please try again.",
+                                  }),
+                                );
+                              } finally {
+                                setRemovingPropertyId(null);
+                              }
+                            }}
+                          >
+                            {isRemoving
+                              ? t("common.removing", { defaultValue: "Removing..." })
+                              : t("common.remove", { defaultValue: "Remove" })}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          </div>
+        );
       default:
         return (
           <div className="text-center py-12">

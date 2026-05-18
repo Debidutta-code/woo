@@ -15,10 +15,10 @@ export class ReviewController {
         res: Response
     ): Promise<Response> {
         try {
-            const customerId = req.Customer!.id;
-            const payload: ICReviewsR = {
+            const customerId = req.Customer?.id;
+            const payload: ICReviewsR & { [key: string]: any } = {
                 ...req.body,
-                customerId,
+                ...(customerId ? { customerId } : {}),
             };
             const result = await this.reviewService.createReview(payload);
             return res.status(result.success ? 201 : 400).json(result);
@@ -43,6 +43,46 @@ export class ReviewController {
                 return res.status(500).json(errorResponse('Failed to fetch review', error.message));
             }
             return res.status(500).json(errorResponse('Failed to fetch review', 'Unknown error'));
+        }
+    }
+
+    public async getReviewByReservation(
+        req: Request,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const reservationId = req.query.reservationId as string;
+            if (!reservationId) {
+                return res.status(400).json(errorResponse('reservationId is required'));
+            }
+
+            const result = await this.reviewService.getReviewByReservationId(reservationId);
+            return res.status(result.success ? 200 : 404).json(result);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(500).json(errorResponse('Failed to fetch review', error.message));
+            }
+            return res.status(500).json(errorResponse('Failed to fetch review', 'Unknown error'));
+        }
+    }
+
+    public async getReservationForReview(
+        req: Request,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const reservationId = req.query.reservationId as string;
+            if (!reservationId) {
+                return res.status(400).json(errorResponse('reservationId is required'));
+            }
+
+            const result = await this.reviewService.getReservationForReview(reservationId);
+            return res.status(result.success ? 200 : 404).json(result);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(500).json(errorResponse('Failed to fetch reservation details', error.message));
+            }
+            return res.status(500).json(errorResponse('Failed to fetch reservation details', 'Unknown error'));
         }
     }
 

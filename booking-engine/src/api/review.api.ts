@@ -38,10 +38,8 @@ class CustomerReviewApi {
       throw new Error(`Failed to fetch reservation details`);
     }
 
-    const data = await response.json();
-    //console.log(`The reservation details we get for ${reservationId}:`, data);
-
-    return data;
+    const payload = await response.json();
+    return payload?.data ?? payload;
   }
 
 

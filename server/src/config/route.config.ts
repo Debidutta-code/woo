@@ -11,6 +11,7 @@ import { bookingEngineRouter } from '../modules/booking-engine/routes';
 import { extranetRouter } from '../modules/extranet/routes';
 import { reservationRoute } from '../modules/extranet/reservation/routes';
 import customerOtpRouter from '../infrastructure/sms-email-service/routes/route';
+import { reviewRouter } from '../modules/booking-engine/customers/routes';
 export async function initializeExpressRoutes({ app }: { app: Express }) {
     // Health check
     app.head('/status', (_, res: Response) => res.status(200).end());
@@ -32,6 +33,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/pms/front-office/reservations', reservationRoute);
     apiV1Router.use('/booking-engine', bookingEngineRouter);
     apiV1Router.use('/booking', bookingEngineRouter);
+    apiV1Router.use('/review', reviewRouter);
     apiV1Router.use('/customers', customerOtpRouter);
     apiV1Router.use('/agency', agencyMainRouter);
     apiV1Router.use('/fikafi', fikafiPaymentRoutes);

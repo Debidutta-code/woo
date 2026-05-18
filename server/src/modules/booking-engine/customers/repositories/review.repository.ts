@@ -64,16 +64,48 @@ export class ReviewRepository {
             throw new Error('Error occure while fetching the reviews');
         }
     }
-    public async getReviewsForProperty(propertyId:string):Promise<IReviews[]>{
+    public async getReviewsForProperty(propertyRef:string){
         try {
             return await prisma.reviews.findMany({
                 where:{
-                    propertyId,
-                    isDeleted:false
-                }
+                    isDeleted:false,
+                    OR: [
+                        { propertyId: propertyRef },
+                        { propertyCode: propertyRef },
+                    ],
+                },
+                include: {
+                    Customer: {
+                        select: {
+                            email: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
             })
         } catch (error) {
             throw new Error('Error occure while fetching the reviews');
+        }
+    }
+
+    public async getReservationForReview(reservationId: string) {
+        try {
+            return await prisma.reservation.findUnique({
+                where: {
+                    id: reservationId,
+                },
+                include: {
+                    property: {
+                        select: {
+                            propertyName: true,
+                        },
+                    },
+                },
+            });
+        } catch (error) {
+            throw new Error('Error occure while fetching reservation details');
         }
     }
 }
