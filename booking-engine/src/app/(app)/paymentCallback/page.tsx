@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/Redux/store";
+import Cookies from "js-cookie";
 import { ngeniusService } from "@/services/payment/negenius.service";
 import toast from "react-hot-toast";
 import {
@@ -44,9 +45,9 @@ const PaymentCallbackPage = () => {
       id: "payment-failed",
     });
 
-    localStorage.removeItem("ngeniusOrderRef");
-    localStorage.removeItem("fikafiOrderRef");
-    localStorage.removeItem("pendingBookingData");
+    Cookies.remove("ngeniusOrderRef", { path: "/" });
+    Cookies.remove("fikafiOrderRef", { path: "/" });
+    Cookies.remove("pendingBookingData", { path: "/" });
 
     setTimeout(() => {
       router.replace("/Payment");
@@ -58,14 +59,14 @@ const PaymentCallbackPage = () => {
       setStatus("success");
 
       // Check if this is a Fikafi payment (booking already created before payment)
-      const storedFikafiRef = localStorage.getItem("fikafiOrderRef");
+      const storedFikafiRef = Cookies.get("fikafiOrderRef");
       const isFikafiPayment = !!storedFikafiRef;
 
       if (isFikafiPayment) {
         // Fikafi: booking was already created, just redirect to success
         setMessage("Payment successful! Redirecting...");
-        localStorage.removeItem("fikafiOrderRef");
-        localStorage.removeItem("pendingBookingData");
+        Cookies.remove("fikafiOrderRef", { path: "/" });
+        Cookies.remove("pendingBookingData", { path: "/" });
 
         toast.success("Payment successful! Your booking is confirmed.", {
           id: "payment-success",
@@ -81,7 +82,7 @@ const PaymentCallbackPage = () => {
 
       // Get booking data from localStorage or Redux
       let bookingData;
-      const storedBookingData = localStorage.getItem("pendingBookingData");
+      const storedBookingData = Cookies.get("pendingBookingData");
 
       if (storedBookingData) {
         bookingData = JSON.parse(storedBookingData);
@@ -158,9 +159,9 @@ const PaymentCallbackPage = () => {
       dispatch(setFullBookingDetails(result.data));
 
       // Cleanup
-      localStorage.removeItem("ngeniusOrderRef");
-      localStorage.removeItem("fikafiOrderRef");
-      localStorage.removeItem("pendingBookingData");
+      Cookies.remove("ngeniusOrderRef", { path: "/" });
+      Cookies.remove("fikafiOrderRef", { path: "/" });
+      Cookies.remove("pendingBookingData", { path: "/" });
 
       setMessage("Booking confirmed successfully!");
       toast.success("Payment successful! Your booking is confirmed.", {
@@ -242,7 +243,7 @@ const PaymentCallbackPage = () => {
     const initializePayment = async () => {
       try {
         // Check if this is a Fikafi return (localStorage is the source of truth)
-        const storedFikafiRef = localStorage.getItem("fikafiOrderRef");
+        const storedFikafiRef = Cookies.get("fikafiOrderRef");
         const urlStatus = searchParams.get("status")?.toLowerCase();
         const isFikafiPayment = !!storedFikafiRef;
 
@@ -264,7 +265,7 @@ const PaymentCallbackPage = () => {
 
         // N-Genius flow
         const urlOrderRef = searchParams.get("orderRef") || searchParams.get("ref");
-        const storedNgeniusRef = localStorage.getItem("ngeniusOrderRef");
+        const storedNgeniusRef = Cookies.get("ngeniusOrderRef");
         const orderRef = urlOrderRef || storedNgeniusRef;
 
         //console.log("🔍 Order Reference:", orderRef);
@@ -283,10 +284,10 @@ const PaymentCallbackPage = () => {
         }
 
         // Check if socket was pre-connected
-        const wasSocketConnected = localStorage.getItem("socketConnected") === "true";
+        const wasSocketConnected = Cookies.get("socketConnected") === "true";
         if (wasSocketConnected) {
           //console.log("✅ Socket was pre-connected before payment");
-          localStorage.removeItem("socketConnected");
+          Cookies.remove("socketConnected", { path: "/" });
         }
 
         // Handle connection error immediately if it happens

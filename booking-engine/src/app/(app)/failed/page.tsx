@@ -3,6 +3,7 @@
 import { useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, XCircle } from "lucide-react";
+import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 
 function FailedContent() {
@@ -16,10 +17,10 @@ function FailedContent() {
     if (!ref || initialized.current) return;
     initialized.current = true;
 
-    // Cleanup localStorage
-    localStorage.removeItem("fikafiOrderRef");
-    localStorage.removeItem("pendingBookingData");
-    localStorage.removeItem("ngeniusOrderRef");
+    // Cleanup cookies
+    Cookies.remove("fikafiOrderRef", { path: "/" });
+    Cookies.remove("pendingBookingData", { path: "/" });
+    Cookies.remove("ngeniusOrderRef", { path: "/" });
 
     // Try to connect socket - but don't rely on it
     const connectSocket = async () => {
