@@ -7,15 +7,39 @@ import Cookies from "js-cookie";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 
-const initialState: AuthState = {
-  isAuthenticated: false,
-  accessToken: "",
-  user: null,
-};
-
 const cookieOptions = {
   sameSite: "strict" as const,
+  path: "/",
 };
+
+const getInitialAuth = (): AuthState => {
+  if (typeof window === "undefined") {
+    return {
+      isAuthenticated: false,
+      accessToken: "",
+      user: null,
+    };
+  }
+
+  const accessToken = Cookies.get("accessToken") || "";
+  const isAuthenticated = Cookies.get("isAuthenticated") === "true";
+  const userData = Cookies.get("userData");
+  let user = null;
+
+  try {
+    user = userData ? JSON.parse(userData) : null;
+  } catch (e) {
+    console.error("Failed to parse userData from cookies", e);
+  }
+
+  return {
+    isAuthenticated: isAuthenticated || !!accessToken,
+    accessToken,
+    user,
+  };
+};
+
+const initialState: AuthState = getInitialAuth();
 
 const normalizeUser = (user: any) => {
   if (!user) return null;
@@ -37,10 +61,16 @@ const authSlice = createSlice({
       state,
       action: PayloadAction<typeof initialState.accessToken>,
     ) => {
-      state.isAuthenticated = true;
       state.accessToken = action.payload;
-      Cookies.set("accessToken", action.payload, cookieOptions);
-      Cookies.set("isAuthenticated", "true", cookieOptions);
+      if (action.payload) {
+        state.isAuthenticated = true;
+        Cookies.set("accessToken", action.payload, cookieOptions);
+        Cookies.set("isAuthenticated", "true", cookieOptions);
+      } else {
+        state.isAuthenticated = false;
+        Cookies.remove("accessToken", { path: "/" });
+        Cookies.remove("isAuthenticated", { path: "/" });
+      }
     },
     setUser(
       state: Draft<typeof initialState>,
@@ -50,15 +80,17 @@ const authSlice = createSlice({
       state.user = normalizedUser;
       if (normalizedUser) {
         Cookies.set("userData", JSON.stringify(normalizedUser), cookieOptions);
+      } else {
+        Cookies.remove("userData", { path: "/" });
       }
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.accessToken = "";
-      Cookies.remove("accessToken");
-      Cookies.remove("isAuthenticated");
-      Cookies.remove("userData");
+      Cookies.remove("accessToken", { path: "/" });
+      Cookies.remove("isAuthenticated", { path: "/" });
+      Cookies.remove("userData", { path: "/" });
     },
   },
   extraReducers: (builder) => {
@@ -82,13 +114,16 @@ const authSlice = createSlice({
       .addCase(googleLogin.fulfilled, (state, action) => {
         state.isAuthenticated = true;
         state.accessToken = action.payload.token;
-        Cookies.set("accessToken", action.payload.token);
-        Cookies.set("isAuthenticated", "true");
+        Cookies.set("accessToken", action.payload.token, cookieOptions);
+        Cookies.set("isAuthenticated", "true", cookieOptions);
       })
       .addCase(googleLogin.rejected, (state, action) => {
         state.isAuthenticated = false;
         state.accessToken = "";
         state.user = null;
+        Cookies.remove("accessToken", { path: "/" });
+        Cookies.remove("isAuthenticated", { path: "/" });
+        Cookies.remove("userData", { path: "/" });
       });
   },
 });

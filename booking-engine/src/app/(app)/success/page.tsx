@@ -3,6 +3,7 @@
 import { useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import Cookies from "js-cookie";
 import toast from "react-hot-toast";
 
 function SuccessContent() {
@@ -37,8 +38,8 @@ function SuccessContent() {
         socketRef.current.on("payment-status-update", (data: any) => {
           if (data.orderReference === ref && data.status === "success") {
             toast.success("Payment successful!");
-            localStorage.removeItem("fikafiOrderRef");
-            localStorage.removeItem("pendingBookingData");
+            Cookies.remove("fikafiOrderRef", { path: "/" });
+            Cookies.remove("pendingBookingData", { path: "/" });
             setTimeout(() => {
               router.replace("/payment-success");
             }, 1500);

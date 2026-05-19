@@ -20,6 +20,7 @@ import {
 import { QRCodeCanvas } from "qrcode.react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 import { messaging } from "../../../utils/firebase.config";
 import { onMessage } from "firebase/messaging";
 import { useDispatch, useSelector } from "react-redux";
@@ -152,8 +153,8 @@ const PaymentProgressPage: React.FC = () => {
     }, [t]);
 
     useEffect(() => {
-        const storedChainId = localStorage.getItem("selectedChainId");
-        const storedContractAddress = localStorage.getItem("contractAddress");
+        const storedChainId = Cookies.get("selectedChainId");
+        const storedContractAddress = Cookies.get("contractAddress");
         if (storedChainId) {
             setSelectedChainId(Number(storedChainId));
         }

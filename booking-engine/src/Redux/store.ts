@@ -19,7 +19,7 @@ import storage from "./storage";
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ["pmsHotelCard", "auth", "payment", "chat"],
+  whitelist: ["pmsHotelCard", "chat"],
   blacklist: ["notifications"] 
 };
 
