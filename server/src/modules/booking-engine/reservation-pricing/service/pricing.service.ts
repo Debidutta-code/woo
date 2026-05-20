@@ -454,33 +454,19 @@ class BasePriceClass {
             const { adults, children } = guestDistribution;
             const totalPersons = adults + children;
 
-            const gap =
-                this.roomDetails.maxOccupancy -
-                this.roomDetails.maxNumberOfAdults +
-                this.roomDetails.maxNumberOfChildren;
             if (totalPersons > this.roomDetails.maxOccupancy) {
                 throw new Error(
                     `This room has a maximum occupancy of ${this.roomDetails.maxOccupancy}.`
                 );
             }
-            if (
-                adults >
-                (gap < 0
-                    ? this.roomDetails.maxNumberOfAdults
-                    : gap + this.roomDetails.maxNumberOfAdults)
-            ) {
+            if (adults > this.roomDetails.maxNumberOfAdults) {
                 throw new Error(
-                    `This room can only accommodate maximum ${gap < 0 ? this.roomDetails.maxNumberOfAdults : gap} adults.`
+                    `This room can only accommodate ${this.roomDetails.maxNumberOfAdults} adults.`
                 );
             }
-            if (
-                children >
-                (gap < 0
-                    ? this.roomDetails.maxNumberOfChildren
-                    : gap + this.roomDetails.maxNumberOfChildren)
-            ) {
+            if (children > this.roomDetails.maxNumberOfChildren) {
                 throw new Error(
-                    `This room can only accommodate maximum ${gap < 0 ? this.roomDetails.maxNumberOfChildren : gap} children.`
+                    `This room can only accommodate ${this.roomDetails.maxNumberOfChildren} children.`
                 );
             }
 
@@ -509,23 +495,22 @@ class BasePriceClass {
                     b => b.numberOfGuests === adults
                 );
                 if (exactAdultBase) {
-                    adultBasePrice = Number(exactAdultBase.amountBeforeTax);
+                    adultBasePrice = Number(exactAdultBase.amountBeforeTax); // Exact match found → use it directly
                 } else if (adultBaseAmounts.length > 0) {
                     const maxAdultBase =
-                        adultBaseAmounts[adultBaseAmounts.length - 1];
+                        adultBaseAmounts[adultBaseAmounts.length - 1]; // No exact match → use highest available base + charge for extras
                     adultBasePrice = Number(maxAdultBase.amountBeforeTax);
                     const extraAdults = adults - maxAdultBase.numberOfGuests;
-                    if (extraAdults > 0) {
-                        if (additionalChargeForAdults) {
-                            additionalAdultCharges =
-                                extraAdults *
-                                Number(additionalChargeForAdults.amount);
-                        } else {
-                            throw new Error(`No additional charge found for adults`);
-                        }
+                    if (extraAdults > 0 && additionalChargeForAdults) {
+                        additionalAdultCharges =
+                            extraAdults *
+                            Number(additionalChargeForAdults.amount);
                     }
                 } else {
-                    throw new Error('Base Price not found for adults');
+                    if (additionalChargeForAdults) {
+                        additionalAdultCharges =
+                            adults * Number(additionalChargeForAdults.amount); // No base entries at all → every adult is additional
+                    }
                 }
 
                 let childBasePrice = 0;
@@ -536,10 +521,10 @@ class BasePriceClass {
                         b => b.numberOfGuests === children
                     );
                     if (exactChildBase) {
-                        childBasePrice = Number(exactChildBase.amountBeforeTax);
+                        childBasePrice = Number(exactChildBase.amountBeforeTax); // Exact match found → use it directly
                     } else if (childBaseAmounts.length > 0) {
                         const maxChildBase =
-                            childBaseAmounts[childBaseAmounts.length - 1];
+                            childBaseAmounts[childBaseAmounts.length - 1]; // No exact match → use highest available base + charge for extras
                         childBasePrice = Number(maxChildBase.amountBeforeTax);
                         const extraChildren =
                             children - maxChildBase.numberOfGuests;
@@ -549,11 +534,10 @@ class BasePriceClass {
                                 Number(additionalChargeForChildren.amount);
                         }
                     } else {
-                        const extraChildren = children - this.roomDetails.maxNumberOfChildren;
-                        if (extraChildren > 0 && additionalChargeForChildren) {
+                        if (additionalChargeForChildren) {
                             additionalChildCharges =
-                                extraChildren *
-                                Number(additionalChargeForChildren.amount);
+                                children *
+                                Number(additionalChargeForChildren.amount); // No base entries at all → every child is additional
                         }
                     }
                 }
