@@ -233,7 +233,7 @@ export interface PromotionBrakeDown {
     currencyCode: CurrencyCode | null;
     discountAmount: number;
     restrictionType: "increase" | "decrease" | "payLater"
-    type:"user-applied"|"auto-applied"
+    type:"user_applied"|"auto_applied"
 
 }
 export interface IRoomDetails{

@@ -1,9 +1,8 @@
 model ExplorDestination {
-    id              String  @id @default(uuid())
-    destinationName String  @unique @map("destination_name")
-    destinationImage String  @map("destination_image")
-    slNo            Int     @unique @map("sl_no")
+  id               String @id @default(uuid())
+  destinationName  String @unique @map("destination_name")
+  destinationImage String @map("destination_image")
+  slNo             Int    @unique @map("sl_no")
 
-
-    @@map("explor_destinations")
+  @@map("explor_destinations")
 }

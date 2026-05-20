@@ -1,17 +1,48 @@
-import { ICreationLoyality } from './creation-loyality.types';
+import { CurrencyCode } from '../../../extranet/tax-system/interfaces';
+import { ILoyalityLevels } from './loyality-level.types';
 
 export interface ICPropertyLoyaltyConfig {
+    discountPercentage: any;
     creationLoyaltyConfigId: string;
     propertyId: string;
     propertyCode: string;
     propertyName: string;
-    discountPercentage: number | null;
     loyalityConfigLogo: string | null;
 }
+export interface ICreationLoyalityConfig {
+    id: string;
+    creationId: string;
+    loyaltyDiscountType: 'percentage' | 'flat';
+    discountValue: number;
+    currencyCode: CurrencyCode | null;
+    LoyalityLevels?: ILoyalityLevels[];
+}
+
 export interface IPropertyLoyaltyConfig extends ICPropertyLoyaltyConfig {
     id: string;
     isActive: boolean;
+    CreationLoyaltyConfig?: ICreationLoyalityConfig;
 }
-export interface IPropertyLoyalityWithLoyality {
-    CreationLoyaltyConfig: ICreationLoyality;
+export interface IPropertyLoyalityGuest {
+    id: string;
+    propertyLoyalityId: string;
+    loyalityGuestId: string;
+}
+export interface IPropertyLoyalityWithLoyality extends IPropertyLoyaltyConfig {}
+
+export interface ILoyaltyDiscountData {
+    guestLevel: number | null;
+    loyalityLevels: ILoyalityLevels[];
+    fallback: { value: number; type: 'percentage' | 'flat' } | null;
+}
+
+export interface IPropertyLoyalityGuest {
+    id: string;
+    propertyLoyalityId: string;
+    loyalityGuestId: string;
+}
+export interface ILoyaltyDiscountData {
+    guestLevel: number | null;
+    loyalityLevels: ILoyalityLevels[];
+    fallback: { value: number; type: 'percentage' | 'flat' } | null;
 }

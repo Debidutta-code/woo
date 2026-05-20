@@ -28,7 +28,7 @@ model Property {
   propertyConfigs             PropertyConfigs?
   Commissions                 PropertyCommission?
   loyaltyProgramConfig        PropertyLoyaltyConfig?
-  LoyalityGuests              LoyalityGuest[]
+  CreationGuest               CreationGuest[]
   propertyEmails              PropertyEmails[]
   reservations                Reservation[]
   propertyAmenities           PropertyAmenitySelection[]
@@ -53,7 +53,8 @@ model Property {
   DynamicPricing              DynamicPricing?
   PropertyReviews             Reviews[]
   PropertyWishList            WishList[]
-  ProblemTickets ProblemTickets[]
+  ProblemTickets              ProblemTickets[]
+
   @@index([createdById])
   @@index([creationId])
   @@index([propertyCode])

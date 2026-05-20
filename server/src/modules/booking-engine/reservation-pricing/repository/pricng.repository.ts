@@ -1,12 +1,13 @@
 import { prisma } from '../../../../config';
 import { IAddOn, IRatePlan, ISelectedAddonsR } from '../types';
-import { IMLOS } from '../../../extranet/promotions/mlos/interfaces';
-import { ICEbDsOftc } from '../../../extranet/promotions/eb-ds-oftc/interfaces';
-import { IPromoCode } from '../../../extranet/ari/types/promoCode.type';
 import {
     IPropertyLoyaltyConfig,
     ITCreationLoyality,
 } from '../../../extranet/loyalty/types';
+import { IMLOS } from '../../../extranet/promotions/mlos/interfaces';
+import { ICEbDsOftc } from '../../../extranet/promotions/eb-ds-oftc/interfaces';
+import { IPromoCode } from '../../../extranet/ari/types/promoCode.type';
+import { ILoyaltyDiscountData } from '../types/property-loyality.types';
 
 export class PricingRepository {
     public async validateRatePlan(
@@ -87,10 +88,15 @@ export class PricingRepository {
                         },
                     },
                     geoRatePlans: true,
+
+                    // customizableDeals:{
+                    //     include:{
+                    //         CustomizableDealsApplicableAddons:true
+                    //     }
+                    // }
                 },
             });
         } catch (error) {
-            console.log(error);
             throw new Error('Failed to validate rate plan');
         }
     }
@@ -165,7 +171,7 @@ export class PricingRepository {
                         {
                             OR: [
                                 { validTo: null },
-                                { validTo: { gte: endDate } },
+                                { validTo: { gte: startDate } }, // debug here if the the problem arries with promotions
                             ],
                         },
                     ],
@@ -221,10 +227,12 @@ export class PricingRepository {
         propertyId: string
     ): Promise<boolean> {
         try {
-            const isLoyalityGuest = await prisma.loyalityGuest.findUnique({
+            const isLoyalityGuest = await prisma.propertyLoyalityGuests.findFirst({
                 where: {
-                    propertyId_guestEmail: {
+                    PropertyLoyalityConfig: {
                         propertyId,
+                    },
+                    LoyalityGuest: {
                         guestEmail,
                     },
                 },
@@ -259,6 +267,72 @@ export class PricingRepository {
             });
         } catch (error) {
             throw new Error('Failed to fetch loyality discount');
+        }
+    }
+    public async findLoyaltyDiscountData(
+        guestEmail: string,
+        propertyId: string
+    ): Promise<ILoyaltyDiscountData | null> {
+        try {
+            const loyalityGuest = await prisma.loyalityGuest.findUnique({
+                where: { guestEmail },
+                include: {
+                    PropertyLoyalityGuests: {
+                        where: {
+                            PropertyLoyalityConfig: { propertyId },
+                        },
+                        include: {
+                            PropertyLoyalityConfig: {
+                                include: {
+                                    CreationLoyaltyConfig: {
+                                        include: {
+                                            LoyalityLevels: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    CreationGuest: true, // all program memberships
+                },
+            });
+
+            if (
+                !loyalityGuest || 
+                !(loyalityGuest as any).PropertyLoyalityGuests || (loyalityGuest as any).PropertyLoyalityGuests.length === 0
+            ) {
+                return null; // not enrolled in any program for this property
+            }
+
+            const propertyEnrollment = (loyalityGuest as any).PropertyLoyalityGuests[0];
+            const creationConfig =
+                propertyEnrollment.PropertyLoyalityConfig.CreationLoyaltyConfig;
+
+            if (!creationConfig) {
+                return null;
+            }
+
+            // Find this guest's level in the specific creation loyalty program
+            const creationGuest = (loyalityGuest as any).CreationGuest.find(
+                (cg: any) => cg.creationLoyaltyConfigId === creationConfig.id
+            );
+            const guestLevel = creationGuest?.guestLevel ?? null;
+
+            return {
+                guestLevel,
+                loyalityLevels: creationConfig.LoyalityLevels ?? [],
+                fallback:
+                    creationConfig.discountValue != null
+                        ? {
+                              value: creationConfig.discountValue,
+                              type: creationConfig.loyaltyDiscountType as
+                                  | 'percentage'
+                                  | 'flat',
+                          }
+                        : null,
+            };
+        } catch (error) {
+            throw new Error('Failed to fetch loyalty discount data');
         }
     }
 }

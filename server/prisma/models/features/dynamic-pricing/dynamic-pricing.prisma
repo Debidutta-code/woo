@@ -1,9 +1,10 @@
 model DynamicPricing {
-  id         String @id @default(cuid())
-  propertyId  String  @unique
+  id                           String                         @id @default(cuid())
+  propertyId                   String                         @unique
   Property                     Property                       @relation(fields: [propertyId], references: [id])
   OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
   SeasonalDynamicPricings      SeasonalDynamicPricing[]
   WeekendDynamicPricing        WeekendDynamicPricing[]
+
   @@map("dynamic_pricing")
 }

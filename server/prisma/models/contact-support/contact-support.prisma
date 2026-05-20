@@ -1,20 +1,20 @@
 model ProblemTickets {
-  id          String      @id @default(uuid())
-  ticketNo String @unique @map("ticket_no")
-  propertyId String      @map("property_id")
-  Property Property @relation(fields: [propertyId], references: [id])
-  subject       String
+  id          String   @id @default(uuid())
+  ticketNo    String   @unique @map("ticket_no")
+  propertyId  String   @map("property_id")
+  Property    Property @relation(fields: [propertyId], references: [id])
+  subject     String
   description String?
 
-  isDeleted Boolean @default(false) @map("is_deleted")
-  status      TicketStatus @default(open)
-  priority    TicketPriority @default(medium)
+  isDeleted Boolean        @default(false) @map("is_deleted")
+  status    TicketStatus   @default(open)
+  priority  TicketPriority @default(medium)
 
-  customerId String      @map("customer_id")
-  Customers   Customers        @relation("TicketCreatedBy", fields: [customerId], references: [id])
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  customerId String    @map("customer_id")
+  Customers  Customers @relation("TicketCreatedBy", fields: [customerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([propertyId])
   @@index([status])

@@ -96,10 +96,10 @@ const emptyFinalPrice = (): IAmendFinalPrice => ({
 const buildPromotions = (reservation: any): IPromotion[] => {
   const promotionBreakdown: any[] = reservation.finalPrice?.promotionBrakeDown ?? [];
 
-  // Send all user-applied promotions from finalPrice.promotionBrakeDown.
+  // Send all user_applied promotions from finalPrice.promotionBrakeDown.
   // reservationPromotions is unreliable (sometimes missing) — finalPrice is the source of truth.
   return promotionBreakdown
-    .filter((p) => p.type === "user-applied" && p.id)
+    .filter((p) => p.type === "user_applied" && p.id)
     .map((p) => ({ id: p.id as string, promotionType: "normal" }));
 };
 

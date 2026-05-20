@@ -1,17 +1,29 @@
 model LoyalityGuest {
-    id                      String                @id @default(uuid())
-    creationLoyaltyConfigId String                @map("creation_loyalty_config_id")
-    CreationLoyaltyConfig   CreationLoyaltyConfig @relation(fields: [creationLoyaltyConfigId], references: [id], onDelete: Cascade)
+  id         String  @id @default(uuid())
+  guestEmail String  @unique @map("guest_email")
+  guestId    String? @map("guest_id")
+  guest      Guests? @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
-    propertyId   String   @map("property_id")
-    property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-    propertyCode String   @map("property_code")
-    guestEmail   String   @map("guest_email")
-    guestId      String?  @map("guest_id")
-    guest        Guests?  @relation(fields: [guestId], references: [id], onDelete: Cascade)
-    metaData     Json     @map("meta_data")
-    createdAt    DateTime @default(now())
+  CreationGuest          CreationGuest[]
+  PropertyLoyalityGuests PropertyLoyalityGuests[]
 
-    @@unique([propertyId, guestEmail])
-    @@map("loyality_guests")
+  createdAt DateTime @default(now())
+
+  @@map("loyality_guests")
+}
+
+model CreationGuest {
+  id                      String                @id @default(uuid())
+  loyalityGuestId         String                @map("loyality_guest_id")
+  LoyalityGuest           LoyalityGuest         @relation(fields: [loyalityGuestId], references: [id], onDelete: Cascade)
+  creationLoyaltyConfigId String                @map("creation_loyalty_config_id")
+  CreationLoyaltyConfig   CreationLoyaltyConfig @relation(fields: [creationLoyaltyConfigId], references: [id], onDelete: Cascade)
+  guestLevel              Int                   @default(1) @map("guest_level")
+  noOfBookings            Int                   @default(0) @map("no_of_bookings")
+  metaData                Json                  @map("meta_data")
+  property                Property?             @relation(fields: [propertyId], references: [id])
+  propertyId              String?
+
+  @@unique([creationLoyaltyConfigId, loyalityGuestId])
+  @@map("creation_guests")
 }

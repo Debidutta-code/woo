@@ -1,21 +1,21 @@
-model WishList{
-    id String @id @default(uuid()) @map("id")
+model WishList {
+  id String @id @default(uuid()) @map("id")
 
-    customerId String @map("customer_id")
-    propertyId String @map("property_id")
-    propertyCode String @map("property_code")
-    propertyName String @map("property_name")
-    
-    roomId String? @map("room_id")
-    roomType String? @map("room_type")
-    roomName String? @map("room_name")
-    
-    createdAt DateTime @default(now()) @map("created_at")
-    updatedAt DateTime @updatedAt @map("updated_at")
+  customerId   String @map("customer_id")
+  propertyId   String @map("property_id")
+  propertyCode String @map("property_code")
+  propertyName String @map("property_name")
 
-    Customer Customers @relation(fields: [customerId], references: [id])
-    Property Property @relation(fields: [propertyId], references: [id])
+  roomId   String? @map("room_id")
+  roomType String? @map("room_type")
+  roomName String? @map("room_name")
 
-    @@unique([customerId,propertyId])
-    @@map("customer_wishlist")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  Customer Customers @relation(fields: [customerId], references: [id])
+  Property Property  @relation(fields: [propertyId], references: [id])
+
+  @@unique([customerId, propertyId])
+  @@map("customer_wishlist")
 }

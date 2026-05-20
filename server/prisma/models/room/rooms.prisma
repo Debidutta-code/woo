@@ -31,14 +31,15 @@ model Room {
   geoRatePlans  GeoRatePlan[]
   promotions    Promotion[]
 
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  customizableDeals CustomizableDeal[]
-  TouristTaxs       TouristTaxes[]
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    DateTime                       @updatedAt
+  customizableDeals            CustomizableDeal[]
+  TouristTaxs                  TouristTaxes[]
   OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
   SeasonalDynamicPricings      SeasonalDynamicPricing[]
   WeekendDynamicPricing        WeekendDynamicPricing[]
   Charges                      Charge[]
+
   @@unique([propertyId, roomType])
   @@unique([propertyId, roomName])
   @@index([propertyId])

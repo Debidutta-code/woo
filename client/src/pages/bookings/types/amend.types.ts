@@ -85,7 +85,7 @@ export interface IAmendPromotionBreakdown {
   discountType: "percentage" | "fixed" | string;
   discountValue: number;
   restrictionType: "decrease" | "payLater" | string;
-  type: "user-applied" | string;
+  type: "user_applied" | string;
 }
 
 export interface IAmendFinalPrice {

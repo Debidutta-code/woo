@@ -397,12 +397,14 @@ enum DynamicPricingPricingType {
   increase
   decrease
 }
+
 enum TicketStatus {
   open
   in_progress
   resolved
   closed
 }
+
 enum TicketPriority {
   low
   medium

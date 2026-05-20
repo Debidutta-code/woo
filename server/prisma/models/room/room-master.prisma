@@ -1,9 +1,10 @@
-model MRoomView{
-    id String @id @default(uuid())
-    roomId String @unique @map("room_id")
-    masterRoomViewId String @map("master_room_view_id")
+model MRoomView {
+  id               String @id @default(uuid())
+  roomId           String @unique @map("room_id")
+  masterRoomViewId String @map("master_room_view_id")
 
-    MasterRoomView MasterRoomView @relation(fields: [masterRoomViewId], references: [id], onDelete: Cascade)
-    Room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-    @@map("room_view")
+  MasterRoomView MasterRoomView @relation(fields: [masterRoomViewId], references: [id], onDelete: Cascade)
+  Room           Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_view")
 }

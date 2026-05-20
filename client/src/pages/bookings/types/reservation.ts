@@ -73,7 +73,7 @@ export interface IGuestDistribution {
 export interface IPromotionBreakdown {
   id: string;
   name: string;
-  type: 'auto-applied' | 'user-applied' | string;
+  type: 'auto_applied' | 'user_applied' | string;
   currencyCode: string | null;
   discountType: 'percentage' | 'fixed';
   discountValue: number;

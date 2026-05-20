@@ -1,9 +1,10 @@
-
-import { errorResponse,
+import {
+    errorResponse,
     getDeviceInfo,
     getGeoLocationDetails,
     PropertyRequest,
-    toUTC, } from '../../../../common/utils';
+    toUTC,
+} from '../../../utils';
 import { PricingService } from '../service';
 import { Response } from 'express';
 export class PricingController {
