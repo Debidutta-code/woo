@@ -454,19 +454,33 @@ class BasePriceClass {
             const { adults, children } = guestDistribution;
             const totalPersons = adults + children;
 
+            const gap =
+                this.roomDetails.maxOccupancy -
+                this.roomDetails.maxNumberOfAdults +
+                this.roomDetails.maxNumberOfChildren;
             if (totalPersons > this.roomDetails.maxOccupancy) {
                 throw new Error(
                     `This room has a maximum occupancy of ${this.roomDetails.maxOccupancy}.`
                 );
             }
-            if (adults > this.roomDetails.maxNumberOfAdults) {
+            if (
+                adults >
+                (gap < 0
+                    ? this.roomDetails.maxNumberOfAdults
+                    : gap + this.roomDetails.maxNumberOfAdults)
+            ) {
                 throw new Error(
-                    `This room can only accommodate ${this.roomDetails.maxNumberOfAdults} adults.`
+                    `This room can only accommodate maximum ${gap < 0 ? this.roomDetails.maxNumberOfAdults : gap} adults.`
                 );
             }
-            if (children > this.roomDetails.maxNumberOfChildren) {
+            if (
+                children >
+                (gap < 0
+                    ? this.roomDetails.maxNumberOfChildren
+                    : gap + this.roomDetails.maxNumberOfChildren)
+            ) {
                 throw new Error(
-                    `This room can only accommodate ${this.roomDetails.maxNumberOfChildren} children.`
+                    `This room can only accommodate maximum ${gap < 0 ? this.roomDetails.maxNumberOfChildren : gap} children.`
                 );
             }
 
