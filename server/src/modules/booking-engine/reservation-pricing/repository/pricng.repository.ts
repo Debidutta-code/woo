@@ -1,5 +1,5 @@
 import { prisma } from '../../../../config';
-import { IAddOn, IRatePlan, ISelectedAddonsR } from '../types';
+import { IAddOn, ILoyaltyDiscountData, IRatePlan, ISelectedAddonsR } from '../types';
 import { IMLOS } from '../../../extranet/promotions/mlos/interfaces';
 import { ICEbDsOftc } from '../../../extranet/promotions/eb-ds-oftc/interfaces';
 import { IPromoCode } from '../../../extranet/ari/types/promoCode.type';
@@ -141,7 +141,7 @@ export class PricingRepository {
                     });
                 })
             );
-            return addons.filter(addon => addon !== null) as IAddOn[];
+            return addons.filter((addon: any) => addon !== null) as IAddOn[];
         } catch (error) {
             throw new Error('Failed to get addons');
         }
@@ -165,7 +165,7 @@ export class PricingRepository {
                         {
                             OR: [
                                 { validTo: null },
-                                { validTo: { gte: endDate } },
+                                { validTo: { gte: startDate } }, // Aligned with reference logic
                             ],
                         },
                     ],
@@ -259,6 +259,51 @@ export class PricingRepository {
             });
         } catch (error) {
             throw new Error('Failed to fetch loyality discount');
+        }
+    }
+
+    public async findLoyaltyDiscountData(
+        guestEmail: string,
+        propertyId: string
+    ): Promise<ILoyaltyDiscountData | null> {
+        try {
+            // Find if guest is a member for this property
+            const loyaltyGuest = await prisma.loyalityGuest.findUnique({
+                where: {
+                    propertyId_guestEmail: {
+                        propertyId,
+                        guestEmail,
+                    },
+                },
+                include: {
+                    CreationLoyaltyConfig: {
+                        include: {
+                            PropertyLoyaltyConfig: {
+                                where: { propertyId },
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (!loyaltyGuest) return null;
+
+            const config = loyaltyGuest.CreationLoyaltyConfig;
+            const propertyConfig = config.PropertyLoyaltyConfig[0];
+
+            if (!propertyConfig || !propertyConfig.isActive) return null;
+
+            return {
+                guestLevel: null,
+                loyalityLevels: [],
+                fallback: {
+                    type: propertyConfig.discountPercentage ? 'percentage' : config.loyaltyDiscountType,
+                    value: (propertyConfig.discountPercentage ?? config.discountValue) as number,
+                },
+            };
+        } catch (error) {
+            console.error('Error fetching loyalty discount data:', error);
+            throw new Error('Failed to fetch loyalty discount data');
         }
     }
 }

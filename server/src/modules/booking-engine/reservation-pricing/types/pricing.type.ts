@@ -210,7 +210,7 @@ export interface PriceBrakeDown {
     addonBrakeDown: AddOnBrakeDown[];
     promotionBrakeDown: PromotionBrakeDown[];
     loyalityDiscount: number;
-    dynamicPricing:IDynamicPricingResult[];
+    dynamicPricing: IDynamicPricingResult[];
 }
 
 export interface DailyPriceBrakeDown {
@@ -249,10 +249,22 @@ export interface PromotionBrakeDown {
     currencyCode: CurrencyCode | null;
     discountAmount: number;
     restrictionType: 'increase' | 'decrease' | 'payLater';
-    type: 'user-applied' | 'auto-applied';
+    type: 'user_applied' | 'auto_applied';
 }
 export interface IRoomDetails {
     adults: number;
     children: number;
     childAges: number[];
+}
+
+export interface ILoyaltyDiscountData {
+    guestLevel: number | null;
+    loyalityLevels: {
+        level: number;
+        discountPercentage: number;
+    }[];
+    fallback: {
+        type: DiscountType;
+        value: number;
+    } | null;
 }
