@@ -212,7 +212,8 @@ export class PricingService {
                 priceBrakedowns = loyalityDiscountClass.findLoyalityDiscount();
             }
 
-            // Ensure amountBeforeTax reflects current state before tourist tax and final taxes
+            // Sync amountBeforeTax to currentChargeableAmount before taxes are applied
+            // This matches the Revchill implementation pattern
             priceBrakedowns.amountBeforeTax = priceBrakedowns.currentChargeableAmount;
 
             // ─── Phase 7: Tourist Taxes ───
@@ -454,19 +455,33 @@ class BasePriceClass {
             const { adults, children } = guestDistribution;
             const totalPersons = adults + children;
 
+            const gap =
+                this.roomDetails.maxOccupancy -
+                this.roomDetails.maxNumberOfAdults +
+                this.roomDetails.maxNumberOfChildren;
             if (totalPersons > this.roomDetails.maxOccupancy) {
                 throw new Error(
                     `This room has a maximum occupancy of ${this.roomDetails.maxOccupancy}.`
                 );
             }
-            if (adults > this.roomDetails.maxNumberOfAdults) {
+            if (
+                adults >
+                (gap < 0
+                    ? this.roomDetails.maxNumberOfAdults
+                    : gap + this.roomDetails.maxNumberOfAdults)
+            ) {
                 throw new Error(
-                    `This room can only accommodate ${this.roomDetails.maxNumberOfAdults} adults.`
+                    `This room can only accommodate maximum ${gap < 0 ? this.roomDetails.maxNumberOfAdults : gap} adults.`
                 );
             }
-            if (children > this.roomDetails.maxNumberOfChildren) {
+            if (
+                children >
+                (gap < 0
+                    ? this.roomDetails.maxNumberOfChildren
+                    : gap + this.roomDetails.maxNumberOfChildren)
+            ) {
                 throw new Error(
-                    `This room can only accommodate ${this.roomDetails.maxNumberOfChildren} children.`
+                    `This room can only accommodate maximum ${gap < 0 ? this.roomDetails.maxNumberOfChildren : gap} children.`
                 );
             }
 
@@ -495,10 +510,10 @@ class BasePriceClass {
                     b => b.numberOfGuests === adults
                 );
                 if (exactAdultBase) {
-                    adultBasePrice = Number(exactAdultBase.amountBeforeTax); // Exact match found → use it directly
+                    adultBasePrice = Number(exactAdultBase.amountBeforeTax);
                 } else if (adultBaseAmounts.length > 0) {
                     const maxAdultBase =
-                        adultBaseAmounts[adultBaseAmounts.length - 1]; // No exact match → use highest available base + charge for extras
+                        adultBaseAmounts[adultBaseAmounts.length - 1];
                     adultBasePrice = Number(maxAdultBase.amountBeforeTax);
                     const extraAdults = adults - maxAdultBase.numberOfGuests;
                     if (extraAdults > 0 && additionalChargeForAdults) {
@@ -509,7 +524,7 @@ class BasePriceClass {
                 } else {
                     if (additionalChargeForAdults) {
                         additionalAdultCharges =
-                            adults * Number(additionalChargeForAdults.amount); // No base entries at all → every adult is additional
+                            adults * Number(additionalChargeForAdults.amount);
                     }
                 }
 
@@ -521,10 +536,10 @@ class BasePriceClass {
                         b => b.numberOfGuests === children
                     );
                     if (exactChildBase) {
-                        childBasePrice = Number(exactChildBase.amountBeforeTax); // Exact match found → use it directly
+                        childBasePrice = Number(exactChildBase.amountBeforeTax);
                     } else if (childBaseAmounts.length > 0) {
                         const maxChildBase =
-                            childBaseAmounts[childBaseAmounts.length - 1]; // No exact match → use highest available base + charge for extras
+                            childBaseAmounts[childBaseAmounts.length - 1];
                         childBasePrice = Number(maxChildBase.amountBeforeTax);
                         const extraChildren =
                             children - maxChildBase.numberOfGuests;
@@ -537,7 +552,7 @@ class BasePriceClass {
                         if (additionalChargeForChildren) {
                             additionalChildCharges =
                                 children *
-                                Number(additionalChargeForChildren.amount); // No base entries at all → every child is additional
+                                Number(additionalChargeForChildren.amount);
                         }
                     }
                 }
@@ -621,6 +636,7 @@ class AddOnPriceClass {
             totalAmount: this.priceBrakedowns.totalAmount + sumAddonsAmount,
             currentChargeableAmount:
                 this.priceBrakedowns.currentChargeableAmount + sumAddonsAmount,
+            // Revchill fix: amountBeforeTax is NOT updated in addon phase
         };
     }
 
@@ -956,6 +972,7 @@ class PromotionClass {
         return {
             ...this.priceBrakeDown,
             totalPromotionAmount: visibleDiscountAmount,
+            // Revchill fix: amountBeforeTax only reduced by geoDiscountAmount
             amountBeforeTax:
                 this.priceBrakeDown.amountBeforeTax - geoDiscountAmount,
             totalAmount:
@@ -1271,7 +1288,7 @@ class PromotionClass {
                     discountValue: Number(geo.restrictionValue),
                     name: 'Geo Restriction',
                     restrictionType,
-                    type: 'auto-applied',
+                    type: 'auto_applied',
                 });
             }
         });
@@ -1350,7 +1367,7 @@ class TouristTaxClass {
                         100) *
                     this.noOfBedrooms,
                 restrictionType: 'payLater',
-                type: 'auto-applied',
+                type: 'auto_applied',
             };
         } else {
             return {
@@ -1366,7 +1383,7 @@ class TouristTaxClass {
                     this.noOfRooms *
                     this.noOfBedrooms,
                 restrictionType: 'payLater',
-                type: 'auto-applied',
+                type: 'auto_applied',
             };
         }
     }
@@ -1418,6 +1435,7 @@ class LoyalityDiscountClass {
             currentChargeableAmount:
                 this.priceBrakedown.currentChargeableAmount - loyaltyDiscount,
             totalAmount: this.priceBrakedown.totalAmount - loyaltyDiscount,
+            // Revchill fix: amountBeforeTax is NOT updated here
         };
     }
 }
@@ -1514,6 +1532,7 @@ class PromoCodeDiscountClass {
                 promoCodeDiscountAmount,
             totalAmount:
                 this.priceBrakedown.totalAmount - promoCodeDiscountAmount,
+            // Revchill fix: amountBeforeTax is NOT updated here
         };
     }
 
@@ -1577,6 +1596,7 @@ class TaxClass {
             rules.forEach(rule => {
                 let taxForThisRule = 0;
                 if (rule.taxRule.type === 'fixed') {
+                    // Revchill fix: Fixed tax is NOT multiplied by rooms/days here
                     taxForThisRule = Number(rule.taxRule.value);
                 } else {
                     taxForThisRule =

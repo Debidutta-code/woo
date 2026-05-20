@@ -165,7 +165,7 @@ export class PricingRepository {
                         {
                             OR: [
                                 { validTo: null },
-                                { validTo: { gte: endDate } },
+                                { validTo: { gte: startDate } }, // Aligned with reference logic
                             ],
                         },
                     ],
@@ -294,8 +294,8 @@ export class PricingRepository {
             if (!propertyConfig || !propertyConfig.isActive) return null;
 
             return {
-                guestLevel: null, // Schema doesn't seem to have levels yet, defaulting to null
-                loyalityLevels: [], // Placeholder for future levels
+                guestLevel: null,
+                loyalityLevels: [],
                 fallback: {
                     type: propertyConfig.discountPercentage ? 'percentage' : config.loyaltyDiscountType,
                     value: (propertyConfig.discountPercentage ?? config.discountValue) as number,
