@@ -313,7 +313,6 @@ export default function Loyalty() {
 
   const handleImageUploadSuccess = (uploadedUrls: string[]) => {
     setLogos([...logos, ...uploadedUrls]);
-    toast.success(`${uploadedUrls.length} image(s) uploaded successfully`);
   };
 
   const handleRemoveLogo = (index: number) => {

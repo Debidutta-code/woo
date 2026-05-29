@@ -65,7 +65,6 @@ const CreateEntityDialog = ({ currentTab, creationId, level, fetchProperties, cr
             ...prev,
             images: [...prev.images, ...uploadedUrls]
         }));
-        toast.success(`${uploadedUrls.length} image(s) uploaded successfully`);
     };
 
     const handleRemoveImage = (index: number) => {

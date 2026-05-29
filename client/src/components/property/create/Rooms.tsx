@@ -376,7 +376,7 @@ export default function Rooms() {
                       />
                     </div>
                                         <div>
-                      <Label htmlFor="bedrooms" className="text-gray-800 font-medium">No.of Bedrooms</Label>
+                      <Label htmlFor="bedrooms" className="text-gray-800 font-medium"> No.of Living Rooms</Label>
                       <Input
                         id="bedrooms"
                         min={1}
@@ -388,7 +388,7 @@ export default function Rooms() {
                       />
                     </div>
                                         <div>
-                      <Label htmlFor="bedrooms" className="text-gray-800 font-medium">No.of Bedrooms</Label>
+                      <Label htmlFor="bedrooms" className="text-gray-800 font-medium">No.of Extra Beds</Label>
                       <Input
                         id="bedrooms"
                         min={1}

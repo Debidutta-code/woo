@@ -162,7 +162,6 @@ export default function Custom() {
             ...prev,
             images: [...prev.images, ...uploadedUrls]
         }));
-        toast.success(`${uploadedUrls.length} image(s) uploaded successfully`);
     };
 
     const handleRemoveImage = (index: number) => {
