@@ -129,14 +129,77 @@ export class RoomController {
         req: CustomRequest,
         res: Response
     ): Promise<Response> {
-        try {
-            const { roomId } = req.params;
-            if (!roomId) {
-                return res.status(400).json(errorResponse('Room id not found'));
+          try {
+            const id = req.params.id;
+            if (!id) {
+                return res
+                    .status(400)
+                    .json(errorResponse('Property id not found'));
             }
-            const roomData = req.body;
-            const response = await this.roomService.update(roomId, roomData);
-            const statusCode = response.success ? 200 : 400;
+            const {
+                roomName,
+                roomType,
+                totalRoom,
+                RoomViews,
+                floor,
+                roomSize,
+                roomUnit,
+                smokingPolicy,
+                maxOccupancy,
+                maxNumberOfAdults,
+                maxNumberOfChildren,
+                numberOfBedrooms,
+                numberOfLivingRoom,
+                extraBed,
+                description,
+                image,
+                available,
+                priority,
+            } = req.body;
+            if (
+                !roomName ||
+                !roomType ||
+                !totalRoom ||
+                !roomSize ||
+                !maxOccupancy ||
+                !image ||
+                image.length == 0
+            ) {
+                return res
+                    .status(400)
+                    .json(errorResponse('Fill all the necessary fields'));
+            }
+            if (maxNumberOfAdults + maxNumberOfChildren > maxOccupancy) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Max number of adults and children cannot exceed max occupancy'
+                        )
+                    );
+            }
+            const response = await this.roomService.create({
+                roomName,
+                roomType,
+                totalRoom,
+                RoomViews,
+                floor,
+                roomSize,
+                roomUnit,
+                smokingPolicy,
+                maxOccupancy,
+                maxNumberOfAdults,
+                maxNumberOfChildren,
+                numberOfBedrooms,
+                numberOfLivingRoom,
+                extraBed,
+                description,
+                image,
+                available,
+                propertyId: id,
+                priority,
+            });
+            const statusCode = response.success ? 201 : 400;
             return res.status(statusCode).json(response);
         } catch (error) {
             return res.status(500).json(errorResponse('Internal server error'));

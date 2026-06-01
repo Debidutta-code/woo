@@ -186,7 +186,7 @@ export default function Rooms({ propertyId }: PropertyId) {
     try {
       const res = await deleteRoom(propertyId, roomId);
       if (res.success) {
-        toast.success("Room Created Successfully");
+        toast.success("Room deleted Successfully");
       } else {
         toast.error(res.message || "Failed to Create Room Details");
       }

@@ -386,7 +386,7 @@ export default function Rooms({
                         htmlFor="roomSize"
                         className="text-gray-800 font-medium"
                       >
-                        Room Size
+                        Room Size *
                       </Label>
                       <Input
                         id="roomSize"
