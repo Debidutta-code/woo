@@ -131,10 +131,14 @@ export class RoomController {
     ): Promise<Response> {
           try {
             const id = req.params.id;
+            const roomId = req.params.roomId;
             if (!id) {
                 return res
                     .status(400)
                     .json(errorResponse('Property id not found'));
+            }
+            if (!roomId) {
+                return res.status(400).json(errorResponse('Room id not found'));
             }
             const {
                 roomName,
@@ -178,7 +182,7 @@ export class RoomController {
                         )
                     );
             }
-            const response = await this.roomService.create({
+            const response = await this.roomService.update(roomId, {
                 roomName,
                 roomType,
                 totalRoom,
@@ -199,7 +203,7 @@ export class RoomController {
                 propertyId: id,
                 priority,
             });
-            const statusCode = response.success ? 201 : 400;
+            const statusCode = response.success ? 200 : 400;
             return res.status(statusCode).json(response);
         } catch (error) {
             return res.status(500).json(errorResponse('Internal server error'));

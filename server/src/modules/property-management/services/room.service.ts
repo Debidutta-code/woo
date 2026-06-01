@@ -9,6 +9,11 @@ export class RoomService {
         this.roomDao = new RoomDao();
     }
 
+    private getMasterRoomViewId(roomData: ICRoom): string | null {
+        const masterRoomViewId = roomData.RoomViews?.MasterRoomView?.id?.trim();
+        return masterRoomViewId || null;
+    }
+
     public async create(roomData: ICRoom): Promise<IApiResponse> {
         try {
             const [roomByName, roomByCode] = await Promise.all([
@@ -27,10 +32,13 @@ export class RoomService {
                 );
             }
             const createdRoom = await this.roomDao.create(roomData);
-            await this.roomDao.createRoomView({
-                roomId: createdRoom.id,
-                masterViewId: roomData.RoomViews!.MasterRoomView.id,
-            });
+            const masterRoomViewId = this.getMasterRoomViewId(roomData);
+            if (masterRoomViewId) {
+                await this.roomDao.createRoomView({
+                    roomId: createdRoom.id,
+                    masterViewId: masterRoomViewId,
+                });
+            }
             if (createdRoom) {
                 return successResponse(
                     'Room created successfully',
@@ -69,10 +77,15 @@ export class RoomService {
                 return errorResponse('Room Does not exists');
             }
             const updatedRoom = await this.roomDao.updateRoom(id, roomData);
-            await this.roomDao.updateRoomView({
-                roomId: id,
-                masterViewId: roomData.RoomViews!.MasterRoomView.id,
-            });
+            const masterRoomViewId = this.getMasterRoomViewId(roomData);
+            if (masterRoomViewId) {
+                await this.roomDao.updateRoomView({
+                    roomId: id,
+                    masterViewId: masterRoomViewId,
+                });
+            } else {
+                await this.roomDao.deleteRoomView(id);
+            }
             if (updatedRoom) {
                 return successResponse(
                     'Room updated successfully',
