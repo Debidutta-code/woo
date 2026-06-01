@@ -20,7 +20,7 @@ import type { roomUnit, smokingPolicy } from "../create/types/types";
 import type { IMasterRoomView } from "@/pages/management/types";
 import toast from "react-hot-toast";
 import { getAllRoomViews } from "@/pages/management/services/room-view.services";
-const roomSchema = z.object({
+export const roomSchema = z.object({
   roomName: z.string().min(3, "Room name is required and must be at least 3 characters."),
   roomType: z.string().min(1, "Please select a room type."),
   totalRoom: z.coerce.number().min(1, "Total rooms must be at least 1."),
@@ -40,10 +40,10 @@ const roomSchema = z.object({
   priority: z.coerce.number().min(0).default(0),
   RoomViews: z.object({
     MasterRoomView: z.object({
-      id: z.string().min(1, "Please select a room view."),
-      viewName: z.string()
-    })
-  }),
+      id: z.string().optional(),
+      viewName: z.string().optional()
+    }).optional()
+  }).optional(),
 }).superRefine((room, ctx) => {
   if (room.maxOccupancy > 0 && room.maxNumberOfChildren >= room.maxOccupancy) {
     ctx.addIssue({
@@ -54,25 +54,30 @@ const roomSchema = z.object({
   }
 });
 
-type FormErrors = z.inferFormattedError<typeof roomSchema>;
+export type RoomFormErrors = z.inferFormattedError<typeof roomSchema>;
 
 export default function Rooms({
   roomDetails,
   updateRoomDetails,
   isLoading,
+  formErrors,
+  onFormErrorsChange,
 }: {
   roomDetails: IRoomDetails;
   updateRoomDetails: Dispatch<SetStateAction<IRoomDetails>>;
   isLoading: boolean;
+  formErrors?: RoomFormErrors | null;
+  onFormErrorsChange?: Dispatch<SetStateAction<RoomFormErrors | null>>;
 }) {
   useEffect(() => {
     fetchRoomViews();
   }, []);
-  const [errors, _setErrors] = useState<FormErrors | null>(null);
+  const errors = formErrors ?? null;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [roomViews, setRoomViews] = useState<IMasterRoomView[]>([]);
 
   const updateRoom = (updates: IRoomDetails) => {
+    onFormErrorsChange?.(null);
     updateRoomDetails((prev) => ({ ...prev, ...updates }));
 
   };
@@ -307,15 +312,18 @@ export default function Rooms({
                         Room View
                       </Label>
                       <Select value={roomDetails.RoomViews?.MasterRoomView?.id || ''} onValueChange={(value) =>
-                        updateRoomDetails((prev) => ({
-                          ...prev,
-                          RoomViews: {
-                            MasterRoomView: {
-                              id: value,
-                              viewName: roomViews.find(view => view.id === value)?.viewName || ''
+                        {
+                          onFormErrorsChange?.(null);
+                          updateRoomDetails((prev) => ({
+                            ...prev,
+                            RoomViews: {
+                              MasterRoomView: {
+                                id: value,
+                                viewName: roomViews.find(view => view.id === value)?.viewName || ''
+                              }
                             }
-                          }
-                        }))}>
+                          }));
+                        }}>
                         <SelectTrigger className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100">
                           <SelectValue placeholder="Select view" />
                         </SelectTrigger>
@@ -326,6 +334,15 @@ export default function Rooms({
 
                         </SelectContent>
                       </Select>
+                      {(errors?.RoomViews?._errors[0] ||
+                        errors?.RoomViews?.MasterRoomView?._errors[0] ||
+                        errors?.RoomViews?.MasterRoomView?.id?._errors[0]) && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.RoomViews?._errors[0] ||
+                            errors.RoomViews?.MasterRoomView?._errors[0] ||
+                            errors.RoomViews?.MasterRoomView?.id?._errors[0]}
+                        </p>
+                      )}
                     </div>
 
                     <div>

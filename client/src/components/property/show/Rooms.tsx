@@ -40,7 +40,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import UpdateRoom from "../update/Rooms";
+import UpdateRoom, { roomSchema, type RoomFormErrors } from "../update/Rooms";
 import type { IRoomDetails } from "../update/types/types";
 import {
   updateRoom,
@@ -98,6 +98,8 @@ export default function Rooms({ propertyId }: PropertyId) {
   };
 
   const [roomDetails, setRoomDetails] = useState<IRoomDetails>(emptyRoomDetails);
+  const [roomErrors, setRoomErrors] = useState<RoomFormErrors | null>(null);
+  const [isSavingRoom, setIsSavingRoom] = useState(false);
 
   const [isDeletingVideo, setIsDeletingVideo] = useState<boolean>(false);
   const [openDialog, setOpenDialog] = useState<"create" | "edit" | null>(null);
@@ -154,48 +156,66 @@ export default function Rooms({ propertyId }: PropertyId) {
     }
     return true;
   };
+  const validateRoomForm = (payload: IRoomDetails) => {
+    const result = roomSchema.safeParse(payload);
+
+    if (!result.success) {
+      setRoomErrors(result.error.format());
+      toast.error("Please fix the highlighted room fields.");
+      return false;
+    }
+
+    setRoomErrors(null);
+    return true;
+  };
   const updateRoomQ = async (
     propertyId: string,
     roomId: string,
     roomDetails: IRoomDetails,
   ) => {
+    if (!validateRoomForm(roomDetails)) {
+      return;
+    }
     if (!validateRoomOccupancy(roomDetails)) {
       return;
     }
-    setLoading(true);
+    setIsSavingRoom(true);
     try {
       const res = await updateRoom(propertyId, roomId, roomDetails);
       if (res.success) {
         toast.success("Room Updated Successfully");
         setOpenDialog(null);
+        await fetchRoom(propertyId);
       } else {
         toast.error(res.message || "Failed to Update Room Details");
       }
-      fetchRoom(propertyId);
     } catch (error) {
       toast.error("Falied to Update Room Details");
     } finally {
-      setLoading(false);
+      setIsSavingRoom(false);
     }
   };
   const createRoomQ = async (propertyId: string, payload: IRoomDetails) => {
+    if (!validateRoomForm(payload)) {
+      return;
+    }
     if (!validateRoomOccupancy(payload)) {
       return;
     }
-    setLoading(true);
+    setIsSavingRoom(true);
     try {
       const res = await createRoom(propertyId, payload);
       if (res.success) {
         toast.success("Room Created Successfully");
         setOpenDialog(null);
+        await fetchRoom(propertyId);
       } else {
         toast.error(res.message || "Failed to Create Room Details");
       }
-      fetchRoom(propertyId);
     } catch (error) {
       toast.error("Falied to Create Room Details");
     } finally {
-      setLoading(false);
+      setIsSavingRoom(false);
     }
   };
   const handleDelete = async (propertyId: string, roomId: string) => {
@@ -383,6 +403,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                               if (!open) {
                                 setOpenDialog(null);
                                 setRoomDetails(emptyRoomDetails);
+                                setRoomErrors(null);
                               }
                             }}
                           >
@@ -394,6 +415,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                                   e.stopPropagation();
                                   setOpenDialog("create");
                                   setRoomDetails(emptyRoomDetails);
+                                  setRoomErrors(null);
                                 }}
                               >
                                 <Plus className="h-4 w-4 mr-2" />
@@ -419,6 +441,8 @@ export default function Rooms({ propertyId }: PropertyId) {
                                   roomDetails={roomDetails}
                                   isLoading={loading}
                                   updateRoomDetails={setRoomDetails}
+                                  formErrors={roomErrors}
+                                  onFormErrorsChange={setRoomErrors}
                                 />
                               </AlertDialogHeader>
                               <AlertDialogFooter className="border-t ">
@@ -428,9 +452,9 @@ export default function Rooms({ propertyId }: PropertyId) {
                                     event.preventDefault();
                                     createRoomQ(propertyId, roomDetails);
                                   }}
-                                  disabled={loading}
+                                  disabled={isSavingRoom}
                                 >
-                                  {loading ? "Creating..." : "Create Room"}
+                                  {isSavingRoom ? "Creating..." : "Create Room"}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -448,6 +472,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                               if (!open) {
                                 setOpenDialog(null);
                                 setRoomDetails(emptyRoomDetails);
+                                setRoomErrors(null);
                               }
                             }}                          >
                             <AlertDialogTrigger asChild>
@@ -457,6 +482,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setOpenDialog("edit");
+                                  setRoomErrors(null);
                                   setRoomDetails({
                                     roomName: room.roomName,
                                     roomType: room.roomType,
@@ -504,6 +530,8 @@ export default function Rooms({ propertyId }: PropertyId) {
                                   roomDetails={roomDetails}
                                   isLoading={loading}
                                   updateRoomDetails={setRoomDetails}
+                                  formErrors={roomErrors}
+                                  onFormErrorsChange={setRoomErrors}
                                 />
                               </AlertDialogHeader>
                               <AlertDialogFooter className="border-t pt-4">
@@ -517,9 +545,9 @@ export default function Rooms({ propertyId }: PropertyId) {
                                       roomDetails,
                                     );
                                   }}
-                                  disabled={loading}
+                                  disabled={isSavingRoom}
                                 >
-                                  {loading ? "Updating..." : "Update Room"}
+                                  {isSavingRoom ? "Updating..." : "Update Room"}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -901,6 +929,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                 if (!open) {
                   setOpenDialog(null);
                   setRoomDetails(emptyRoomDetails);
+                  setRoomErrors(null);
                 }
               }}
             >
@@ -911,6 +940,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                     e.stopPropagation();
                     setOpenDialog("create");
                     setRoomDetails(emptyRoomDetails);
+                    setRoomErrors(null);
                   }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -936,6 +966,8 @@ export default function Rooms({ propertyId }: PropertyId) {
                     roomDetails={roomDetails}
                     isLoading={loading}
                     updateRoomDetails={setRoomDetails}
+                    formErrors={roomErrors}
+                    onFormErrorsChange={setRoomErrors}
                   />
                 </AlertDialogHeader>
                 <AlertDialogFooter className="border-t ">
@@ -945,9 +977,9 @@ export default function Rooms({ propertyId }: PropertyId) {
                       event.preventDefault();
                       createRoomQ(propertyId, roomDetails);
                     }}
-                    disabled={loading}
+                    disabled={isSavingRoom}
                   >
-                    {loading ? "Creating..." : "Create Room"}
+                    {isSavingRoom ? "Creating..." : "Create Room"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
