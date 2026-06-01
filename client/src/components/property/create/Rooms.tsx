@@ -40,6 +40,14 @@ const roomSchema = z.object({
       viewName: z.string()
     })
   }),
+}).superRefine((room, ctx) => {
+  if (room.maxOccupancy > 0 && room.maxNumberOfChildren >= room.maxOccupancy) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["maxNumberOfChildren"],
+      message: "Max children must be less than max occupancy.",
+    });
+  }
 });
 
 type FormErrors = z.inferFormattedError<typeof roomSchema>;
@@ -445,11 +453,15 @@ export default function Rooms() {
                         id="maxNumberOfChildren"
                         type="number"
                         min={0}
+                        max={roomDetails.maxOccupancy > 0 ? roomDetails.maxOccupancy - 1 : undefined}
                         value={roomDetails.maxNumberOfChildren || ''}
                         onChange={(e) => updateroomDetails({ maxNumberOfChildren: parseInt(e.target.value) || 0 })}
                         placeholder="e.g., 1"
                         className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
                       />
+                      {errors?.maxNumberOfChildren?._errors[0] && (
+                        <p className="text-red-500 text-sm mt-1">{errors.maxNumberOfChildren._errors[0]}</p>
+                      )}
                     </div>
                   </div>
                 </div>

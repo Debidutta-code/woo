@@ -7,6 +7,23 @@ export class RoomController {
     constructor() {
         this.roomService = new RoomService();
     }
+    private validateOccupancy(
+        maxOccupancy: number,
+        maxNumberOfAdults: number = 0,
+        maxNumberOfChildren: number = 0
+    ): string | null {
+        const occupancy = Number(maxOccupancy);
+        const adults = Number(maxNumberOfAdults || 0);
+        const children = Number(maxNumberOfChildren || 0);
+
+        if (occupancy > 0 && children >= occupancy) {
+            return 'Max number of children must be less than max occupancy';
+        }
+        if (adults + children > occupancy) {
+            return 'Max number of adults and children cannot exceed max occupancy';
+        }
+        return null;
+    }
     public async createRoom(
         req: CustomRequest,
         res: Response
@@ -51,14 +68,15 @@ export class RoomController {
                     .status(400)
                     .json(errorResponse('Fill all the necessary fields'));
             }
-            if (maxNumberOfAdults + maxNumberOfChildren > maxOccupancy) {
+            const occupancyError = this.validateOccupancy(
+                maxOccupancy,
+                maxNumberOfAdults,
+                maxNumberOfChildren
+            );
+            if (occupancyError) {
                 return res
                     .status(400)
-                    .json(
-                        errorResponse(
-                            'Max number of adults and children cannot exceed max occupancy'
-                        )
-                    );
+                    .json(errorResponse(occupancyError));
             }
             const response = await this.roomService.create({
                 roomName,
@@ -173,14 +191,15 @@ export class RoomController {
                     .status(400)
                     .json(errorResponse('Fill all the necessary fields'));
             }
-            if (maxNumberOfAdults + maxNumberOfChildren > maxOccupancy) {
+            const occupancyError = this.validateOccupancy(
+                maxOccupancy,
+                maxNumberOfAdults,
+                maxNumberOfChildren
+            );
+            if (occupancyError) {
                 return res
                     .status(400)
-                    .json(
-                        errorResponse(
-                            'Max number of adults and children cannot exceed max occupancy'
-                        )
-                    );
+                    .json(errorResponse(occupancyError));
             }
             const response = await this.roomService.update(roomId, {
                 roomName,

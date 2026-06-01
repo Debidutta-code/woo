@@ -144,11 +144,24 @@ export default function Rooms({ propertyId }: PropertyId) {
   if (loading) {
     return <Loader text="Loading Rooms..." />;
   }
+  const validateRoomOccupancy = (payload: IRoomDetails) => {
+    if (
+      payload.maxOccupancy > 0 &&
+      payload.maxNumberOfChildren >= payload.maxOccupancy
+    ) {
+      toast.error("Max children must be less than max occupancy.");
+      return false;
+    }
+    return true;
+  };
   const updateRoomQ = async (
     propertyId: string,
     roomId: string,
     roomDetails: IRoomDetails,
   ) => {
+    if (!validateRoomOccupancy(roomDetails)) {
+      return;
+    }
     setLoading(true);
     try {
       const res = await updateRoom(propertyId, roomId, roomDetails);
@@ -166,6 +179,9 @@ export default function Rooms({ propertyId }: PropertyId) {
     }
   };
   const createRoomQ = async (propertyId: string, payload: IRoomDetails) => {
+    if (!validateRoomOccupancy(payload)) {
+      return;
+    }
     setLoading(true);
     try {
       const res = await createRoom(propertyId, payload);
@@ -408,9 +424,10 @@ export default function Rooms({ propertyId }: PropertyId) {
                               <AlertDialogFooter className="border-t ">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() =>
-                                    createRoomQ(propertyId, roomDetails)
-                                  }
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    createRoomQ(propertyId, roomDetails);
+                                  }}
                                   disabled={loading}
                                 >
                                   {loading ? "Creating..." : "Create Room"}
@@ -492,13 +509,14 @@ export default function Rooms({ propertyId }: PropertyId) {
                               <AlertDialogFooter className="border-t pt-4">
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() =>
+                                  onClick={(event) => {
+                                    event.preventDefault();
                                     updateRoomQ(
                                       propertyId,
                                       room.id,
                                       roomDetails,
-                                    )
-                                  }
+                                    );
+                                  }}
                                   disabled={loading}
                                 >
                                   {loading ? "Updating..." : "Update Room"}
@@ -923,7 +941,10 @@ export default function Rooms({ propertyId }: PropertyId) {
                 <AlertDialogFooter className="border-t ">
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => createRoomQ(propertyId, roomDetails)}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      createRoomQ(propertyId, roomDetails);
+                    }}
                     disabled={loading}
                   >
                     {loading ? "Creating..." : "Create Room"}
