@@ -631,8 +631,9 @@ class AddOnPriceClass {
                         a =>
                             new Date(a.date).toISOString() ===
                             new Date(avail.date).toISOString()
-                    )?.quantity || 1
+                    )?.quantity ?? 0
                     : 1;
+                if (quantityForDate === 0) return;
                 const totalAmount = amount * quantityForDate;
 
                 addonBrakeDown.push({

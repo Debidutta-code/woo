@@ -131,7 +131,7 @@ export class PricingRepository {
         try {
             const addons = await Promise.all(
                 selectedAddons.map(async (singleAdd: ISelectedAddonsR) => {
-                    return await prisma.addon.findUnique({
+                    return await prisma.addon.findFirst({
                         where: {
                             id: singleAdd.addOnId,
                             isActive: true,
