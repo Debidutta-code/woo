@@ -8,7 +8,7 @@ export class PropertyRepository {
     // ✅ EXISTING METHOD - Keep this (if you have it)
     public async getPropertyByCode(propertyCode: string): Promise<IPropertyWithDetails | null> {
         try {
-            return await prisma.property.findUnique({
+            const property = await prisma.property.findUnique({
                 where: {
                     propertyCode: propertyCode,
                     isDeleted: false,
@@ -57,6 +57,7 @@ export class PropertyRepository {
                     propertyVideos: true,
                 },
             });
+            return property as IPropertyWithDetails | null;
         } catch (error) {
             console.error('Error fetching property by code:', error);
             throw new Error('Failed to fetch property');
@@ -66,7 +67,7 @@ export class PropertyRepository {
     // ✅ NEW METHOD - ADD THIS RIGHT AFTER getPropertyByCode()
     public async getPropertyById(propertyId: string): Promise<IPropertyWithDetails | null> {
         try {
-            return await prisma.property.findUnique({
+            const property = await prisma.property.findUnique({
                 where: {
                     id: propertyId,
                     isDeleted: false,
@@ -120,6 +121,7 @@ export class PropertyRepository {
                     propertyVideos: true,
                 },
             });
+            return property as IPropertyWithDetails | null;
         } catch (error) {
             console.error('Error fetching property by ID:', error);
             throw new Error('Failed to fetch property');

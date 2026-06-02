@@ -126,7 +126,7 @@ export class PricingService {
                 ratePlan.charges,
                 ratePlan.taxGroup,
                 guestDistribution,
-                selectedRoom
+                selectedRoom as any
             );
             let priceBrakedowns = basePrice.calculateTotalPrice();
 
@@ -194,7 +194,7 @@ export class PricingService {
             );
             const touristTaxClass = new TouristTaxClass(
                 selectedRoom.TouristTaxs,
-                selectedRoom,
+                selectedRoom as any,
                 rooms,
                 priceBrakedowns,
                 diffInDays

@@ -81,7 +81,7 @@ export class SearchRepository {
                 },
             });
 
-            return properties;
+            return properties as unknown as IPropertyWithDetails[];
         } catch (error) {
             console.error('Error fetching properties by ids:', error);
             throw new Error('Failed to fetch properties');
@@ -274,7 +274,7 @@ export class SearchRepository {
                         },
                     },
                 },
-            });
+            }) as unknown as IPropertyWithDetails[];
 
             // Apply room-level filters
             let filteredProperties = properties;

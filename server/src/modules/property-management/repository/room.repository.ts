@@ -95,7 +95,7 @@ export class RoomDao {
                     roomName: roomData.roomName,
                     roomType: roomData.roomType,
                     totalRoom: roomData.totalRoom,
-                    floor: roomData.floor,
+                    floor: roomData.floor as any,
                     roomSize: roomData.roomSize,
                     roomUnit: roomData.roomUnit,
                     smokingPolicy: roomData.smokingPolicy,
