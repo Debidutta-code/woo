@@ -23,7 +23,7 @@ export interface IRoom {
     roomName: string;
     roomType: string;
     totalRoom: number;
-    floor: number;
+    floor: string;
     roomView: RoomView;
     roomSize: any;
     roomUnit: RoomUnit;

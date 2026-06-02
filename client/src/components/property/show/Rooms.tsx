@@ -78,7 +78,7 @@ export default function Rooms({ propertyId }: PropertyId) {
     roomName: "",
     roomType: "",
     totalRoom: 0,
-    floor: 0,
+    floor: "",
     roomSize: 0,
     roomUnit: "sqft",
     smokingPolicy: "designated_area",

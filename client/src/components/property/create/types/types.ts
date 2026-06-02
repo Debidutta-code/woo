@@ -65,7 +65,7 @@ export interface IRoomDetails {
   roomName: string;
   roomType: string;
   totalRoom: number;
-  floor: number;
+  floor: string;
   roomSize: number;
   roomUnit: roomUnit;
   smokingPolicy: smokingPolicy;
