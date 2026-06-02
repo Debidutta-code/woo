@@ -3,7 +3,7 @@ model Room {
   roomName            String        @map("room_name")
   roomType            String        @map("room_type")
   totalRoom           Int           @map("total_room")
-  floor               Int
+  floor               String
   roomView            RoomView      @default(others) @map("room_view") //this is not being used RoomViews this is being used from now onwads
   roomSize            Float         @map("room_size")
   roomUnit            RoomUnit      @default(sqft) @map("room_unit")

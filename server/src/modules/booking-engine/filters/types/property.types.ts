@@ -47,7 +47,7 @@ export interface ISearchRoom {
     maxOccupancy: number;
     numberOfBedrooms: number;
     smokingPolicy: string;
-    floor: number;
+    floor: string;
     images: string[];
     video: IVideoDetail | null;
     view360Link: string | null;

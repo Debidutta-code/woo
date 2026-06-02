@@ -219,7 +219,7 @@ export interface Room {
     roomName: string;
     roomType: string;
     totalRoom: number;
-    floor: number;
+    floor: string;
     roomView: string;  // RoomView enum
     roomSize: number;
     roomUnit: string;  // RoomUnit enum
@@ -602,7 +602,7 @@ export interface ISearchRoom {
     maxOccupancy: number;
     numberOfBedrooms: number;
     smokingPolicy: string;
-    floor: number;
+    floor: string;
     images: string[];
     amenities: string[];
     availabilityCount: number;

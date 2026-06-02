@@ -75,7 +75,7 @@ export interface IRoom {
   roomType: string;
   totalRoom: number;
   availableRooms: number;
-  floor: number;
+  floor: string;
   roomSize: number;
   roomUnit: roomUnit;
   smokingPolicy: smokingPolicy;

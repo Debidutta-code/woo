@@ -81,7 +81,7 @@ export interface IPropertyRoom {
     roomName: string;
     roomType: string;
     totalRoom: number;
-    floor: number;
+    floor: string;
     roomView: string;
     roomSize: number;
     roomUnit: string;

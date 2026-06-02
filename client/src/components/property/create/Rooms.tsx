@@ -23,7 +23,7 @@ const roomSchema = z.object({
   description: z.string().min(1, "Description must be at least 20 characters.").max(5000, "Description cannot exceed 500 characters."),
   maxOccupancy: z.coerce.number().min(1, "Max occupancy must be at least 1."),
   image: z.array(z.string()).min(1, "Please upload at least one room image."),
-  floor: z.coerce.number(),
+  floor: z.string().trim().regex(/^\d+(?:\s*,\s*\d+)*$/, "Enter floor numbers separated by commas."),
   roomSize: z.coerce.number().default(0),
   roomUnit: z.enum(["sqm", "sqft"]).default("sqft"),
   smokingPolicy: z.enum(["smoking", "non_smoking", "designated_area"]).default("designated_area"),
@@ -60,7 +60,7 @@ export default function Rooms() {
     roomName: '',
     roomType: '',
     totalRoom: 0,
-    floor: 0,
+    floor: '',
     roomSize: 0,
     roomUnit: 'sqft',
     smokingPolicy: 'designated_area',
@@ -324,13 +324,15 @@ export default function Rooms() {
                       <Label htmlFor="floor" className="text-gray-800 font-medium">Floor</Label>
                       <Input
                         id="floor"
-                        type="number"
+                        type="text"
                         value={roomDetails.floor || ''}
-                        min={0}
-                        onChange={(e) => updateroomDetails({ floor: parseInt(e.target.value) || 0 })}
-                        placeholder="e.g., 8"
+                        onChange={(e) => updateroomDetails({ floor: e.target.value })}
+                        placeholder="e.g., 1, 2, 3"
                         className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
                       />
+                      {errors?.floor?._errors[0] && (
+                        <p className="text-red-500 text-sm mt-1">{errors.floor._errors[0]}</p>
+                      )}
                     </div>
 
                     
