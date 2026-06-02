@@ -25,8 +25,7 @@ export default function ReferralWallet() {
   const [isFetching, setIsFetching] = useState(false);
 
   const fetchWalletData = async () => {
-    const accessToken = Cookies.get("accessToken");
-    if (!accessToken) {
+    if (false) {
       toast.error(t("Referral.noToken") || "Please login to view wallet data");
       return;
     }
@@ -40,7 +39,6 @@ export default function ReferralWallet() {
       const response = await axios.get(`${API_BASE_URL}/referrals/wallet`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -67,8 +65,7 @@ export default function ReferralWallet() {
   };
 
   const handleRedeem = async () => {
-    const accessToken = Cookies.get("accessToken");
-    if (!accessToken) {
+    if (false) {
       toast.error(t("Referral.noToken") || "Please login to redeem");
       return;
     }
@@ -98,7 +95,6 @@ export default function ReferralWallet() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
         }
       );

@@ -12,7 +12,6 @@ export const checkRoomAvailability = async (
   startDate: string,
   endDate: string
 ) => {
-  const token = Cookies.get("accessToken");
   const response = await axios.get(`${API_BASE_URL}/booking/check/availability`, {
     params: {
       hotelCode,
@@ -23,7 +22,6 @@ export const checkRoomAvailability = async (
     },
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
     },
     withCredentials: true,
   });
@@ -49,7 +47,6 @@ export const getRoomPrice = async (
   noOfRooms: number,
   parsedAddons: any[] = []
 ) => {
-  const token = Cookies.get("accessToken");
   const response = await axios.post(
     `${API_BASE_URL}/booking-engine/pricing/get-price`,
     {

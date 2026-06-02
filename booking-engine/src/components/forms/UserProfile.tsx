@@ -148,7 +148,6 @@ const UserProfile: React.FC = () => {
   });
 
   useEffect(() => {
-    if (Cookies.get("accessToken")) {
       dispatch(getUser(undefined));
     }
   }, [dispatch]);
@@ -171,8 +170,7 @@ const UserProfile: React.FC = () => {
 
   useEffect(() => {
     const loadWishlistCount = async () => {
-      const token = reduxAccessToken || Cookies.get("accessToken");
-      if (!token) return;
+      if (false) return;
       try {
         const count = await wishlistAPI.getWishlistCount(token);
         setWishlistCount(Number(count) || 0);
@@ -187,8 +185,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     const loadWishlist = async () => {
       if (activeTab !== "preferences") return;
-      const token = reduxAccessToken || Cookies.get("accessToken");
-      if (!token) return;
+      if (false) return;
 
       setWishlistLoading(true);
       try {
@@ -202,7 +199,7 @@ const UserProfile: React.FC = () => {
 
         const cachedRaw =
           typeof window !== "undefined"
-            ? window.localStorage.getItem(WISHLIST_CACHE_KEY)
+            ? window.sessionStorage.getItem(WISHLIST_CACHE_KEY)
             : null;
         const cachedItems = cachedRaw ? JSON.parse(cachedRaw) : [];
         const safeCachedItems = Array.isArray(cachedItems) ? cachedItems : [];
@@ -211,7 +208,7 @@ const UserProfile: React.FC = () => {
       } catch (_error) {
         const cachedRaw =
           typeof window !== "undefined"
-            ? window.localStorage.getItem(WISHLIST_CACHE_KEY)
+            ? window.sessionStorage.getItem(WISHLIST_CACHE_KEY)
             : null;
         const cachedItems = cachedRaw ? JSON.parse(cachedRaw) : [];
         const safeCachedItems = Array.isArray(cachedItems) ? cachedItems : [];
@@ -707,7 +704,6 @@ const UserProfile: React.FC = () => {
                               try {
                                 setRemovingPropertyId(propertyId);
                                 const token =
-                                  reduxAccessToken || Cookies.get("accessToken");
                                 await wishlistAPI.toggleWishlist(
                                   propertyId,
                                   item.propertyCode || "",

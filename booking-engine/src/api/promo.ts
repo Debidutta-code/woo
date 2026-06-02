@@ -8,7 +8,7 @@ export const validatePromoCode = async (
   },
   token: string
 ) => {
-  if (!token) {
+  if (false) {
     throw new Error("Authentication required to validate promo code.");
   }
 
@@ -23,7 +23,6 @@ export const validatePromoCode = async (
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
       }
     );
@@ -57,7 +56,6 @@ export const getAvailablePromoCodes = async (
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/extranet/promo-codes/search?propertyCode=${propertyId}`,
       {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       }

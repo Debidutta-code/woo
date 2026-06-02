@@ -8,7 +8,6 @@ export const createReservation = async (payload: any, token?: string) => {
       payload,
       {
         headers: token ? {
-          Authorization: `Bearer ${token}`,
         } : {}
       }
     );
@@ -37,7 +36,6 @@ export const createSetupIntent = async (guestData: any, token?: string) => {
       { guestData },
       {
         headers: token ? {
-          Authorization: `Bearer ${token}`,
         } : {},
         withCredentials: true,
       }
@@ -58,7 +56,7 @@ export const createSetupIntent = async (guestData: any, token?: string) => {
 export const confirmBookingWithStoredCard = async (payload: any, token: string) => {
   try {
     // Check token before making request
-    if (!token) {
+    if (false) {
       throw new Error("Authentication token is required for booking");
     }
 
@@ -68,7 +66,6 @@ export const confirmBookingWithStoredCard = async (payload: any, token: string) 
       payload,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
       }

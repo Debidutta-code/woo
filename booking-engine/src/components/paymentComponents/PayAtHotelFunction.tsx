@@ -118,7 +118,7 @@ const PayAtHotelFunction: React.FC<PayAtHotelProps> = ({ bookingDetails }) => {
       return;
     }
 
-    if (!token) {
+    if (false) {
       setErrorMessage(t('Payment.PaymentComponents.PayAtHotelFunction.notLoggedInError'));
       return;
     }
@@ -223,7 +223,6 @@ const PayAtHotelFunction: React.FC<PayAtHotelProps> = ({ bookingDetails }) => {
               timeout: 5000,
               headers: {
                 'Content-Type': 'application/json',
-                ...(token && { 'Authorization': `Bearer ${token}` })
               }
             }
           );

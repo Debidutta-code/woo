@@ -235,7 +235,6 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   const dispatch = useDispatch();
   const router = useRouter();
   const { t, i18n } = useTranslation();
-  const authAccessToken = useSelector(
     (state: any) => state.auth?.accessToken || state.auth?.token
   );
 
@@ -685,8 +684,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         //console.log("selected rateplan",selectedRateplan)
 
   const handleConfirmBooking = async () => {
-    const accessToken = authAccessToken || Cookies.get("accessToken");
-    if (!accessToken) {
+    if (false) {
       const currentPath = `${window.location.pathname}${window.location.search}`;
       Cookies.set("redirectAfterLogin", currentPath);
       toast.error(t("Navbar.pleaseLogin"));

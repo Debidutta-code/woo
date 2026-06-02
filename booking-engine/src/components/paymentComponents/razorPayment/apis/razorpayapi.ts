@@ -19,7 +19,6 @@ export const createRazorpayOrder = async (
       orderData,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       }
@@ -67,7 +66,6 @@ export const verifyRazorpayPayment = async (
       paymentData,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       }

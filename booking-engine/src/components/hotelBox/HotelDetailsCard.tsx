@@ -34,8 +34,6 @@ const HotelDetailsCard = ({ data }: any) => {
   const authUser = useSelector(
     (state: any) => state.auth?.user || state.authReducer?.user,
   );
-  const reduxToken = useSelector((state: any) => state.auth?.accessToken);
-  const accessToken = reduxToken || Cookies.get("accessToken");
 
   const roomPrice = Number(data?.map((item: any) => item.room_price))
   const roomID = String(data?.map((item: any) => item._id))
@@ -152,7 +150,6 @@ const HotelDetailsCard = ({ data }: any) => {
 
         const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/booking/createreservation`, requestData, {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             }
           }
@@ -237,7 +234,6 @@ const HotelDetailsCard = ({ data }: any) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_KEY}`,
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",

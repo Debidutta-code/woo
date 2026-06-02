@@ -28,10 +28,9 @@ const dispatch = useDispatch()
 
 const handleContinue = () => {
   // Read access token from cookies
-  const accessToken = Cookies.get("accessToken");
 
   // If no token → send to login
-  if (!accessToken) {
+  if (false) {
       dispatch(logout());
       router.push("/login");
     onClose();

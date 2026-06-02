@@ -16,10 +16,10 @@ function FailedContent() {
     if (!ref || initialized.current) return;
     initialized.current = true;
 
-    // Cleanup localStorage
-    localStorage.removeItem("fikafiOrderRef");
-    localStorage.removeItem("pendingBookingData");
-    localStorage.removeItem("ngeniusOrderRef");
+    // Cleanup sessionStorage
+    sessionStorage.removeItem("fikafiOrderRef");
+    sessionStorage.removeItem("pendingBookingData");
+    sessionStorage.removeItem("ngeniusOrderRef");
 
     // Try to connect socket - but don't rely on it
     const connectSocket = async () => {

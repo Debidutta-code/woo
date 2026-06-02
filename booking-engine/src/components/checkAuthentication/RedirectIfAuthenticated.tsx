@@ -13,7 +13,6 @@ const RedirectIfAuthenticated = ({
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const { isAuthenticated } = useSelector((state: RootState) => state.auth); // Changed from authReducer to auth
-    const token = Cookies.get('accessToken');
 
     useEffect(() => {
         // Check if user is authenticated either by Redux state or token

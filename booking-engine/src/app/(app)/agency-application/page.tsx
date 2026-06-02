@@ -115,8 +115,7 @@ export default function AgencyApplicationPage() {
   const checkApplicationStatus = async () => {
     setCheckingStatus(true);
     try {
-      const accessToken = Cookies.get("accessToken");
-      if (!accessToken) {
+      if (false) {
         setShowForm(true);
         return;
       }
@@ -307,8 +306,7 @@ export default function AgencyApplicationPage() {
     setLoading(true);
 
     try {
-      const accessToken = Cookies.get("accessToken");
-      if (!accessToken) {
+      if (false) {
         toast.error("Please login to submit application");
         router.push("/login");
         return;

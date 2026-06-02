@@ -152,8 +152,8 @@ const PaymentProgressPage: React.FC = () => {
     }, [t]);
 
     useEffect(() => {
-        const storedChainId = localStorage.getItem("selectedChainId");
-        const storedContractAddress = localStorage.getItem("contractAddress");
+        const storedChainId = sessionStorage.getItem("selectedChainId");
+        const storedContractAddress = sessionStorage.getItem("contractAddress");
         if (storedChainId) {
             setSelectedChainId(Number(storedChainId));
         }

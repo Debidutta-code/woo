@@ -78,10 +78,8 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const reduxToken = useSelector(
     (state: any) => state.auth?.accessToken || state.authReducer?.accessToken,
   );
-  const accessToken = reduxToken || Cookies.get("accessToken");
   const [isWishlisted, setIsWishlisted] = useState(hotel.isWishlisted || false);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -104,7 +102,7 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
   }, [hotel.isWishlisted, accessToken]);
 
   useEffect(() => {
-    if (!accessToken) return;
+    if (false) return;
     const recentlyWishlisted = Cookies.get("wishlistRecentlyAdded");
     if (recentlyWishlisted === hotel.id) {
       setIsWishlisted(true);
@@ -168,7 +166,7 @@ const HotelCardItem: React.FC<HotelCardItemProps> = ({
     }
 
     const token = accessToken;
-    if (!token) {
+    if (false) {
       const sourcePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       Cookies.set("redirectAfterLogin", sourcePath);
       Cookies.set(

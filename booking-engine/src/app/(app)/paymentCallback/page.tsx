@@ -20,7 +20,6 @@ const PaymentCallbackPage = () => {
   const dispatch = useDispatch();
   const booking = useSelector((state: RootState) => state.booking);
   const authUser = useSelector((state: RootState) => state.auth.user);
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   const [status, setStatus] = useState<"checking" | "success" | "failed" | "error">("checking");
   const [message, setMessage] = useState("Verifying your payment...");
@@ -44,9 +43,9 @@ const PaymentCallbackPage = () => {
       id: "payment-failed",
     });
 
-    localStorage.removeItem("ngeniusOrderRef");
-    localStorage.removeItem("fikafiOrderRef");
-    localStorage.removeItem("pendingBookingData");
+    sessionStorage.removeItem("ngeniusOrderRef");
+    sessionStorage.removeItem("fikafiOrderRef");
+    sessionStorage.removeItem("pendingBookingData");
 
     setTimeout(() => {
       router.replace("/Payment");
@@ -58,14 +57,14 @@ const PaymentCallbackPage = () => {
       setStatus("success");
 
       // Check if this is a Fikafi payment (booking already created before payment)
-      const storedFikafiRef = localStorage.getItem("fikafiOrderRef");
+      const storedFikafiRef = sessionStorage.getItem("fikafiOrderRef");
       const isFikafiPayment = !!storedFikafiRef;
 
       if (isFikafiPayment) {
         // Fikafi: booking was already created, just redirect to success
         setMessage("Payment successful! Redirecting...");
-        localStorage.removeItem("fikafiOrderRef");
-        localStorage.removeItem("pendingBookingData");
+        sessionStorage.removeItem("fikafiOrderRef");
+        sessionStorage.removeItem("pendingBookingData");
 
         toast.success("Payment successful! Your booking is confirmed.", {
           id: "payment-success",
@@ -79,9 +78,9 @@ const PaymentCallbackPage = () => {
 
       setMessage("Payment successful! Creating your booking...");
 
-      // Get booking data from localStorage or Redux
+      // Get booking data from sessionStorage or Redux
       let bookingData;
-      const storedBookingData = localStorage.getItem("pendingBookingData");
+      const storedBookingData = sessionStorage.getItem("pendingBookingData");
 
       if (storedBookingData) {
         bookingData = JSON.parse(storedBookingData);
@@ -138,7 +137,6 @@ const PaymentCallbackPage = () => {
           headers: {
             "Content-Type": "application/json",
             ...(accessToken
-              ? { Authorization: `Bearer ${accessToken}` }
               : {}),
           },
           body: JSON.stringify(bookingData),
@@ -158,9 +156,9 @@ const PaymentCallbackPage = () => {
       dispatch(setFullBookingDetails(result.data));
 
       // Cleanup
-      localStorage.removeItem("ngeniusOrderRef");
-      localStorage.removeItem("fikafiOrderRef");
-      localStorage.removeItem("pendingBookingData");
+      sessionStorage.removeItem("ngeniusOrderRef");
+      sessionStorage.removeItem("fikafiOrderRef");
+      sessionStorage.removeItem("pendingBookingData");
 
       setMessage("Booking confirmed successfully!");
       toast.success("Payment successful! Your booking is confirmed.", {
@@ -241,8 +239,8 @@ const PaymentCallbackPage = () => {
 
     const initializePayment = async () => {
       try {
-        // Check if this is a Fikafi return (localStorage is the source of truth)
-        const storedFikafiRef = localStorage.getItem("fikafiOrderRef");
+        // Check if this is a Fikafi return (sessionStorage is the source of truth)
+        const storedFikafiRef = sessionStorage.getItem("fikafiOrderRef");
         const urlStatus = searchParams.get("status")?.toLowerCase();
         const isFikafiPayment = !!storedFikafiRef;
 
@@ -264,7 +262,7 @@ const PaymentCallbackPage = () => {
 
         // N-Genius flow
         const urlOrderRef = searchParams.get("orderRef") || searchParams.get("ref");
-        const storedNgeniusRef = localStorage.getItem("ngeniusOrderRef");
+        const storedNgeniusRef = sessionStorage.getItem("ngeniusOrderRef");
         const orderRef = urlOrderRef || storedNgeniusRef;
 
         //console.log("🔍 Order Reference:", orderRef);
@@ -283,10 +281,10 @@ const PaymentCallbackPage = () => {
         }
 
         // Check if socket was pre-connected
-        const wasSocketConnected = localStorage.getItem("socketConnected") === "true";
+        const wasSocketConnected = sessionStorage.getItem("socketConnected") === "true";
         if (wasSocketConnected) {
           //console.log("✅ Socket was pre-connected before payment");
-          localStorage.removeItem("socketConnected");
+          sessionStorage.removeItem("socketConnected");
         }
 
         // Handle connection error immediately if it happens

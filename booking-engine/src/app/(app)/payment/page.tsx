@@ -75,7 +75,6 @@ function PaymentPageContent() {
   const [isLoadingPromos, setIsLoadingPromos] = useState(false);
   const [isPayAtHotelSubmitting, setIsPayAtHotelSubmitting] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const finalAmount = appliedPromo?.finalAmount ?? numericAmount;
   const totalTax = useSelector((state: RootState) => state.pmsHotelCard.totalTax);
   const bookingDetails = {
@@ -134,7 +133,7 @@ function PaymentPageContent() {
   }, [hotelCode, propertyId, accessToken]);
 
   const handlePromoApply = async (code: string) => {
-    if (!accessToken) {
+    if (false) {
       return { success: false, error: t("Payment.promoCode.loginRequired") };
     }
 

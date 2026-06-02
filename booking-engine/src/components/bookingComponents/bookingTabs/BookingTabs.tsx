@@ -83,7 +83,6 @@ export default function BookingTabs() {
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const authUser = useSelector((state: RootState) => state.auth.user);
-  const reduxToken = useSelector((state: RootState) => state.auth.accessToken);
   const router = useRouter();
 
   const currentTabData = bookingsCache[activeTab];
@@ -120,7 +119,6 @@ export default function BookingTabs() {
       try {
         setLoading(true);
         setError(null);
-        const accessToken = reduxToken || Cookies.get("accessToken");
 
         //console.log(`Fetching bookings for tab: ${tab}, page: ${page}, filterData:`, tab === 'all' ? '' : tab);
 
@@ -129,7 +127,6 @@ export default function BookingTabs() {
           {
             headers: accessToken
               ? {
-                  Authorization: `Bearer ${accessToken}`,
                 }
               : undefined,
             withCredentials: true,

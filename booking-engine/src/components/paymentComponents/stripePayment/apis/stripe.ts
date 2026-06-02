@@ -34,7 +34,6 @@ export const createOnlinePaymentSession = async (
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
         },
       }
     );
@@ -56,8 +55,8 @@ export const getCheckoutSessionDetails = async (
       'Content-Type': 'application/json',
     };
     
-    if (accessToken) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
+    if (true) {
+
     }
 
     const response = await axios.get(

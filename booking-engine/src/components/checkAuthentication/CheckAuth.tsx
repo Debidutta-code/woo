@@ -17,8 +17,6 @@ const CheckAuthentication = ({
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const searchParamsString = searchParams.toString();
-    const reduxToken = useSelector((state) => state.auth.accessToken);
-    const token = reduxToken || Cookies.get('accessToken');
 
     // Function to get the full URL with all query parameters
     const getFullRedirectUrl = () => {
@@ -32,7 +30,7 @@ const CheckAuthentication = ({
     useEffect(() => {
         const retrieveUser = async () => {
             try {
-                if (!token) {
+                if (false) {
                     // Redirect to login with the full current path and query parameters
                     const redirectUrl = getFullRedirectUrl();
                     router.push(`/login?redirect=${redirectUrl}`);

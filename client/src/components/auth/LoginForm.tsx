@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, Lock, Eye, EyeOff, Building2, Shield, Zap } from 'lucide-react';
 import AxiosInstance from "@/components/axiosInstance";
 import { z } from 'zod';
@@ -25,7 +24,6 @@ export default function LoginForm() {
     email: "",
     password: "",
   });
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
@@ -33,31 +31,18 @@ export default function LoginForm() {
 
   useEffect(() => {
         fetchUser();
-
-    const savedCredentials = localStorage.getItem("swiftRoomsLogCred");
-    if (savedCredentials) {
-      try {
-        const cred = JSON.parse(savedCredentials);
-        setLoginDetails({ email: cred.email, password: cred.password });
-        setRememberMe(true);
-      } catch (e) {
-        console.error("Failed to parse saved credentials from localStorage", e);
-      }
-    }
   }, []);
+
   const fetchUser = async () => {
       try {
         const axiosInstance = AxiosInstance();
         const response = await axiosInstance.get('/user/me');
         if (response.data.success) {
           navigate('/app');
-        } else {
-          
         }
-      } catch (error: any) {
-        
-      }
+      } catch (error: any) {}
     };
+
   const handleLogin = async () => {
     const validation = loginSchema.safeParse(loginDetails);
 
@@ -78,13 +63,7 @@ export default function LoginForm() {
       const response = await axiosInstance.post("/auth/login", loginDetails);
 
       if (response?.data?.success) {
-        if (rememberMe) {
-          localStorage.setItem("swiftRoomsLogCred", JSON.stringify(loginDetails));
-        } else {
-          localStorage.removeItem("swiftRoomsLogCred");
-        }
         toast.success("Login Successfull")
-        
         navigate('/app');
       } else {
         toast.error(response?.data?.message)
@@ -124,9 +103,6 @@ export default function LoginForm() {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 text-primary-foreground w-full">
-          {/* Logo & Brand */}
-         
-
           {/* Main Content */}
           <div className="space-y-8 animate-fade-in-delay">
             <div>
@@ -216,7 +192,7 @@ export default function LoginForm() {
                     onKeyPress={handleKeyPress}
                     className="pl-11 h-12 transition-all"
                     required
-                    autoComplete="r"
+                    autoComplete="email"
                   />
                 </div>
                 {errors.email && (
@@ -257,22 +233,8 @@ export default function LoginForm() {
                 )}
               </div>
 
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(newChecked) => setRememberMe(newChecked === true)}
-                    disabled={isLoading}
-                  />
-                  <Label 
-                    htmlFor="remember" 
-                    className="text-sm cursor-pointer select-none"
-                  >
-                    Remember me
-                  </Label>
-                </div>
+              {/* Forgot Password */}
+              <div className="flex items-center justify-end">
                 <button
                   type="button"
                   onClick={() => navigate('/forgot-password')}

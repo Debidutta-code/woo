@@ -345,13 +345,11 @@ const AmendReservationModal: React.FC<AmendReservationModalProps> = ({
         })),
       };
 
-      const token = Cookies.get("accessToken");
       await axios.patch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking/update-reservation/${booking.reservationId}`,
         amendedData,
         {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
