@@ -328,10 +328,78 @@ export default function Rooms({ propertyId }: PropertyId) {
     }
   };
 
+  const createRoomDialog = (label: string) => (
+    <AlertDialog
+      open={openDialog === "create"}
+      onOpenChange={(open) => {
+        if (!open) {
+          setOpenDialog(null);
+          setRoomDetails(emptyRoomDetails);
+          setRoomErrors(null);
+        }
+      }}
+    >
+      <AlertDialogTrigger asChild>
+        <Button
+          size="sm"
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenDialog("create");
+            setRoomDetails(emptyRoomDetails);
+            setRoomErrors(null);
+          }}
+        >
+          <Plus className="h-4 w-4" />
+          {label}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <AlertDialogHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <AlertDialogTitle className="text-xl">
+                Create New Room
+              </AlertDialogTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                Add a new room type to your property
+              </p>
+            </div>
+            <AlertDialogCancel className="rounded-full h-8 w-8 p-0 border-0 hover:bg-gray-100">
+              <X className="h-4 w-4" />
+            </AlertDialogCancel>
+          </div>
+          <UpdateRoom
+            roomDetails={roomDetails}
+            isLoading={loading}
+            updateRoomDetails={setRoomDetails}
+            formErrors={roomErrors}
+            onFormErrorsChange={setRoomErrors}
+          />
+        </AlertDialogHeader>
+        <AlertDialogFooter className="border-t ">
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(event) => {
+              event.preventDefault();
+              createRoomQ(propertyId, roomDetails);
+            }}
+            disabled={isSavingRoom}
+          >
+            {isSavingRoom ? "Creating..." : "Create Room"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <div className="w-full space-y-6">
       {rooms.length > 0 ? (
         <div className="space-y-6">
+          <div className="flex justify-end">
+            {createRoomDialog("Create Room")}
+          </div>
           {rooms.map((room) => (
             <Card
               key={room.id}
@@ -392,75 +460,6 @@ export default function Rooms({ propertyId }: PropertyId) {
                       </DropdownMenuTrigger>
 
                       <DropdownMenuContent align="end" className="w-48">
-                        {/* Create Room */}
-                        <DropdownMenuItem
-                          className="p-0 focus:bg-transparent"
-                          onSelect={(e) => e.preventDefault()}
-                        >
-                          <AlertDialog
-                            open={openDialog === "create"}
-                            onOpenChange={(open) => {
-                              if (!open) {
-                                setOpenDialog(null);
-                                setRoomDetails(emptyRoomDetails);
-                                setRoomErrors(null);
-                              }
-                            }}
-                          >
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                className="w-full justify-start px-2 py-1.5 h-auto font-normal"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenDialog("create");
-                                  setRoomDetails(emptyRoomDetails);
-                                  setRoomErrors(null);
-                                }}
-                              >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Create Room
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-                              <AlertDialogHeader>
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <AlertDialogTitle className="text-xl">
-                                      Create New Room
-                                    </AlertDialogTitle>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                      Add a new room type to your property
-                                    </p>
-                                  </div>
-                                  <AlertDialogCancel className="rounded-full h-8 w-8 p-0 border-0 hover:bg-gray-100">
-                                    <X className="h-4 w-4" />
-                                  </AlertDialogCancel>
-                                </div>
-                                <UpdateRoom
-                                  roomDetails={roomDetails}
-                                  isLoading={loading}
-                                  updateRoomDetails={setRoomDetails}
-                                  formErrors={roomErrors}
-                                  onFormErrorsChange={setRoomErrors}
-                                />
-                              </AlertDialogHeader>
-                              <AlertDialogFooter className="border-t ">
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    createRoomQ(propertyId, roomDetails);
-                                  }}
-                                  disabled={isSavingRoom}
-                                >
-                                  {isSavingRoom ? "Creating..." : "Create Room"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuItem>
-
                         {/* Edit Room */}
                         <DropdownMenuItem
                           className="p-0 focus:bg-transparent"
@@ -923,67 +922,7 @@ export default function Rooms({ propertyId }: PropertyId) {
               Start by creating your first room type to showcase your property's
               accommodations
             </p>
-            <AlertDialog
-              open={openDialog === "create"}
-              onOpenChange={(open) => {
-                if (!open) {
-                  setOpenDialog(null);
-                  setRoomDetails(emptyRoomDetails);
-                  setRoomErrors(null);
-                }
-              }}
-            >
-              <AlertDialogTrigger asChild>
-                <Button
-                  className="gap-2 bg-primary hover:bg-primary/90"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenDialog("create");
-                    setRoomDetails(emptyRoomDetails);
-                    setRoomErrors(null);
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Room
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-                <AlertDialogHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <AlertDialogTitle className="text-xl">
-                        Create New Room
-                      </AlertDialogTitle>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Add a new room type to your property
-                      </p>
-                    </div>
-                    <AlertDialogCancel className="rounded-full h-8 w-8 p-0 border-0 hover:bg-gray-100">
-                      <X className="h-4 w-4" />
-                    </AlertDialogCancel>
-                  </div>
-                  <UpdateRoom
-                    roomDetails={roomDetails}
-                    isLoading={loading}
-                    updateRoomDetails={setRoomDetails}
-                    formErrors={roomErrors}
-                    onFormErrorsChange={setRoomErrors}
-                  />
-                </AlertDialogHeader>
-                <AlertDialogFooter className="border-t ">
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={(event) => {
-                      event.preventDefault();
-                      createRoomQ(propertyId, roomDetails);
-                    }}
-                    disabled={isSavingRoom}
-                  >
-                    {isSavingRoom ? "Creating..." : "Create Room"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {createRoomDialog("Create Room")}
           </CardContent>
         </Card>
       )}

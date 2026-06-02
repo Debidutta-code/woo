@@ -27,7 +27,7 @@ const roomSchema = z.object({
   roomSize: z.coerce.number().default(0),
   roomUnit: z.enum(["sqm", "sqft"]).default("sqft"),
   smokingPolicy: z.enum(["smoking", "non_smoking", "designated_area"]).default("designated_area"),
-  maxNumberOfAdults: z.coerce.number().default(0),
+  maxNumberOfAdults: z.coerce.number().min(1, "Max adults must be at least 1."),
   maxNumberOfChildren: z.coerce.number().default(0),
   numberOfBedrooms: z.coerce.number().optional(),
   numberOfLivingRoom: z.coerce.number().optional(),
@@ -436,16 +436,19 @@ export default function Rooms() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="maxNumberOfAdults" className="text-gray-800 font-medium">Max Adults</Label>
+                      <Label htmlFor="maxNumberOfAdults" className="text-gray-800 font-medium">Max Adults *</Label>
                       <Input
                         id="maxNumberOfAdults"
                         type="number"
-                        min={0}
+                        min={1}
                         value={roomDetails.maxNumberOfAdults || ''}
                         onChange={(e) => updateroomDetails({ maxNumberOfAdults: parseInt(e.target.value) || 0 })}
                         placeholder="e.g., 2"
                         className="mt-2 h-12 border-2 border-gray-300 hover:border-gray-400 focus:border-black transition-all duration-300 focus:ring-4 focus:ring-gray-100"
                       />
+                      {errors?.maxNumberOfAdults?._errors[0] && (
+                        <p className="text-red-500 text-sm mt-1">{errors.maxNumberOfAdults._errors[0]}</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="maxNumberOfChildren" className="text-gray-800 font-medium">Max Children</Label>

@@ -7,6 +7,9 @@ export class RoomController {
     constructor() {
         this.roomService = new RoomService();
     }
+    private hasPositiveNumber(value: unknown): boolean {
+        return value !== undefined && value !== null && Number(value) >= 1;
+    }
     private validateOccupancy(
         maxOccupancy: number,
         maxNumberOfAdults: number = 0,
@@ -61,12 +64,13 @@ export class RoomController {
                 !totalRoom ||
                 !roomSize ||
                 !maxOccupancy ||
+                !this.hasPositiveNumber(maxNumberOfAdults) ||
                 !image ||
                 image.length == 0
             ) {
                 return res
                     .status(400)
-                    .json(errorResponse('Fill all the necessary fields'));
+                    .json(errorResponse('Fill all the necessary fields. Max adults must be at least 1'));
             }
             const occupancyError = this.validateOccupancy(
                 maxOccupancy,
@@ -184,12 +188,13 @@ export class RoomController {
                 !totalRoom ||
                 !roomSize ||
                 !maxOccupancy ||
+                !this.hasPositiveNumber(maxNumberOfAdults) ||
                 !image ||
                 image.length == 0
             ) {
                 return res
                     .status(400)
-                    .json(errorResponse('Fill all the necessary fields'));
+                    .json(errorResponse('Fill all the necessary fields. Max adults must be at least 1'));
             }
             const occupancyError = this.validateOccupancy(
                 maxOccupancy,
