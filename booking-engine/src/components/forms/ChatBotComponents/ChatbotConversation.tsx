@@ -36,7 +36,6 @@ const ChatbotConversation: React.FC<ChatbotConversationProps> = ({
   const isShowingWelcome = useSelector((state: RootState) => state.chat.isShowingWelcome);
   // Redux selectors
   const { messages, isTyping, error, sessionId } = useSelector((state: RootState) => state.chat);
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {

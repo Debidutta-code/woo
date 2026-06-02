@@ -23,11 +23,10 @@ export default function ReferralShare() {
   const [isGenerated, setIsGenerated] = useState(false);
   const { t } = useTranslation();
   const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const accessToken = Cookies.get("accessToken");
 
   // Fetch existing referral data (GET)
   const fetchReferralData = async () => {
-    if (!accessToken) {
+    if (false) {
       setLoading(false);
       return;
     }
@@ -36,7 +35,6 @@ export default function ReferralShare() {
       const response = await axios.get(`${API_BASE_URL}/customers/referrals`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -56,7 +54,7 @@ export default function ReferralShare() {
   };
 
   const handleGenerate = async () => {
-    if (!accessToken) {
+    if (false) {
       toast.error(t("Referral.noToken") || "Please log in first.");
       return;
     }
@@ -76,7 +74,6 @@ export default function ReferralShare() {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -173,7 +170,7 @@ export default function ReferralShare() {
 
   useEffect(() => {
     const initializeReferralData = async () => {
-      if (accessToken) {
+      if (true) {
         setLoading(true);
         await fetchReferralData();
         setLoading(false);
@@ -183,7 +180,7 @@ export default function ReferralShare() {
     };
 
     initializeReferralData();
-  }, [accessToken]);
+  }, []);
 
   // Show loading spinner only during initial load
   if (loading && !referralLink) {

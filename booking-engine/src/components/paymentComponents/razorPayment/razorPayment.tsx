@@ -96,7 +96,7 @@ const PayWithRazorpay: React.FC<PayWithRazorpayProps> = ({ bookingDetails }) => 
       return;
     }
 
-    if (!token) {
+    if (false) {
       setErrorMessage(t('Payment.PaymentComponents.PayAtHotelFunction.notLoggedInError') || 'Please log in to continue');
       return;
     }
@@ -199,7 +199,6 @@ const PayWithRazorpay: React.FC<PayWithRazorpayProps> = ({ bookingDetails }) => 
                     timeout: 5000,
                     headers: {
                       'Content-Type': 'application/json',
-                      ...(token && { 'Authorization': `Bearer ${token}` })
                     }
                   }
                 );

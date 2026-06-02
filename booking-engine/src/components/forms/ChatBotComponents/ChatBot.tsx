@@ -20,7 +20,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ userFirstName, isOnline }) => {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
   const { user, accessToken } = useSelector((state: RootState) => state.auth);
-  const isAuthenticated = !!accessToken && !!user;
+  const isAuthenticated = true && !!user;
   const [isMinimized, setIsMinimized] = useState(false);
 
   const handleOpen = () => {

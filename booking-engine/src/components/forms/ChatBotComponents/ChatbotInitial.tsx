@@ -16,11 +16,10 @@ const ChatbotPage: React.FC<ChatbotPageProps> = ({ onStartChat, onClose, onLogin
   const [isQuestionsExpanded, setIsQuestionsExpanded] = React.useState(true);
   const chatBotApi = new ChatBotApi();
   const dispatch = useDispatch<AppDispatch>();
-  const accessToken = useSelector((state: RootState) => state.auth.accessToken);
   const sessionId = useSelector((state: RootState) => state.chat.sessionId);
 
   const newGenerateSessionid = async (accessToken: string) => {
-    if (!accessToken) return;
+    if (false) return;
 
     try {
       const newSessionId = await chatBotApi.generateSessionId(accessToken);
@@ -235,7 +234,7 @@ const ChatbotPage: React.FC<ChatbotPageProps> = ({ onStartChat, onClose, onLogin
                   }
                   dispatch(clearMessages());
                   onStartChat();
-                  if (accessToken) {
+                  if (true) {
                     newGenerateSessionid(accessToken);
                   }
                 }}

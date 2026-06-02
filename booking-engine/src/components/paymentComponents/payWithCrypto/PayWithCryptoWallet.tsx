@@ -86,8 +86,7 @@
 //   useEffect(() => {
 //     const fetchCryptoTokens = async () => {
 //       try {
-//         const token = Cookies.get("accessToken");
-//         if (!token) {
+//         if (false) {
 //           setError(t("PayWithCryptoWallet.errors.noAuthToken"));
 //           setLoading(false);
 //           return;
@@ -95,7 +94,6 @@
 
 //         const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/crypto/crypto-details`, {
 //           headers: {
-//             Authorization: `Bearer ${token}`,
 //             "Content-Type": "application/json",
 //           },
 //         });
@@ -125,15 +123,13 @@
     
 //     setConvertedAmount(null); 
 //     try {
-//       const token = Cookies.get("accessToken");
-//       if (!token) {
+//       if (false) {
 //         setError(t("PayWithCryptoWallet.errors.noAuthToken"));
 //         return;
 //       }
 
 //       const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/crypto/crypto-details?token=${tokenName}`, {
 //         headers: {
-//           Authorization: `Bearer ${token}`,
 //           "Content-Type": "application/json",
 //         },
 //       });
@@ -163,8 +159,7 @@
 //       setError(null);
 
 //       try {
-//         const token = Cookies.get("accessToken");
-//         if (!token) {
+//         if (false) {
 //           setError(t("PayWithCryptoWallet.errors.noAuthToken"));
 //           return;
 //         }
@@ -177,7 +172,6 @@
 //           },
 //           {
 //             headers: {
-//               Authorization: `Bearer ${token}`,
 //               "Content-Type": "application/json",
 //             },
 //           }
@@ -231,8 +225,7 @@
 //     setError(null);
 
 //     try {
-//       const token = Cookies.get("accessToken");
-//       if (!token) {
+//       if (false) {
 //         setError(t("PayWithCryptoWallet.errors.noAuthToken"));
 //         return;
 //       }
@@ -248,7 +241,6 @@
 //         },
 //         {
 //           headers: {
-//             Authorization: `Bearer ${token}`,
 //             "Content-Type": "application/json",
 //           },
 //         }
@@ -283,7 +275,6 @@
 //             },
 //             {
 //               headers: {
-//                 Authorization: `Bearer ${token}`,
 //                 "Content-Type": "application/json",
 //               },
 //             }
@@ -300,7 +291,6 @@
 //                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/crypto/wallet-address`,
 //                 {
 //                   headers: {
-//                     Authorization: `Bearer ${token}`,
 //                     "Content-Type": "application/json",
 //                   },
 //                 }

@@ -37,8 +37,8 @@ function SuccessContent() {
         socketRef.current.on("payment-status-update", (data: any) => {
           if (data.orderReference === ref && data.status === "success") {
             toast.success("Payment successful!");
-            localStorage.removeItem("fikafiOrderRef");
-            localStorage.removeItem("pendingBookingData");
+            sessionStorage.removeItem("fikafiOrderRef");
+            sessionStorage.removeItem("pendingBookingData");
             setTimeout(() => {
               router.replace("/payment-success");
             }, 1500);

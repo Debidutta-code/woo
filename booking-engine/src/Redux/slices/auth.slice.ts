@@ -3,18 +3,12 @@
 import { createSlice, PayloadAction, Draft } from "@reduxjs/toolkit";
 import { AuthState } from "../states/auth.state";
 import axios from "axios";
-import Cookies from "js-cookie";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 
 const initialState: AuthState = {
   isAuthenticated: false,
-  accessToken: "",
   user: null,
-};
-
-const cookieOptions = {
-  sameSite: "strict" as const,
 };
 
 const normalizeUser = (user: any) => {
@@ -33,26 +27,19 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAccessToken: (
-      state,
-      action: PayloadAction<typeof initialState.accessToken>,
-    ) => {
-      state.isAuthenticated = true;
-      state.accessToken = action.payload;
-      Cookies.set("accessToken", action.payload, cookieOptions);
-    },
     setUser(
       state: Draft<typeof initialState>,
       action: PayloadAction<typeof initialState.user>,
     ) {
       const normalizedUser = normalizeUser(action.payload);
       state.user = normalizedUser;
+      if (normalizedUser) {
+        state.isAuthenticated = true;
+      }
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
-      state.accessToken = "";
-      Cookies.remove("accessToken");
     },
   },
   extraReducers: (builder) => {
@@ -70,20 +57,16 @@ const authSlice = createSlice({
       })
       .addCase(googleLogin.fulfilled, (state, action) => {
         state.isAuthenticated = true;
-        state.accessToken = action.payload.token;
-        Cookies.set("accessToken", action.payload.token);
       })
       .addCase(googleLogin.rejected, (state, action) => {
         state.isAuthenticated = false;
-        state.accessToken = "";
         state.user = null;
       });
   },
 });
 
-// Login thunk for email/password authentication
 export const login = createAsyncThunk<
-  string,
+  void,
   { email: string; password: string; provider: string },
   { dispatch: AppDispatch; state: RootState }
 >("auth/login", async (data, { dispatch }) => {
@@ -94,26 +77,20 @@ export const login = createAsyncThunk<
     },
     { withCredentials: true }
   );
-  //console.log("Login response from REDUX:", res);
   if (res.status !== 200) {
     throw new Error(res.data.error || "Failed to login");
   }
-  const token = res.data.data?.accessToken; 
   const loginUser = res.data.data?.user;
-  Cookies.set("accessToken", token, cookieOptions);
-  dispatch(setAccessToken(token));
   if (loginUser) {
     dispatch(setUser(normalizeUser(loginUser)));
   }
   try {
-    await dispatch(getUser(token));
+    await dispatch(getUser());
   } catch (_error) {}
-  return token;
 });
 
-// Google login thunk
 export const googleLogin = createAsyncThunk<
-  { token: string },
+  void,
   {
     code: string;
     provider: string;
@@ -146,6 +123,7 @@ export const googleLogin = createAsyncThunk<
             "Content-Type": "application/json",
             Accept: "application/json",
           },
+          withCredentials: true,
         },
       );
 
@@ -153,68 +131,31 @@ export const googleLogin = createAsyncThunk<
         throw new Error(response.data.error || "Failed to login with Google");
       }
 
-      const token = response.data.token;
-
-      if (!token) {
-        throw new Error("No token received from Google login");
-      }
-
-      //console.log("🔑 Token received from backend:", token);
-
-      Cookies.set("accessToken", token, cookieOptions);
-      dispatch(setAccessToken(token));
       try {
-        await dispatch(getUser(token));
+        await dispatch(getUser());
       } catch (_error) {}
 
-      return { token };
     } catch (error) {
-      console.error("❌ Error in googleLogin thunk:", error);
-
       if (axios.isAxiosError(error)) {
-        console.error("❌ Axios error details:", {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers,
-        });
-
-        // IMPORTANT: Extract the exact error message from your API response
         const apiErrorMessage =
           error.response?.data?.error ||
           error.response?.data?.message ||
           "Failed to login with Google";
-
         return rejectWithValue(apiErrorMessage);
       }
-
       return rejectWithValue("Failed to login with Google");
     }
   },
 );
 
-// Get user thunk
 export const getUser = createAsyncThunk<
   void,
-  string | undefined,
+  void,
   { dispatch: AppDispatch; state: RootState }
->("auth/getUser", async (providedToken, { dispatch, getState }) => {
-  const stateToken = getState().auth.accessToken;
-  const accessToken = providedToken || stateToken || Cookies.get("accessToken");
-  //console.log(`The access token we get from cookies ${accessToken}`);
-  // if (!accessToken) {
-  // const token = Cookies.get("accessToken");
-  // }
-  if (!accessToken) {
-    throw new Error("No access token available for getUser");
-  }
+>("auth/getUser", async (_, { dispatch }) => {
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
     {
-      headers: accessToken
-        ? {
-            Authorization: `Bearer ${accessToken}`,
-          }
-        : undefined,
        withCredentials: true, 
     },
   );
@@ -223,7 +164,6 @@ export const getUser = createAsyncThunk<
   dispatch(setUser(normalizedUser));
 });
 
-// Update profile thunk
 export const updateProfile = createAsyncThunk<
   any,
   {
@@ -236,16 +176,10 @@ export const updateProfile = createAsyncThunk<
   { dispatch: AppDispatch; state: RootState }
 >("auth/updateProfile", async (data, { rejectWithValue }) => {
   try {
-    const token = Cookies.get("accessToken") || "";
     const response = await axios.put(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
       data,
       {
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
         withCredentials: true,
       },
     );
@@ -260,7 +194,6 @@ export const updateProfile = createAsyncThunk<
   }
 });
 
-// Delete account thunk
 export const deleteAccount = createAsyncThunk<
   any,
   {
@@ -271,19 +204,11 @@ export const deleteAccount = createAsyncThunk<
     description: string;
   },
   { dispatch: AppDispatch; state: RootState }
->("auth/deleteAccount", async (data, { dispatch, rejectWithValue, getState }) => {
+>("auth/deleteAccount", async (data, { dispatch, rejectWithValue }) => {
   try {
-    const stateToken = getState().auth.accessToken;
-    const token = stateToken || Cookies.get("accessToken") || "";
-    if (!token) {
-      return rejectWithValue("No access token found. Please login again.");
-    }
     const response = await axios.delete(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         withCredentials: true,
       },
     );
@@ -308,11 +233,9 @@ export const logoutUser = createAsyncThunk<void, void>(
         {},
         { withCredentials: true },
       );
-    } catch (_error) {
-      // Even if backend logout fails, clear local auth state in UI flow.
-    }
+    } catch (_error) {}
   },
 );
 
-export const { setAccessToken, logout, setUser } = authSlice.actions;
+export const { logout, setUser } = authSlice.actions;
 export default authSlice.reducer;

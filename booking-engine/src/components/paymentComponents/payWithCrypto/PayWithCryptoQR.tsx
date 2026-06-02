@@ -52,8 +52,7 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
   useEffect(() => {
     const fetchCryptoTokens = async () => {
       try {
-        const token = Cookies.get("accessToken");
-        if (!token) {
+        if (false) {
           setError(t("PayWithCryptoQR.errors.noAuthToken"));
           setLoading(false);
           return;
@@ -61,7 +60,6 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
 
         const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/crypto/crypto-details`, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -89,15 +87,13 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
     setSelectedNetwork(null);
     setConvertedAmount(null); // Reset converted amount when token changes
     try {
-      const token = Cookies.get("accessToken");
-      if (!token) {
+      if (false) {
         setError(t("PayWithCryptoQR.errors.noAuthToken"));
         return;
       }
 
       const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/crypto/crypto-details?token=${tokenName}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -125,8 +121,7 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
       setError(null);
 
       try {
-        const token = Cookies.get("accessToken");
-        if (!token) {
+        if (false) {
           setError(t("PayWithCryptoQR.errors.noAuthToken"));
           return;
         }
@@ -139,7 +134,6 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           }
@@ -182,8 +176,7 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
     setError(null);
 
     try {
-      const token = Cookies.get("accessToken");
-      if (!token) {
+      if (false) {
         setError(t("PayWithCryptoQR.errors.noAuthToken"));
         return;
       }
@@ -202,7 +195,6 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -236,7 +228,6 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
             },
             {
               headers: {
-                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
             }
@@ -253,7 +244,6 @@ const PayWithCryptoQR: React.FC<PayWithCryptoQRProps> = ({ bookingDetails, onCon
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/crypto/wallet-address`,
                 {
                   headers: {
-                    Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                   },
                 }

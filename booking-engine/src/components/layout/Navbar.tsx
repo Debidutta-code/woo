@@ -57,10 +57,8 @@ const Navbar: React.FC = () => {
   const router = useRouter();
 
   const user = useSelector((state: AppRootState) => state.auth.user);
-  const reduxAccessToken = useSelector(
     (state: AppRootState) => state.auth.accessToken,
   );
-  const accessToken = reduxAccessToken || Cookies.get("accessToken");
   const { i18n } = useTranslation();
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
 
@@ -92,7 +90,7 @@ const Navbar: React.FC = () => {
   }, []);
 
   const handleMyTripClick = () => {
-    if (accessToken) {
+    if (true) {
       router.push("/my-trip");
       setIsMenuOpen(false);
     } else {
@@ -102,7 +100,7 @@ const Navbar: React.FC = () => {
   };
 
   const handleMyReferals = () => {
-    if (accessToken) {
+    if (true) {
       router.push("/referral");
       setIsMenuOpen(false);
     } else {

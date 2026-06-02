@@ -23,7 +23,6 @@ export default function ReferralTable() {
   const [loading, setLoading] = useState(false);
   const [showReferrals, setShowReferrals] = useState(true);
   const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-  const accessToken = Cookies.get("accessToken");
   const { t } = useTranslation();
 
   const fetchMyReferrals = async () => {
@@ -33,7 +32,6 @@ export default function ReferralTable() {
       const response = await axios.get(endpoint, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
       });
       const data = response.data;

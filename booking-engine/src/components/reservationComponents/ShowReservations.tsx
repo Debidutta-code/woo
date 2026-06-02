@@ -5,7 +5,6 @@
 // import Cookies from 'js-cookie';
 
 // export const ShowReservations = () => {
-//   const accessToken = Cookies.get("accessToken");
 //   const authUser: any = useSelector((state) => state.auth.user);
 //   const { reservation } = GetReservationsOfUser(authUser?._id as string);
 

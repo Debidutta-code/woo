@@ -64,7 +64,6 @@ class AgencyApplicationApiService {
     };
     
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
     }
     
     return headers;

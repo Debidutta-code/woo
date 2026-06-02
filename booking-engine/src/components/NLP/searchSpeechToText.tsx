@@ -60,7 +60,6 @@
 //     const fetchData = async (transcript: string) => {
 //         try {
 //             const headers = {
-//                 Authorization: `Bearer ${apiKey}`,
 //                 "Content-Type": "application/json",
 //             };
 

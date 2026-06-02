@@ -152,11 +152,9 @@ export const {
 export const getUser =
   () =>
     async (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
-      const accessToken = Cookies.get("accessToken");
       try {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/booking-engine/customer/me`, {
           headers: {
-            Authorization: "Bearer " + accessToken,
           },
           withCredentials: true, 
         });

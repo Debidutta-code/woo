@@ -83,10 +83,8 @@ export interface HotelData {
 }
 
 const getAuthHeaders = () => {
-  const token = Cookies.get("accessToken");
   return token
     ? {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       }
     : {

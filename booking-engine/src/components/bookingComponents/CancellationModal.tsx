@@ -141,14 +141,12 @@ const CancellationModal: React.FC<CancellationModalProps> = ({
         checkInDate: booking.checkInDate.slice(0, 10),
         checkOutDate: booking.checkOutDate.slice(0, 10),
       };
-      const token = Cookies.get("accessToken");
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/booking/cancel-reservation/${booking.reservationId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }

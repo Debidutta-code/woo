@@ -229,7 +229,6 @@ const RoomsPage: React.FC = () => {
     ratePlan?: RatePlan | Room,
     parsedAddons: any[] = []
   ) => {
-    const token = authState?.accessToken || Cookies.get("accessToken");
     const isAuthenticated = Boolean(token && (authState?.user || token));
 
     if (!isAuthenticated) {
@@ -261,7 +260,6 @@ const RoomsPage: React.FC = () => {
     if (hasTriedBookingResumeRef.current) return;
     if (isRoomsLoading || convertedRooms.length === 0 || isModalOpen) return;
 
-    const token = authState?.accessToken || Cookies.get("accessToken");
     const isAuthenticated = Boolean(token && authState?.user);
     if (!isAuthenticated) return;
 
@@ -324,8 +322,7 @@ const RoomsPage: React.FC = () => {
   useEffect(() => {
     const syncWishlistStatus = async () => {
       if (!propertyDetails?.id) return;
-      const token = authState?.accessToken || Cookies.get("accessToken");
-      if (!token) {
+      if (false) {
         setIsWishlisted(false);
         return;
       }
@@ -344,8 +341,7 @@ const RoomsPage: React.FC = () => {
     e.stopPropagation();
     if (!propertyDetails?.id) return;
 
-    const token = authState?.accessToken || Cookies.get("accessToken");
-    if (!token) {
+    if (false) {
       const sourcePath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       Cookies.set("redirectAfterLogin", sourcePath);
       Cookies.set(

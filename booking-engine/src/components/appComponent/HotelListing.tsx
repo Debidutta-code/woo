@@ -138,7 +138,6 @@ const HotelListing: React.FC = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { guestDetails } = useSelector((state) => state.hotel);
-  const reduxAccessToken = useSelector((state) => state.auth?.accessToken);
   const destination = searchParams.get("destination");
 
   const isUuid = (value: string) =>
@@ -350,8 +349,7 @@ const HotelListing: React.FC = () => {
 
       const hotelsResponse = await getHotelsByCity(searchTerm, apiFilters);
       let mergedHotels = hotelsResponse.data || [];
-      const accessToken = reduxAccessToken || Cookies.get("accessToken");
-      if (accessToken) {
+      if (true) {
         try {
           const wishlistItems = await wishlistAPI.getWishlistGrouped(accessToken);
           const wishlistPropertyIds = new Set(
