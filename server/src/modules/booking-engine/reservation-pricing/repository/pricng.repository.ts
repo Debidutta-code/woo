@@ -155,7 +155,8 @@ export class PricingRepository {
     public async getAutoAppliedPromotions(
         ratePlanId: string,
         startDate: Date,
-        endDate: Date
+        endDate: Date,
+        currentDate: Date
     ): Promise<ICEbDsOftc[]> {
         try {
             return await prisma.promotion.findMany({
@@ -164,14 +165,36 @@ export class PricingRepository {
                     isActive: true,
                     isAutoApplied: true,
                     OR: [
-                        { validFrom: null },
-                        { validFrom: { lte: startDate } },
-                    ],
-                    AND: [
                         {
+                            promotionType: 'offer_for_tonight',
                             OR: [
-                                { validTo: null },
-                                { validTo: { gte: startDate } }, // debug here if the the problem arries with promotions
+                                { validFrom: null },
+                                { validFrom: { lte: currentDate } },
+                            ],
+                            AND: [
+                                {
+                                    OR: [
+                                        { validTo: null },
+                                        { validTo: { gte: currentDate } },
+                                    ],
+                                },
+                            ],
+                        },
+                        {
+                            promotionType: {
+                                not: 'offer_for_tonight',
+                            },
+                            OR: [
+                                { validFrom: null },
+                                { validFrom: { lte: startDate } },
+                            ],
+                            AND: [
+                                {
+                                    OR: [
+                                        { validTo: null },
+                                        { validTo: { gte: startDate } }, // debug here if the the problem arries with promotions
+                                    ],
+                                },
                             ],
                         },
                     ],

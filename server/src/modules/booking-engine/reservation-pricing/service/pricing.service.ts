@@ -104,7 +104,8 @@ export class PricingService {
                 this.pricingRepository.getAutoAppliedPromotions(
                     ratePlan.id,
                     toUTC(startDate),
-                    toUTC(endDate)
+                    toUTC(endDate),
+                    nowUTC()
                 ),
                 promoCode
                     ? this.pricingRepository.findPromoCode(promoCode)
@@ -988,35 +989,47 @@ class PromotionClass {
         autoAppliedPromotions: ICEbDsOftc[],
         type: 'user_applied' | 'auto_applied'
     ): PromotionBrakeDown[] {
-        const promotionBrakeDown: PromotionBrakeDown[] = [];
+        const promotionBrakeDownByType = new Map<string, PromotionBrakeDown>();
         autoAppliedPromotions.forEach(promotion => {
+            let promotionBrakeDown: PromotionBrakeDown | null = null;
             if (promotion.promotionType === 'early_bird') {
-                const earlyBirdPromotionBrakeDown =
-                    this.calculateEarlyBirdPromotionPrices(promotion, type);
-                if (!earlyBirdPromotionBrakeDown) {
-                    return;
-                }
-                promotionBrakeDown.push(earlyBirdPromotionBrakeDown);
+                promotionBrakeDown = this.calculateEarlyBirdPromotionPrices(
+                    promotion,
+                    type
+                );
             } else if (promotion.promotionType === 'offer_for_tonight') {
-                const offerForTonightPromotionBrakeDown =
+                promotionBrakeDown =
                     this.calculateOfferForTonightPromotionPrices(
                         promotion,
                         type
                     );
-                if (!offerForTonightPromotionBrakeDown) {
-                    return;
-                }
-                promotionBrakeDown.push(offerForTonightPromotionBrakeDown);
             } else if (promotion.promotionType === 'device_specific') {
-                const deviceBasedPromotionBrakeDown =
-                    this.calculateDeviceBasedPromotionPrices(promotion, type);
-                if (!deviceBasedPromotionBrakeDown) {
-                    return;
-                }
-                promotionBrakeDown.push(deviceBasedPromotionBrakeDown);
+                promotionBrakeDown = this.calculateDeviceBasedPromotionPrices(
+                    promotion,
+                    type
+                );
+            }
+
+            if (!promotionBrakeDown) {
+                return;
+            }
+
+            const promotionType = promotionBrakeDown.promotionType || 'normal';
+            const existingPromotionBrakeDown =
+                promotionBrakeDownByType.get(promotionType);
+
+            if (
+                !existingPromotionBrakeDown ||
+                promotionBrakeDown.discountAmount >
+                    existingPromotionBrakeDown.discountAmount
+            ) {
+                promotionBrakeDownByType.set(
+                    promotionType,
+                    promotionBrakeDown
+                );
             }
         });
-        return promotionBrakeDown;
+        return Array.from(promotionBrakeDownByType.values());
     }
     private calculateDeviceBasedPromotionPrices(
         promotion: ICEbDsOftc,
@@ -1129,9 +1142,9 @@ class PromotionClass {
         }
         const todayDate = nowUTC();
         const isOfferForTonightApplicable =
-            this.startDate.getTime() - todayDate.getTime() <=
-            1000 * 60 * 60 * 24 &&
-            this.startDate.getTime() - todayDate.getTime() <= 0;
+            this.startDate.getUTCFullYear() === todayDate.getUTCFullYear() &&
+            this.startDate.getUTCMonth() === todayDate.getUTCMonth() &&
+            this.startDate.getUTCDate() === todayDate.getUTCDate();
         if (isOfferForTonightApplicable) {
             if (promotion.discountType == 'percentage') {
                 return {
