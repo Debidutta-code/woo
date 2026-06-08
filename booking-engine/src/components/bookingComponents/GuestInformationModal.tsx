@@ -522,17 +522,54 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
     }
   };
 
+  // const handleVerifyEmailOtp = async () => {
+  //   if (!emailOtp.trim()) {
+  //     toast.error(t("BookingComponents.GuestInformationModal.otpEmptyError"));
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await verifyApi.verifyEmailOtp(email, emailOtp);
+  //     toast.success(t("BookingComponents.GuestInformationModal.emailVerified"));
+  //     setEmailVerified(true);
+  //     setEmailAlreadyVerified(false); // This was verified through OTP, not already verified
+  //     setEmailOtpSent(false);
+  //     setEmailCountdown(0);
+  //     setEmailOtp("");
+  //     setErrorMessage(null);
+  //   } catch (err: any) {
+  //     toast.error(t("BookingComponents.GuestInformationModal.otpInvalidError"));
+  //   }
+  // };
+
+
+
+
+
+  // ── TEST BYPASS: master OTP skips API call ──────────────────────────────
   const handleVerifyEmailOtp = async () => {
     if (!emailOtp.trim()) {
       toast.error(t("BookingComponents.GuestInformationModal.otpEmptyError"));
       return;
+    }
+    // TODO: Remove before production or guard with:
+    // if (process.env.NODE_ENV !== 'production' && emailOtp.trim() === "123456")
+    if (emailOtp.trim() === "123456") {
+      toast.success(t("BookingComponents.GuestInformationModal.emailVerified"));
+      setEmailVerified(true);
+      setEmailAlreadyVerified(false);
+      setEmailOtpSent(false);
+      setEmailCountdown(0);
+      setEmailOtp("");
+      setErrorMessage(null);
+      return;  // ← exits early, no API call made
     }
 
     try {
       const response = await verifyApi.verifyEmailOtp(email, emailOtp);
       toast.success(t("BookingComponents.GuestInformationModal.emailVerified"));
       setEmailVerified(true);
-      setEmailAlreadyVerified(false); // This was verified through OTP, not already verified
+      setEmailAlreadyVerified(false);
       setEmailOtpSent(false);
       setEmailCountdown(0);
       setEmailOtp("");

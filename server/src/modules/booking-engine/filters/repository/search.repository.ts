@@ -3,6 +3,7 @@ import {
     IPropertyWithDetails,
     IInventoryItem,
     IChargeWithGuestAmounts,
+    BookingOffset,
 } from '../types/search.types';
 
 export class SearchRepository {
@@ -136,6 +137,24 @@ export class SearchRepository {
         } catch (error) {
             console.error('Error fetching charges:', error);
             throw new Error('Failed to fetch charges');
+        }
+    }
+
+    public async getBookingOffset(
+        ratePlanId: string,
+        checkInDate: Date
+    ): Promise<BookingOffset | null> {
+        try {
+            return await prisma.bookingOffset.findFirst({
+                where: {
+                    ratePlanId,
+                    date: checkInDate,
+                    isActive: true,
+                },
+            });
+        } catch (error) {
+            console.error('Error fetching booking offset:', error);
+            throw new Error('Failed to fetch booking offset');
         }
     }
 

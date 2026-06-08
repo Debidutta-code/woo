@@ -89,11 +89,28 @@ export class PricingRepository {
                     },
                     geoRatePlans: true,
 
-                    // customizableDeals:{
-                    //     include:{
-                    //         CustomizableDealsApplicableAddons:true
-                    //     }
-                    // }
+                    customizableDeals: {
+                        where: {
+                            isActive: true,
+                            isAutoApplied: true,
+                            roomType: roomTypeCode,
+                            startDate: { lte: startDate },
+                            endDate: { gte: endDate },
+                        },
+                        include: {
+                            CustomizableDealsApplicableAddons: {
+                                include: {
+                                    AddOn: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            code: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             });
         } catch (error) {
