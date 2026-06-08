@@ -73,6 +73,7 @@ export interface IRatePlan {
     charges: ICharge[];
     Addons: IRatePlanWithAddon[];
     geoRatePlans: IGeoRatePlanWithoutRatePlan[];
+    customizableDeals: ICustomizableDeal[];
     // TouristTaxs: ITouristTax[];
     // TouristTaxs: {
     //     select: {

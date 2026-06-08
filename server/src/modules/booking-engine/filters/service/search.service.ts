@@ -13,6 +13,7 @@ import {
     IPropertyWithDetails,
     IChargeWithGuestAmounts,
     IInventoryItem,
+    BookingOffset,
 } from '../types/search.types';
 
 export class SearchService {
@@ -52,7 +53,9 @@ export class SearchService {
         let {
             location,
             checkIn,
+            checkin,
             checkOut,
+            checkout,
             rooms,
             adults,
             children,
@@ -71,6 +74,9 @@ export class SearchService {
             paymentAcceptedMethods,
             sort,
         } = reqQuery;
+
+        checkIn = checkIn ?? checkin;
+        checkOut = checkOut ?? checkout;
 
         // Validate location
         if (
@@ -236,6 +242,40 @@ export class SearchService {
         }
     }
 
+    private isPositiveOffset(
+        value: number | null | undefined
+    ): value is number {
+        return typeof value === 'number' && Number.isFinite(value) && value > 0;
+    }
+
+    private isBookingOffsetValid(
+        bookingOffset: BookingOffset | null,
+        checkInDate: Date
+    ): boolean {
+        if (!bookingOffset) return true;
+
+        const hoursUntilCheckIn =
+            (this.toUTCDate(checkInDate).getTime() -
+                this.toUTCDate(new Date()).getTime()) /
+            (1000 * 60 * 60);
+
+        if (
+            this.isPositiveOffset(bookingOffset.minimumAdvanceBookingOffset) &&
+            hoursUntilCheckIn < bookingOffset.minimumAdvanceBookingOffset
+        ) {
+            return false;
+        }
+
+        if (
+            this.isPositiveOffset(bookingOffset.maximumAdvanceBookingOffset) &&
+            hoursUntilCheckIn > bookingOffset.maximumAdvanceBookingOffset
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     private async transformProperty(
         property: IPropertyWithDetails,
         params: any,
@@ -287,6 +327,16 @@ export class SearchService {
             const ratePlans: ISearchRatePlan[] = [];
 
             for (const ratePlan of property.ratePlans) {
+                const bookingOffset =
+                    await this.searchRepository.getBookingOffset(
+                        ratePlan.id,
+                        params.checkIn
+                    );
+
+                if (!this.isBookingOffsetValid(bookingOffset, params.checkIn)) {
+                    continue;
+                }
+
                 const charges = await this.searchRepository.getCharges(
                     property.propertyCode,
                     room.roomType,

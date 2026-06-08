@@ -11,6 +11,7 @@ import {
     DailyPriceBrakeDown,
     IAddOn,
     ICharge,
+    ICustomizableDeal,
     IGuestDistribution,
     IIncludedAddons,
     IRatePlanWithAddon,
@@ -154,6 +155,7 @@ export class PricingService {
                 appliedPromotions.mlos || [],
                 appliedPromotions.promotions || [],
                 ratePlan.geoRatePlans,
+                ratePlan.customizableDeals || [],
                 ratePlan.id,
                 priceBrakedowns.amountBeforeTax,
                 invTypeCode,
@@ -838,6 +840,7 @@ class PromotionClass {
     mlos: IMLOS[];
     promotions: ICEbDsOftc[];
     geoRatePlans: IGeoRatePlanWithoutRatePlan[];
+    customizableDeals: ICustomizableDeal[];
     ratePlanId: string;
     roomType: string;
     baseAmount: number;
@@ -851,6 +854,7 @@ class PromotionClass {
         mlos: IMLOS[],
         promotions: ICEbDsOftc[],
         geoRatePlans: IGeoRatePlanWithoutRatePlan[],
+        customizableDeals: ICustomizableDeal[],
         ratePlanId: string,
         baseAmount: number,
         roomType: string,
@@ -870,6 +874,7 @@ class PromotionClass {
         this.detectedDeviceType = detectedDeviceType;
         this.priceBrakeDown = priceBrakeDown;
         this.geoRatePlans = geoRatePlans;
+        this.customizableDeals = customizableDeals;
         this.autoAppliedMLOSData = autoAppliedMLOS;
         this.autoAppliedPromotionsData = autoAppliedPromotions;
     }
@@ -881,6 +886,11 @@ class PromotionClass {
         const autoAppliedPromotionBrakeDown =
             this.calculateAutoAppliedPromotionPrices(
                 this.autoAppliedPromotionsData,
+                'auto_applied'
+            );
+        const customizableDealBrakeDown =
+            this.calculateCustomizableDealPrices(
+                this.customizableDeals,
                 'auto_applied'
             );
         const mlsoBrakeDown = this.calculateAutoAppliedMLOSPrices(
@@ -897,6 +907,7 @@ class PromotionClass {
         const visiblePromotionalBrakeDown = [
             ...autoAppliedMlosBrakeDown,
             ...autoAppliedPromotionBrakeDown,
+            ...customizableDealBrakeDown,
             ...mlsoBrakeDown,
             ...promotionBrakeDown,
         ];
@@ -1198,6 +1209,70 @@ class PromotionClass {
                 return promotion.satApplicable || false;
         }
         return false;
+    }
+    private calculateCustomizableDealPrices(
+        customizableDeals: ICustomizableDeal[],
+        type: 'user_applied' | 'auto_applied'
+    ): PromotionBrakeDown[] {
+        if (customizableDeals.length === 0) {
+            return [];
+        }
+
+        const promotionBrakeDownByDeal = new Map<string, PromotionBrakeDown>();
+
+        customizableDeals.forEach(deal => {
+            if (!deal.isActive || deal.roomType !== this.roomType) {
+                return;
+            }
+
+            if (
+                deal.startDate > this.startDate ||
+                deal.endDate < this.endDate
+            ) {
+                return;
+            }
+
+            if (deal.discountValue === null) {
+                return;
+            }
+
+            const applicableAddons =
+                deal.CustomizableDealsApplicableAddons || [];
+            if (applicableAddons.length > 0) {
+                const appliedAddonIds = new Set(
+                    this.priceBrakeDown.addonBrakeDown.map(
+                        addon => addon.addonId
+                    )
+                );
+                const hasApplicableAddon = applicableAddons.some(addon =>
+                    appliedAddonIds.has(addon.addOnId)
+                );
+
+                if (!hasApplicableAddon) {
+                    return;
+                }
+            }
+
+            const discountValue = Number(deal.discountValue);
+            const discountAmount =
+                deal.discountType === 'percentage'
+                    ? (this.baseAmount * discountValue) / 100
+                    : discountValue;
+
+            promotionBrakeDownByDeal.set(deal.id, {
+                id: deal.id,
+                promotionType: 'customizable_deal',
+                name: 'Customizable Deal',
+                currencyCode: deal.currencyCode,
+                discountAmount,
+                discountType: deal.discountType,
+                discountValue,
+                restrictionType: 'decrease',
+                type,
+            });
+        });
+
+        return Array.from(promotionBrakeDownByDeal.values());
     }
     private calculateGeoLocation(country?: string): PromotionBrakeDown[] {
         const promotionBrakeDown: PromotionBrakeDown[] = [];
