@@ -678,12 +678,12 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
       valid = false;
     }
 
-    if (!emailVerified) {
-      newErrors["email"] = t(
-        "BookingComponents.GuestInformationModal.emailNotVerified"
-      );
-      valid = false;
-    }
+    // if (!emailVerified) {
+    //   newErrors["email"] = t(
+    //     "BookingComponents.GuestInformationModal.emailNotVerified"
+    //   );
+    //   valid = false;
+    // }
 
     // if (!phoneVerified) {
     //   newErrors["phone"] = t(
@@ -1865,17 +1865,17 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
               }}
               disabled={
                 (activeSection === "details" &&
-                  (!validateGuestNames() ||
-                    !phone || // Check if phone exists
-                    !validatePhoneNumber())) || // Check if phone is valid
+                  (/* !validateGuestNames() || */
+                    !phone /* ||
+                    !validatePhoneNumber() */)) || // Check if phone is valid
                 (activeSection === "review" && !isFormUpdated) ||
                 isLoading
               }
               className={`px-6 py-2.5 rounded-lg text-sm font-tripswift-medium transition-all duration-200 flex items-center justify-center gap-2 ${
                 (activeSection === "details" &&
-                  (!validateGuestNames() ||
-                    !phone ||
-                    !validatePhoneNumber())) ||
+                  (/* !validateGuestNames() || */
+                    !phone /* ||
+                    !validatePhoneNumber() */)) ||
                 (activeSection === "review" && !isFormUpdated) ||
                 isLoading
                   ? "bg-gray-300 text-black cursor-not-allowed"
