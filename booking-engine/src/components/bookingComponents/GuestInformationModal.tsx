@@ -478,11 +478,21 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
 
     setIsEmailVerifying(true);
     try {
-      const response = await verifyApi.sendEmailOtp(email);
-      const status = response?.status;
-      const message = String(response?.message || "").toLowerCase();
+      // Bypassing real OTP send for testing as requested
+      // const response = await verifyApi.sendEmailOtp(email);
+      // const status = response?.status;
+      // const message = String(response?.message || "").toLowerCase();
 
-      // Check if email is already verified
+      // Simulate OTP sent success
+      toast.success(t("BookingComponents.GuestInformationModal.otpSent") + " (Bypassed)");
+      setEmailOtpSent(true);
+      setEmailCountdown(300);
+      setEmailVerified(false);
+      setEmailAlreadyVerified(false);
+      setIsEmailVerifying(false);
+
+      /*
+      // Original logic commented out to bypass timeout/actual send
       if (status === "verified") {
         toast.success(
           t("BookingComponents.GuestInformationModal.emailAlreadyVerified")
@@ -512,6 +522,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
         setEmailVerified(false);
         setEmailAlreadyVerified(false);
       }
+      */
     } catch (err: any) {
       toast.error(
         err.message ||
