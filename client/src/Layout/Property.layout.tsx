@@ -1,18 +1,25 @@
-import { useEffect, useState } from 'react';
-import { Outlet, useParams } from 'react-router-dom';
-import Sidebar from '@/components/layout/SideBar/Sidebar';
-import Navbar from '@/components/layout/NavBar/Navbar';
-import { getPropertyDetails } from '@/components/property/api/show/propertyDetails';
-import type { IPropertyAddress } from '@/pages/property/types/types';
-import toast from 'react-hot-toast';
-import { MapPin } from 'lucide-react';
-import BackButton from '@/components/shared/BackButton';
+import { useEffect, useState } from "react";
+import { Outlet, useParams, useMatches } from "react-router-dom";
+import Sidebar from "@/components/layout/SideBar/Sidebar";
+import Navbar from "@/components/layout/NavBar/Navbar";
+import { getPropertyDetails } from "@/components/property/api/show/propertyDetails";
+import type { IPropertyAddress } from "@/pages/property/types/types";
+import toast from "react-hot-toast";
+import { MapPin } from "lucide-react";
+import BackButton from "@/components/shared/BackButton";
 
 export default function AppLayout() {
-    const { propertyId } = useParams<{ propertyId: string }>();
+  const { propertyId } = useParams<{ propertyId: string }>();
+
+  const matches = useMatches();
+  const hidePropertyHeader = matches.some(
+    (match: any) => (match.handle as any)?.hideHeader === true,
+  );
 
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [propertyDetails, setPropertyDetails] = useState<{ propertyName: string }>({
+  const [propertyDetails, setPropertyDetails] = useState<{
+    propertyName: string;
+  }>({
     propertyName: "",
   });
   const [propertyAddress, setPropertyAddress] = useState<IPropertyAddress>({
@@ -45,7 +52,6 @@ export default function AppLayout() {
         const data = response.data;
         setPropertyDetails({
           propertyName: data.propertyName,
-          
         });
         if (data.propertyAddress) {
           setPropertyAddress(data.propertyAddress);
@@ -81,23 +87,24 @@ export default function AppLayout() {
           <Navbar isOpen={isSidebarOpen} />
         </div>
         <main className="flex-1 overflow-auto p-4">
-            <BackButton/>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between px-6">
-            <div className="w-full">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {propertyDetails.propertyName}
-                  </h1>
-                  <p className="text-base text-gray-600 flex items-center">
-                    <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
-                    {getFullAddress()}
-                  </p>
+          <BackButton />
+          {!hidePropertyHeader && (
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between px-6">
+              <div className="w-full">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      {propertyDetails.propertyName}
+                    </h1>
+                    <p className="text-base text-gray-600 flex items-center">
+                      <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
+                      {getFullAddress()}
+                    </p>
+                  </div>
                 </div>
-
               </div>
             </div>
-          </div>
+          )}
           <Outlet />
         </main>
       </div>

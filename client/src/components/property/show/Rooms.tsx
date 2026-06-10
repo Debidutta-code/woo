@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef} from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
+
 import Loader from "../../Loader/Loader";
 import {
   DropdownMenu,
@@ -74,6 +76,9 @@ export default function Rooms({ propertyId }: PropertyId) {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [selectedRoomName, setSelectedRoomName] = useState<string>("");
+  const listRef = useRef<HTMLDivElement>(null);
+const [scrollTop, setScrollTop] = useState(0);
+
   const emptyRoomDetails: IRoomDetails = {
     roomName: "",
     roomType: "",
@@ -94,10 +99,11 @@ export default function Rooms({ propertyId }: PropertyId) {
     view360Link: "",
     roomVideos: { url: "", thumbnail: "" },
     priority: 0,
-    RoomViews: { MasterRoomView: { id: "", viewName: "" } }
+    RoomViews: { MasterRoomView: { id: "", viewName: "" } },
   };
 
-  const [roomDetails, setRoomDetails] = useState<IRoomDetails>(emptyRoomDetails);
+  const [roomDetails, setRoomDetails] =
+    useState<IRoomDetails>(emptyRoomDetails);
   const [roomErrors, setRoomErrors] = useState<RoomFormErrors | null>(null);
   const [isSavingRoom, setIsSavingRoom] = useState(false);
 
@@ -403,8 +409,9 @@ export default function Rooms({ propertyId }: PropertyId) {
           {rooms.map((room) => (
             <Card
               key={room.id}
-              className={`overflow-hidden transition-all ${!room.available ? "border-l-4 border-l-red-500" : ""
-                }`}
+              className={`overflow-hidden transition-all ${
+                !room.available ? "border-l-4 border-l-red-500" : ""
+              }`}
             >
               <CardHeader className="border-b bg-primary/5">
                 <div className="flex items-start justify-between">
@@ -432,7 +439,9 @@ export default function Rooms({ propertyId }: PropertyId) {
                         {room.totalRoom === 1 ? "Room" : "Rooms"}
                       </span>
                       <span className="text-gray-400">•</span>
-                      <span className="text-gray-400">Priority: {room.priority}</span>
+                      <span className="text-gray-400">
+                        Priority: {room.priority}
+                      </span>
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
@@ -473,7 +482,8 @@ export default function Rooms({ propertyId }: PropertyId) {
                                 setRoomDetails(emptyRoomDetails);
                                 setRoomErrors(null);
                               }
-                            }}                          >
+                            }}
+                          >
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
@@ -492,7 +502,8 @@ export default function Rooms({ propertyId }: PropertyId) {
                                     smokingPolicy: room.smokingPolicy,
                                     maxOccupancy: room.maxOccupancy,
                                     maxNumberOfAdults: room.maxNumberOfAdults,
-                                    maxNumberOfChildren: room.maxNumberOfChildren,
+                                    maxNumberOfChildren:
+                                      room.maxNumberOfChildren,
                                     numberOfBedrooms: room.numberOfBedrooms,
                                     numberOfLivingRoom: room.numberOfLivingRoom,
                                     extraBed: room.extraBed,
@@ -704,13 +715,14 @@ export default function Rooms({ propertyId }: PropertyId) {
                         </p>
                       </div>
 
-
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-500  tracking-wide block">
                           Smoking Policy
                         </label>
                         <p className="text-sm text-gray-900">
-                          {capitalizeFirstLetter(room.smokingPolicy.replace(/_/g, " ")) || "—"}
+                          {capitalizeFirstLetter(
+                            room.smokingPolicy.replace(/_/g, " "),
+                          ) || "—"}
                         </p>
                       </div>
 
@@ -750,9 +762,7 @@ export default function Rooms({ propertyId }: PropertyId) {
                         <label className="text-xs font-medium text-gray-500  tracking-wide block">
                           Extra Beds
                         </label>
-                        <p className="text-sm text-gray-900">
-                          {room.extraBed}
-                        </p>
+                        <p className="text-sm text-gray-900">{room.extraBed}</p>
                       </div>
                     </div>
                   </div>
@@ -772,9 +782,12 @@ export default function Rooms({ propertyId }: PropertyId) {
                               className="h-7 gap-1 text-primary-600 hover:text-primary-700"
                               onClick={() => {
                                 const initial: Record<string, boolean> = {};
-                                (room.roomAmenities ?? []).forEach((selection) => {
-                                  initial[selection.amenity.amenityName] = true;
-                                });
+                                (room.roomAmenities ?? []).forEach(
+                                  (selection) => {
+                                    initial[selection.amenity.amenityName] =
+                                      true;
+                                  },
+                                );
                                 setUpdatedAmenities(initial);
                               }}
                             >
@@ -877,18 +890,59 @@ export default function Rooms({ propertyId }: PropertyId) {
                     </div>
 
                     {room?.roomAmenities && room.roomAmenities.length > 0 ? (
-                      <div className="space-y-2">
-                        {room.roomAmenities.map((selection) => (
-                          <div
-                            key={selection.id}
-                            className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-md"
-                          >
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" />
-                            <span className="capitalize">
-                              {selection.amenity.amenityName}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="relative">
+                        {/* Up Button */}
+                        <button
+                          onClick={() =>
+                            listRef.current?.scrollBy({
+                              top: -44,
+                              behavior: "smooth",
+                            })
+                          }
+                          className="absolute -top-2 right-0 z-10 h-6 w-6 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30"
+                          disabled={scrollTop <= 0}
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </button>
+
+                        {/* Scrollable List */}
+                        <div
+                          ref={listRef}
+                          onScroll={(e) =>
+                            setScrollTop(e.currentTarget.scrollTop)
+                          }
+                          className="space-y-2 overflow-y-auto"
+                          style={{ maxHeight: 5 * 44 }}
+                        >
+                          {room.roomAmenities.map((selection) => (
+                            <div
+                              key={selection.id}
+                              className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-md"
+                            >
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" />
+                              <span className="capitalize">
+                                {selection.amenity.amenityName}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Down Button */}
+                        <button
+                          onClick={() =>
+                            listRef.current?.scrollBy({
+                              top: 44,
+                              behavior: "smooth",
+                            })
+                          }
+                          className="absolute -bottom-2 right-0 z-10 h-6 w-6 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30"
+                          disabled={
+                            scrollTop >=
+                            room.roomAmenities.length * 44 - 5 * 44 - 1
+                          }
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">

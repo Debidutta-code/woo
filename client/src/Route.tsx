@@ -128,13 +128,13 @@ export const router = createBrowserRouter(
         <Route path="rate-plan/map/:propertyId" element={<MappedRatePlans />} />
         <Route path="calender-view/:propertyId" element={<InventoryPage />} />
         <Route path="inventory/:propertyId" element={<Inventory />} />
-        <Route path="policy/:propertyId" element={<Policies />} />
-        <Route path="promo-code/:propertyId" element={<PromoCode />} />
-        <Route path="add-on/:propertyId" element={<AddOn />} />
-        <Route path="tax-system/:propertyId" element={<TaxSystem />} />
-        <Route path="start-stop-sell/:propertyId" element={<StartStopSell />} />
-        <Route path="booking-offset/:propertyId" element={<BookingOffset />} />
-        <Route path="dynamic-pricing/:propertyId" element={<DynamicPricing />} />
+        <Route path="policy/:propertyId" element={<Policies />} handle={{ hideHeader: true }}/>
+        <Route path="promo-code/:propertyId" element={<PromoCode />} handle={{ hideHeader: true }}/>
+        <Route path="add-on/:propertyId" element={<AddOn />} handle={{ hideHeader: true }}/>
+        <Route path="tax-system/:propertyId" element={<TaxSystem />} handle={{ hideHeader: true }}/>
+        <Route path="start-stop-sell/:propertyId" element={<StartStopSell />} handle={{ hideHeader: true }}/>
+        <Route path="booking-offset/:propertyId" element={<BookingOffset />} handle={{ hideHeader: true }}/>
+        <Route path="dynamic-pricing/:propertyId" element={<DynamicPricing />} handle={{ hideHeader: true }}/>
         <Route
           path="cta-ctd/:propertyId"
           element={<RestrictionsPageWrapper />}
