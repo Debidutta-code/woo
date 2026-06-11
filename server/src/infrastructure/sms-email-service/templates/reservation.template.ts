@@ -8,6 +8,7 @@ interface PropertyDetails {
     description: string;
     image: string[];
     propertyCode: string;
+      id: string;
 }
 
 interface PropertyAddress {
@@ -883,7 +884,7 @@ export const BookingConfirmationEmail = ({
         <!-- Call to Action -->
        <div class="cta-section">
   <p class="cta-text">Need to make changes to your reservation?</p>
-  <a href="https://bookings.revchilltech.com/my-trip?propertyCode=${property.propertyCode}" class="cta-button">
+  <a href="https://woohobooking.trip-swift.ai/my-trip/?id=${property.id}" class="cta-button">
     Manage Booking
   </a>
 </div>
@@ -1227,7 +1228,7 @@ export const BookingAmendmentEmail = ({
 
  <div class="cta-section">
   <p class="cta-text">Need to make changes to your reservation?</p>
-  <a href="https://bookings.revchilltech.com/my-trip?propertyCode=${property.propertyCode}" class="cta-button">
+  <a href="https://woohobooking.trip-swift.ai/my-trip/?id=${property.id}" class="cta-button">
     Manage Booking
   </a>
 </div>
@@ -1461,7 +1462,7 @@ export const BookingCancellationEmail = ({
 
  <div class="cta-section">
           <p class="cta-text">Changed your mind?</p>
-  <a href="https://bookings.revchilltech.com/my-trip?propertyCode=${property.propertyCode}" class="cta-button">
+  <a href="https://woohobooking.trip-swift.ai/my-trip/?id=${property.id}" class="cta-button">
     Manage Booking
   </a>
 </div>

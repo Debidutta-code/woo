@@ -30,7 +30,7 @@ export class GoogleFeedsService {
             latitude: p.propertyAddress.latitude,
             longitude: p.propertyAddress.longitude,
             phoneNumber: p.propertyContact,
-            websiteUrl: `https://bookings.revchilltech.com/Rooms/?code=${p.propertyCode}`,
+            websiteUrl: `https://woohobooking.trip-swift.ai/hotel/?id=${p.id}`,
         }));
     }
 
@@ -93,7 +93,7 @@ export class GoogleFeedsService {
                 tax: 0,
                 otherFees: 0,
                 currencyCode: 'USD',
-                landingPageUrl: `https://bookings.revchilltech.com/Rooms/?code=${property.propertyCode}&checkin={checkin}&checkout={checkout}&adults={adults}&children={children}&rooms={rooms}`,
+                landingPageUrl: `https://woohobooking.trip-swift.ai/hotel/?id=${property.id}&checkin={checkin}&checkout={checkout}&adults={adults}&children={children}&rooms={rooms}`,
             });
         }
 

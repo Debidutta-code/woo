@@ -50,6 +50,7 @@ export default function PropertyDetails({
     propertyName: "",
     description: "",
     propertyEmail: "",
+    id:"",
     propertyCode: "",
     destinationType: {
       masterDestinationType: {
@@ -182,6 +183,7 @@ export default function PropertyDetails({
           propertyName: data.propertyName,
           description: data.description,
           propertyCode: data.propertyCode,
+          id: data.id,
           destinationType: data.destinationType,
           propertyCategory: data.propertyCategory,
           propertyContact: data.propertyContact,
@@ -396,10 +398,10 @@ export default function PropertyDetails({
                   Booking Engine Url
                 </span>
                 <a className="text-xs text-gray-900 font-medium text-right" target="_blank" rel="noopener noreferrer"
-                  href={`https://bookings.revchilltech.com/Rooms/?code=${propertyDetails.propertyCode}`}  
+                  href={`https://woohobooking.trip-swift.ai/hotel/?id=${propertyDetails?.id}`}  
                 >
 
-                  {`https://bookings.revchilltech.com/Rooms/?code=${propertyDetails.propertyCode.replace(/[A-Z0-9]/g, "*")}`}
+                  {`https://woohobooking.trip-swift.ai/hotel/?id=${propertyDetails?.id.replace(/[A-Z0-9]/g, "*")}`}
                 </a>
               </div>
             </div>

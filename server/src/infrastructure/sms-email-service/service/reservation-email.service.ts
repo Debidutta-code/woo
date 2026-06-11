@@ -39,6 +39,7 @@ export class ReservationEmailService {
 
             const htmlTemplate = EmailTemplates.BookingConfirmation({
                 property: {
+                    id: propertyDetails.id,
                     propertyName: propertyDetails.propertyName,
                     description: propertyDetails.description,
                     image: propertyDetails.image,
@@ -116,6 +117,7 @@ export class ReservationEmailService {
 
             const htmlTemplate = EmailTemplates.BookingAmendment({
                 property: {
+                    id: propertyDetails.id,
                     propertyName: propertyDetails.propertyName,
                     description: propertyDetails.description,
                     image: propertyDetails.image,
@@ -190,6 +192,7 @@ export class ReservationEmailService {
 
             const htmlTemplate = EmailTemplates.BookingCancellation({
                 property: {
+                    id: propertyDetails.id,
                     propertyName: propertyDetails.propertyName,
                     description: propertyDetails.description,
                     image: propertyDetails.image,

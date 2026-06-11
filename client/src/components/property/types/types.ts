@@ -7,6 +7,7 @@ export interface IPropertyEmail {
 }
 
 export interface IPropertyDetails {
+  id: string;
   propertyName: string;
   propertyEmail: string;
   propertyContact: string;

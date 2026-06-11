@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef} from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 import Loader from "../../Loader/Loader";
@@ -77,7 +77,7 @@ export default function Rooms({ propertyId }: PropertyId) {
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [selectedRoomName, setSelectedRoomName] = useState<string>("");
   const listRef = useRef<HTMLDivElement>(null);
-const [scrollTop, setScrollTop] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
 
   const emptyRoomDetails: IRoomDetails = {
     roomName: "",
@@ -891,19 +891,21 @@ const [scrollTop, setScrollTop] = useState(0);
 
                     {room?.roomAmenities && room.roomAmenities.length > 0 ? (
                       <div className="relative">
-                        {/* Up Button */}
-                        <button
-                          onClick={() =>
-                            listRef.current?.scrollBy({
-                              top: -44,
-                              behavior: "smooth",
-                            })
-                          }
-                          className="absolute -top-2 right-0 z-10 h-6 w-6 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30"
-                          disabled={scrollTop <= 0}
-                        >
-                          <ChevronUp className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Up Button - only show when scrollable and scrolled down */}
+                        {/* {room.roomAmenities.length > 5 && (
+                          <button
+                            onClick={() =>
+                              listRef.current?.scrollBy({
+                                top: -44,
+                                behavior: "smooth",
+                              })
+                            }
+                            className="absolute -top-2 right-0 z-10 h-6 w-6 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30"
+                            disabled={scrollTop <= 0}
+                          >
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          </button>
+                        )} */}
 
                         {/* Scrollable List */}
                         <div
@@ -927,22 +929,24 @@ const [scrollTop, setScrollTop] = useState(0);
                           ))}
                         </div>
 
-                        {/* Down Button */}
-                        <button
-                          onClick={() =>
-                            listRef.current?.scrollBy({
-                              top: 44,
-                              behavior: "smooth",
-                            })
-                          }
-                          className="absolute -bottom-2 right-0 z-10 h-6 w-6 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30"
-                          disabled={
-                            scrollTop >=
-                            room.roomAmenities.length * 44 - 5 * 44 - 1
-                          }
-                        >
-                          <ChevronDown className="h-3.5 w-3.5" />
-                        </button>
+                        {/* Down Button - only show when scrollable */}
+                        {/* {room.roomAmenities.length > 5 && (
+                          <button
+                            onClick={() =>
+                              listRef.current?.scrollBy({
+                                top: 44,
+                                behavior: "smooth",
+                              })
+                            }
+                            className="absolute -bottom-2 right-0 z-10 h-6 w-6 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-30"
+                            disabled={
+                              scrollTop >=
+                              room.roomAmenities.length * 44 - 5 * 44 - 1
+                            }
+                          >
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </button>
+                        )} */}
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-8 text-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
