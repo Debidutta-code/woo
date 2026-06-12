@@ -174,7 +174,7 @@ export default function SeasonalTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+      <div className="flex flex-col sm:flex-row  gap-[560px] items-start sm:items-center">
         <div className="flex-1 max-w-xs">
           <Select value={selectedRoomId} onValueChange={setSelectedRoomId}>
             <SelectTrigger>
