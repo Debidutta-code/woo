@@ -61,20 +61,20 @@ export class EmailService {
                 login: 'Your Login Code - Woohoo Trip',
             }[purpose];
 
-            await emailQueue.enqueueEmail({
-                to: email,
-                cc: [],
-                subject,
-                htmlContent,
-                priority: 'high',
-                meta: {
-                    template: 'otp',
-                    event: purpose,
-                },
-            });
+            // await emailQueue.enqueueEmail({
+            //     to: email,
+            //     cc: [],
+            //     subject,
+            //     htmlContent,
+            //     priority: 'high',
+            //     meta: {
+            //         template: 'otp',
+            //         event: purpose,
+            //     },
+            // });
             return {
                 success: true,
-                message: 'OTP sent successfully to your email',
+                message: 'OTP sent successfully to your email (Bypassed)',
             };
         } catch (error) {
             console.error('Error sending OTP email:', error);
@@ -94,6 +94,14 @@ export class EmailService {
         purpose: 'email_verification' | 'password_reset' | 'login'
     ): Promise<{ success: boolean; message: string }> {
         try {
+            // Bypass for testing
+            if (process.env.NODE_ENV !== 'production' && otp === '123456') {
+                return {
+                    success: true,
+                    message: 'OTP verified successfully (Bypassed)',
+                };
+            }
+
             const otpDoc = await this.otpRepository.verifyOTP(
                 email,
                 otp,
