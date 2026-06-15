@@ -75,6 +75,7 @@ export default function PropertyPage() {
     const roles = [{ value: "hotel_manager", label: "Hotel Manager" }, { value: "staff", label: "Staff" },];
     const [selectedRole, setSelectedRole] = useState<string>(roles[0].value);
     const [selectedUser, setSelectedUser] = useState<string>('');
+    const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
     const [users, setUsers] = useState<HotelManagerMapping>({
         hotelManagers: [],
         staffs: [],
@@ -272,6 +273,15 @@ export default function PropertyPage() {
                 // Reset form
                 setSelectedUser('');
                 // You might want to refresh the property data or user list here
+            } else {
+                toast.error(response.message || "Failed to assign user");
+            }
+
+
+            if (response.success) {
+                setSelectedUser('');
+                setSelectedRole(roles[0].value);
+                setIsAddMemberDialogOpen(false); // close the dialog
             } else {
                 toast.error(response.message || "Failed to assign user");
             }
@@ -570,7 +580,11 @@ export default function PropertyPage() {
                                 </DropdownMenuItem>
                             )}
 
-                            <Dialog onOpenChange={handleDialogOpenChange}>
+                            <Dialog open={isAddMemberDialogOpen}  
+                                    onOpenChange={(open) => {
+                                        setIsAddMemberDialogOpen(open);
+                                        if (!open) handleDialogOpenChange(open);
+                            }}>
                                 <DialogTrigger asChild>
                                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
                                         <Button variant={"secondary"}>

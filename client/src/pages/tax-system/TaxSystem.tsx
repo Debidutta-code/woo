@@ -1021,7 +1021,7 @@ export default function TaxSystem() {
                                                     <CardTitle className="text-lg mb-1">
                                                         {group.name}
                                                     </CardTitle>
-                                                    <CardDescription className="text-xs">
+                                                    {/* <CardDescription className="text-xs">
                                                         {group.isActive ? (
                                                             <span className="flex items-center gap-1 text-green-600">
                                                                 <CheckCircle className="w-3 h-3" />
@@ -1033,7 +1033,7 @@ export default function TaxSystem() {
                                                                 Inactive
                                                             </span>
                                                         )}
-                                                    </CardDescription>
+                                                    </CardDescription> */}
                                                 </div>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
