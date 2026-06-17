@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import type { IUser } from '../../pages/members/types/types';
 import type { Dispatch, SetStateAction } from 'react';
-import toast from 'react-hot-toast';
 
 interface DeleteConfirmationDialogProps {
   user: IUser | null;
@@ -22,7 +21,7 @@ interface DeleteConfirmationDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   loading: boolean;
-  setUserToDelete: Dispatch<SetStateAction<IUser | null>>
+  setUserToDelete: Dispatch<SetStateAction<IUser | null>>;
 }
 
 export default function DeleteConfirmationDialog({
@@ -34,10 +33,8 @@ export default function DeleteConfirmationDialog({
   setUserToDelete
 }: DeleteConfirmationDialogProps) {
   if (!user) {
-    toast.error("User Not Found for Delete");
-    return;
+    return null;
   }
-              setUserToDelete(user);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -46,6 +43,7 @@ export default function DeleteConfirmationDialog({
           variant="ghost"
           size="sm"
           className="text-red-600 hover:text-red-700"
+          onClick={() => setUserToDelete(user)}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -61,7 +59,7 @@ export default function DeleteConfirmationDialog({
           <DialogClose>Cancel</DialogClose>
           <Button
             onClick={() => {
-              onConfirm()
+              onConfirm();
             }}
             className="bg-red-600 hover:bg-red-700"
             disabled={loading}

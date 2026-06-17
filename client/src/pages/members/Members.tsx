@@ -273,8 +273,16 @@ export default function MembersPage() {
           </Button>
           <DeleteConfirmationDialog
             user={row}
-            isOpen={isDeleteDialogOpen}
-            onOpenChange={setIsDeleteDialogOpen}
+            isOpen={isDeleteDialogOpen && userToDelete?.id === row.id}
+            onOpenChange={(open) => {
+              if (open) {
+                setUserToDelete(row);
+                setIsDeleteDialogOpen(true);
+              } else {
+                setIsDeleteDialogOpen(false);
+                setUserToDelete(null);
+              }
+            }}
             onConfirm={confirmDeleteUser}
             loading={loading}
             setUserToDelete={setUserToDelete}
