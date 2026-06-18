@@ -46,6 +46,7 @@ export default function PropertyDetails({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [propertyDetails, setPropertyDetails] = useState<IPropertyDetails>({
     propertyName: "",
     description: "",
@@ -213,6 +214,7 @@ export default function PropertyDetails({
       if (response.success) {
         toast.success("Property Details Updated successfully");
         setPropertyDetails(payload);
+        setIsUpdateDialogOpen(false);
       } else {
         throw new Error(response.message || "Failed to Update Property Details");
       }
@@ -274,7 +276,7 @@ export default function PropertyDetails({
             </div>
             <ExpandableDescription description={propertyDetails.description} />
           </div>
-          <AlertDialog>
+          <AlertDialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button className="ml-4 shadow-sm hover:shadow-md transition-shadow bg-primary hover:bg-primary/90">
                 <PenTool className="h-4 w-4 mr-2" />

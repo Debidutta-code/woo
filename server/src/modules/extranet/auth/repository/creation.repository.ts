@@ -64,8 +64,26 @@ export default class CreationDao {
 
     public static async delete(creationId: string) {
         try {
-            return await prisma.creation.delete({
-                where: { id: creationId },
+            return await prisma.$transaction(async (tx) => {
+                const deletedCreation = await tx.creation.update({
+                    where: { id: creationId },
+                    data: {
+                        isActive: false,
+                        isDeleted: true,
+                    },
+                });
+
+                if (deletedCreation.type === 'property') {
+                    await tx.property.updateMany({
+                        where: { creationId },
+                        data: {
+                            isAvailable: false,
+                            isDeleted: true,
+                        },
+                    });
+                }
+
+                return deletedCreation;
             });
         } catch (error: any) {
             throw new Error(`Failed to mark as deleted: ${error.message}`);
@@ -111,7 +129,10 @@ export default class CreationDao {
     ): Promise<any[]> {
         try {
             return await prisma.creation.findMany({
-                where: {},
+                where: {
+                    ...filters,
+                    isDeleted: false,
+                },
                 orderBy: { createdAt: 'desc' },
                 include: {
                     users: true,
@@ -119,9 +140,17 @@ export default class CreationDao {
                     super: true,
                     group: true,
                     brand: true,
-                    property: true,
+                    property: {
+                        where: {
+                            isDeleted: false,
+                        },
+                    },
                     regional: true,
-                    regionalChildren: true,
+                    regionalChildren: {
+                        where: {
+                            isDeleted: false,
+                        },
+                    },
                 },
             });
         } catch (error: any) {
@@ -175,24 +204,52 @@ export default class CreationDao {
                     brand: true,
                     property: true,
                     brandChildren: {
+                        where: {
+                            isDeleted: false,
+                        },
                         include: {
-                            property: true,
+                            property: {
+                                where: {
+                                    isDeleted: false,
+                                },
+                            },
                         },
                     },
                     groupChildren: {
+                        where: {
+                            isDeleted: false,
+                        },
                         include: {
-                            property: true,
+                            property: {
+                                where: {
+                                    isDeleted: false,
+                                },
+                            },
                             brandChildren: {
+                                where: {
+                                    isDeleted: false,
+                                },
                                 include: {
-                                    property: true,
+                                    property: {
+                                        where: {
+                                            isDeleted: false,
+                                        },
+                                    },
                                 },
                             },
                         },
                     },
                     regional: true,
                     regionalChildren: {
+                        where: {
+                            isDeleted: false,
+                        },
                         include: {
-                            property: true,
+                            property: {
+                                where: {
+                                    isDeleted: false,
+                                },
+                            },
                         },
                     },
                 },

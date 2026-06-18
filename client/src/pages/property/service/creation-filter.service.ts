@@ -107,7 +107,12 @@ export async function getBrandCreationId(id: string) {
         }
         const data = response.data;
         // console.log("Brand Data:", data);
-        const properties = data?.brandChildren?.filter((creation: ICreation) => creation.type === "property")
+        const properties = data?.brandChildren?.filter(
+            (creation: ICreation) =>
+                creation.type === "property" &&
+                !creation.isDeleted &&
+                !creation.property?.isDeleted
+        )
         return {
             success: true,
             message: "Fetched Brand Successfully",

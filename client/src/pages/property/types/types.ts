@@ -75,8 +75,10 @@ export interface ICreation {
     groupIds?: string[];
     brandIds?: string[];
     propertyIds?: string[];
+    isDeleted?: boolean;
     property?:{
         isDraft:boolean;
+        isDeleted?: boolean;
     }
 }
 

@@ -23,6 +23,7 @@ const CreateEntityDialog = ({ currentTab, creationId, level, fetchProperties, cr
 ) => {
   const user = useAppSelector((state) => state.user.user);
     const [customs, setCustoms] = useState<ICreation[]>([]);
+     const [open, setOpen] = useState(false);
     const [selectedCustom, _setSelectedCustom] = useState<ICreation | null>(null);
     useEffect(() => {
         const fetchCustoms = async () => {
@@ -102,6 +103,7 @@ const CreateEntityDialog = ({ currentTab, creationId, level, fetchProperties, cr
                     assignTo: ""
                 });
                 fetchProperties();
+                setOpen(false); 
             } else {
                 toast.error(res.message)
             }
@@ -118,7 +120,7 @@ const CreateEntityDialog = ({ currentTab, creationId, level, fetchProperties, cr
     };
 
     return (
-        <AlertDialog>
+        <AlertDialog  open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
                 <Button variant={"secondary"}>
                     <PlusCircle className="h-4 w-4 mr-2" />
