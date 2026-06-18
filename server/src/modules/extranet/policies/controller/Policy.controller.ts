@@ -34,18 +34,18 @@ export class PolicyController {
             if (!id) {
                 return res.status(400).json('Policy Id is required for update');
             }
-            const { ratePlanCode, ratePlanName } = req.body;
-            if (!ratePlanCode || !ratePlanName) {
+            const { policyName, description } = req.body;
+            if (!policyName) {
                 return res
                     .status(400)
-                    .json(errorResponse('All the fields are required'));
+                    .json(errorResponse('Policy name is required'));
             }
             const serRes = await PoliciesServices.updatePolicyService(
                 id,
-                ratePlanCode,
-                ratePlanName
+                policyName,
+                description
             );
-            const resStatus = serRes ? 200 : 400;
+            const resStatus = serRes?.success ? 200 : 400;
             return res.status(resStatus).json(serRes);
         } catch (error: any) {
             return res

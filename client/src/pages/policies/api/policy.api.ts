@@ -49,6 +49,21 @@ const deletePolicyApi = async (policyId: string) => {
         }
     }
 }
+const updatePolicy = async (policyId: string, policyData: Pick<ICPolicy, "policyName" | "description">) => {
+    try {
+        const response = await axiosInstance.patch(`/policy/${policyId}`, policyData);
+        return response.data;
+    } catch (error: any) {
+        if (error?.response?.data) {
+            return error.response.data
+        } else {
+            return {
+                success: false,
+                message: error?.message
+            }
+        }
+    }
+}
 const addPolicyToRatePlan = async (policyId: string, ratePlanId: string) => {
     try {
         const response = await axiosInstance.post(`/policy/addToRatePlan`, { policyId, ratePlanId });
@@ -70,6 +85,7 @@ const addPolicyToRatePlan = async (policyId: string, ratePlanId: string) => {
 export {
     createPolicy,
     getPolicies,
+    updatePolicy,
     deletePolicyApi,
     addPolicyToRatePlan
 }

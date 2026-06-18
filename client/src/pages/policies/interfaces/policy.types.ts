@@ -11,6 +11,11 @@ export interface IPolicy{
     type: PolicyTypes;
     description?: string;
     ratePlanName?:string;
+    ratePlans?: {
+        id: string;
+        ratePlanCode: string;
+        ratePlanName: string;
+    }[];
     propertyId: string;
     createdAt: Date;
     updatedAt: Date;

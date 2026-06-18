@@ -4,6 +4,7 @@ import type {
     IPolicy,
     PolicyFilters,
     UpdatePolicyData,
+    UpdatePolicyDetailsData,
     FilterOptions,
     PaginatedResult,
     allPolicies,
@@ -98,6 +99,49 @@ export class PolicyRepository {
         }
     }
 
+    public static async updateOne(
+        id: string,
+        { policyName, description }: UpdatePolicyDetailsData
+    ): Promise<IPolicy | null> {
+        try {
+            const existingPolicy = await prisma.policy.findUnique({
+                where: { id: toStringId(id) },
+            });
+
+            if (!existingPolicy) {
+                return null;
+            }
+
+            const duplicatePolicy = await prisma.policy.findFirst({
+                where: {
+                    id: { not: toStringId(id) },
+                    propertyId: existingPolicy.propertyId,
+                    policyName,
+                    type: existingPolicy.type,
+                },
+            });
+
+            if (duplicatePolicy) {
+                throw new Error('Policy with this name and type already exists');
+            }
+
+            const policy = await prisma.policy.update({
+                where: { id: toStringId(id) },
+                data: {
+                    policyName,
+                    description,
+                },
+            });
+
+            return {
+                ...policy,
+                propertyId: policy.propertyId || '',
+            };
+        } catch (error: any) {
+            throw new Error(`Failed to update policy: ${error.message}`);
+        }
+    }
+
     public static async MapPolicyDao(id: string, data: UpdatePolicyData) {
         const { ratePlanCode } = data;
         try {
@@ -156,8 +200,53 @@ export class PolicyRepository {
                 where: { propertyId: propertyId },
             });
 
-            const allPolicies: allPolicies[] = [];
+            const policiesById = new Map<string, allPolicies>();
             const mappedPolicyIds: string[] = [];
+
+            const addPolicyWithRatePlan = (
+                policy: any,
+                type: 'deposit' | 'guarantee' | 'cancellation',
+                ratePlan: any
+            ) => {
+                mappedPolicyIds.push(policy.id);
+
+                const ratePlanInfo = {
+                    id: ratePlan.id,
+                    ratePlanCode: ratePlan.ratePlanCode,
+                    ratePlanName: ratePlan.ratePlanName,
+                };
+
+                const existingPolicy = policiesById.get(policy.id);
+                if (existingPolicy) {
+                    const hasRatePlan = existingPolicy.ratePlans?.some(
+                        (item) => item.id === ratePlan.id
+                    );
+                    if (!hasRatePlan) {
+                        existingPolicy.ratePlans = [
+                            ...(existingPolicy.ratePlans || []),
+                            ratePlanInfo,
+                        ];
+                    }
+                    existingPolicy.ratePlanCode = existingPolicy.ratePlans
+                        ?.map((item) => item.ratePlanCode)
+                        .join(', ');
+                    existingPolicy.ratePlanName = existingPolicy.ratePlans
+                        ?.map((item) => item.ratePlanName)
+                        .join(', ');
+                    return;
+                }
+
+                policiesById.set(policy.id, {
+                    id: policy.id,
+                    policyName: policy.policyName,
+                    type,
+                    description: policy.description,
+                    ratePlanCode: ratePlan.ratePlanCode,
+                    propertyId: policy.propertyId || '',
+                    ratePlanName: ratePlan.ratePlanName,
+                    ratePlans: [ratePlanInfo],
+                });
+            };
 
             if (ratePlans && ratePlans.length > 0) {
                 for (const ratePlan of ratePlans) {
@@ -166,16 +255,11 @@ export class PolicyRepository {
                             where: { id: toStringId(ratePlan.depositPolicyId) },
                         });
                         if (depositPolicy) {
-                            mappedPolicyIds.push(depositPolicy.id);
-                            allPolicies.push({
-                                id: depositPolicy.id,
-                                policyName: depositPolicy.policyName,
-                                type: 'deposit',
-                                description: depositPolicy.description,
-                                ratePlanCode: ratePlan.ratePlanCode,
-                                propertyId: depositPolicy.propertyId || '',
-                                ratePlanName: ratePlan.ratePlanName,
-                            });
+                            addPolicyWithRatePlan(
+                                depositPolicy,
+                                'deposit',
+                                ratePlan
+                            );
                         }
                     }
 
@@ -187,16 +271,11 @@ export class PolicyRepository {
                             },
                         });
                         if (guaranteePolicy) {
-                            mappedPolicyIds.push(guaranteePolicy.id);
-                            allPolicies.push({
-                                id: guaranteePolicy.id,
-                                policyName: guaranteePolicy.policyName,
-                                type: 'guarantee',
-                                description: guaranteePolicy.description,
-                                ratePlanCode: ratePlan.ratePlanCode,
-                                propertyId: guaranteePolicy.propertyId || '',
-                                ratePlanName: ratePlan.ratePlanName,
-                            });
+                            addPolicyWithRatePlan(
+                                guaranteePolicy,
+                                'guarantee',
+                                ratePlan
+                            );
                         }
                     }
                     if (ratePlan.cancellationPolicyId) {
@@ -209,16 +288,11 @@ export class PolicyRepository {
                                 },
                             });
                         if (cancellationPolicy) {
-                            mappedPolicyIds.push(cancellationPolicy.id);
-                            allPolicies.push({
-                                id: cancellationPolicy.id,
-                                policyName: cancellationPolicy.policyName,
-                                type: 'cancellation',
-                                description: cancellationPolicy.description,
-                                ratePlanCode: ratePlan.ratePlanCode,
-                                propertyId: cancellationPolicy.propertyId || '',
-                                ratePlanName: ratePlan.ratePlanName,
-                            });
+                            addPolicyWithRatePlan(
+                                cancellationPolicy,
+                                'cancellation',
+                                ratePlan
+                            );
                         }
                     }
                 }
@@ -239,7 +313,7 @@ export class PolicyRepository {
 
             // Add non-mapped policies to the result
             nonMappedPolicies.forEach((policy: any) => {
-                allPolicies.push({
+                policiesById.set(policy.id, {
                     id: policy.id,
                     policyName: policy.policyName,
                     type: policy.type,
@@ -247,8 +321,11 @@ export class PolicyRepository {
                     ratePlanCode: '', // Empty for non-mapped policies
                     propertyId: policy.propertyId || '',
                     ratePlanName: '', // Empty for non-mapped policies
+                    ratePlans: [],
                 });
             });
+
+            const allPolicies = Array.from(policiesById.values());
 
             return {
                 success: true,

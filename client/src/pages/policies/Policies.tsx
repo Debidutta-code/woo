@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Plus, Shield, FileText, CreditCard, AlertCircle, Check, MoreVertical, Trash2, Link2 } from "lucide-react";
+import { Plus, Shield, FileText, CreditCard, AlertCircle, Check, MoreVertical, Trash2, Link2, Pencil } from "lucide-react";
 import { toast } from "react-hot-toast";
 // import BackButton from "@/components/shared/BackButton";
 import Loader from "@/components/Loader/Loader";
@@ -55,7 +55,7 @@ import {
     TabsTrigger
 } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { createPolicyService, getPoliciesService, fetchRatePlansService, addPolicyToRatePlanService, deletePolicyService } from "./services";
+import { createPolicyService, getPoliciesService, fetchRatePlansService, addPolicyToRatePlanService, deletePolicyService, updatePolicyService } from "./services";
 import type { IPolicy, PolicyTypes, ICPolicy, RatePlan } from "./interfaces";
 
 export default function PoliciesPage() {
@@ -67,6 +67,7 @@ export default function PoliciesPage() {
     }>({ isLoading: false, text: "Loading policies..." });
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [policyToEdit, setPolicyToEdit] = useState<IPolicy | null>(null);
 
     const [newPolicy, setNewPolicy] = useState<ICPolicy>({
         policyName: "",
@@ -94,6 +95,66 @@ export default function PoliciesPage() {
             toast.error("An error occurred while fetching policies");
         } finally {
             setLoading({ isLoading: false, text: "" });
+        }
+    };
+
+    const resetPolicyForm = () => {
+        setNewPolicy({
+            policyName: "",
+            type: "cancellation",
+            description: "",
+        });
+        setPolicyToEdit(null);
+    };
+
+    const handleDialogOpenChange = (open: boolean) => {
+        setIsDialogOpen(open);
+        if (!open) {
+            resetPolicyForm();
+        }
+    };
+
+    const handleAddPolicyClick = () => {
+        resetPolicyForm();
+        setIsDialogOpen(true);
+    };
+
+    const handleEditClick = (policy: IPolicy) => {
+        setPolicyToEdit(policy);
+        setNewPolicy({
+            policyName: policy.policyName,
+            type: policy.type,
+            description: policy.description || "",
+        });
+        setIsDialogOpen(true);
+    };
+
+    const handleUpdatePolicy = async () => {
+        if (!policyToEdit) return;
+        if (!newPolicy.policyName.trim()) {
+            toast.error("Policy name is required");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const response = await updatePolicyService(
+                policyToEdit.id,
+                newPolicy.policyName,
+                newPolicy.description
+            );
+            if (response.success) {
+                toast.success("Policy updated successfully");
+                setIsDialogOpen(false);
+                resetPolicyForm();
+                fetchPolicies();
+            } else {
+                toast.error(response.message || "Failed to update policy");
+            }
+        } catch (error) {
+            toast.error("An error occurred while updating the policy");
+        } finally {
+            setIsSubmitting(false);
         }
     };
     const fetchRatePlans = async (propertyId: string) => {
@@ -138,12 +199,8 @@ export default function PoliciesPage() {
             );
             if (response.success) {
                 toast.success("Policy created successfully");
-                setNewPolicy({
-                    policyName: "",
-                    type: "cancellation",
-                    description: "",
-                });
                 setIsDialogOpen(false);
+                resetPolicyForm();
                 fetchPolicies();
             } else {
                 toast.error(response.message || "Failed to create policy");
@@ -194,6 +251,7 @@ export default function PoliciesPage() {
             if (response.success) {
                 toast.success("Policy assigned to rate plan successfully");
                 setPolicyToAssign(null);
+                fetchPolicies();
             } else {
                 toast.error(response.message || "Failed to assign policy");
             }
@@ -252,17 +310,19 @@ export default function PoliciesPage() {
                             Manage cancellation, deposit, and guarantee policies for your property.
                         </p>
                     </div>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
                         <DialogTrigger asChild>
-                            <Button className="bg-primary text-white hover:bg-gray-800">
+                            <Button className="bg-primary text-white hover:bg-gray-800" onClick={handleAddPolicyClick}>
                                 <Plus className="mr-2 h-4 w-4" /> Add New Policy
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[500px]">
                             <DialogHeader>
-                                <DialogTitle>Create New Policy</DialogTitle>
+                                <DialogTitle>{policyToEdit ? "Edit Policy" : "Create New Policy"}</DialogTitle>
                                 <DialogDescription>
-                                    Define the terms for your new policy. Click save when you're done.
+                                    {policyToEdit
+                                        ? "Update the policy details. Click save when you're done."
+                                        : "Define the terms for your new policy. Click save when you're done."}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-6 py-4">
@@ -277,24 +337,26 @@ export default function PoliciesPage() {
                                         }
                                     />
                                 </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="type">Policy Type</Label>
-                                    <Select
-                                        value={newPolicy.type}
-                                        onValueChange={(value: PolicyTypes) =>
-                                            setNewPolicy({ ...newPolicy, type: value })
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="cancellation">Cancellation</SelectItem>
-                                            <SelectItem value="deposit">Deposit</SelectItem>
-                                            <SelectItem value="guarantee">Guarantee</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                {!policyToEdit && (
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="type">Policy Type</Label>
+                                        <Select
+                                            value={newPolicy.type}
+                                            onValueChange={(value: PolicyTypes) =>
+                                                setNewPolicy({ ...newPolicy, type: value })
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="cancellation">Cancellation</SelectItem>
+                                                <SelectItem value="deposit">Deposit</SelectItem>
+                                                <SelectItem value="guarantee">Guarantee</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
                                 <div className="grid gap-2">
                                     <Label htmlFor="description">Description</Label>
                                     <Textarea
@@ -311,17 +373,17 @@ export default function PoliciesPage() {
                             <DialogFooter>
                                 <Button
                                     variant="outline"
-                                    onClick={() => setIsDialogOpen(false)}
+                                    onClick={() => handleDialogOpenChange(false)}
                                     disabled={isSubmitting}
                                 >
                                     Cancel
                                 </Button>
                                 <Button
-                                    onClick={handleCreatePolicy}
+                                    onClick={policyToEdit ? handleUpdatePolicy : handleCreatePolicy}
                                     disabled={isSubmitting}
                                     className="bg-black text-white hover:bg-gray-800"
                                 >
-                                    {isSubmitting ? "Saving..." : "Save Policy"}
+                                    {isSubmitting ? "Saving..." : policyToEdit ? "Update Policy" : "Save Policy"}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -345,67 +407,86 @@ export default function PoliciesPage() {
                                         .filter(
                                             (p) => tabValue === "all" || p.type === tabValue
                                         )
-                                        .map((policy) => (
-                                            <Card
-                                                key={policy.id}
-                                                className="group relative overflow-hidden transition-all hover:shadow-md"
-                                            >
-                                                <div className={`absolute left-0 top-0 h-full w-1 ${getPolicyColor(policy.type).split(" ")[0].replace("bg-", "bg-opacity-100 bg-")}`} />
-                                                <CardHeader className="pb-3">
-                                                    <div className="flex items-start justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            {getPolicyIcon(policy.type)}
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className={`capitalize ${getPolicyColor(policy.type)}`}
-                                                            >
-                                                                {policy.type}
-                                                            </Badge>
-                                                        </div>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                    <span className="sr-only">Open menu</span>
-                                                                    <MoreVertical className="h-4 w-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                                <DropdownMenuItem onClick={() => handleAssignClick(policy)}>
-                                                                    <Link2 className="mr-2 h-4 w-4" />
-                                                                    Add to Rate Plan
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem
-                                                                    onClick={() => handleDeleteClick(policy)}
-                                                                    className="text-red-600 focus:text-red-600"
+                                        .map((policy) => {
+                                            const assignedRatePlans = policy.ratePlans?.length
+                                                ? policy.ratePlans
+                                                : policy.ratePlanName
+                                                    ? [{ id: policy.ratePlanName, ratePlanCode: "", ratePlanName: policy.ratePlanName }]
+                                                    : [];
+                                            return (
+                                                <Card
+                                                    key={policy.id}
+                                                    className="group relative overflow-hidden transition-all hover:shadow-md"
+                                                >
+                                                    <div className={`absolute left-0 top-0 h-full w-1 ${getPolicyColor(policy.type).split(" ")[0].replace("bg-", "bg-opacity-100 bg-")}`} />
+                                                    <CardHeader className="pb-3">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                {getPolicyIcon(policy.type)}
+                                                                <Badge
+                                                                    variant="secondary"
+                                                                    className={`capitalize ${getPolicyColor(policy.type)}`}
                                                                 >
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    Delete
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                    <CardTitle className="mt-3 text-lg font-semibold flex items-center gap-2">
-                                                        {policy.policyName}
-                                                        {policy.ratePlanName && (
-                                                            <Badge variant="outline" className="text-xs font-normal text-gray-500">
-                                                                {policy.ratePlanName}
-                                                            </Badge>
+                                                                    {policy.type}
+                                                                </Badge>
+                                                            </div>
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                        <span className="sr-only">Open menu</span>
+                                                                        <MoreVertical className="h-4 w-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end">
+                                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                    <DropdownMenuItem onClick={() => handleAssignClick(policy)}>
+                                                                        <Link2 className="mr-2 h-4 w-4" />
+                                                                        Add to Rate Plan
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => handleEditClick(policy)}>
+                                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                                        Edit Policy
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuItem
+                                                                        onClick={() => handleDeleteClick(policy)}
+                                                                        className="text-red-600 focus:text-red-600"
+                                                                    >
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        Delete
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </div>
+                                                        <CardTitle className="mt-3 text-lg font-semibold flex items-center gap-2">
+                                                            {policy.policyName}
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <p className="text-sm leading-relaxed text-gray-600 line-clamp-3">
+                                                            {policy.description || "No description provided."}
+                                                        </p>
+                                                        {assignedRatePlans.length > 0 && (
+                                                            <div className="mt-4 flex flex-wrap gap-2">
+                                                                {assignedRatePlans.map((ratePlan) => (
+                                                                    <Badge
+                                                                        key={ratePlan.id}
+                                                                        variant="outline"
+                                                                        className="max-w-full text-xs font-normal text-gray-500"
+                                                                    >
+                                                                        <span className="truncate">{ratePlan.ratePlanName}</span>
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
                                                         )}
-                                                    </CardTitle>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    <p className="text-sm leading-relaxed text-gray-600 line-clamp-3">
-                                                        {policy.description || "No description provided."}
-                                                    </p>
-                                                    <div className={`mt-4 flex items-center gap-2 text-xs ${policy.ratePlanName ? "text-green-600" : "text-gray-400"}`}>
-                                                        {policy.ratePlanName ? <Check className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
-                                                        <span>{policy.ratePlanName ? "Active" : "Inactive"}</span>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
+                                                        <div className={`mt-4 flex items-center gap-2 text-xs ${assignedRatePlans.length > 0 ? "text-green-600" : "text-gray-400"}`}>
+                                                            {assignedRatePlans.length > 0 ? <Check className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+                                                            <span>{assignedRatePlans.length > 0 ? "Active" : "Inactive"}</span>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            );
+                                        })}
                                     {policies.filter((p) => tabValue === "all" || p.type === tabValue)
                                         .length === 0 && (
                                             <div className="col-span-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-white py-12 text-center">
@@ -420,10 +501,10 @@ export default function PoliciesPage() {
                                                         ? "Get started by creating your first policy."
                                                         : `No ${tabValue} policies found.`}
                                                 </p>
-                                                {tabValue === "all" && (
+                                                {tabValue === "all" && (    
                                                     <Button
                                                         variant="link"
-                                                        onClick={() => setIsDialogOpen(true)}
+                                                        onClick={handleAddPolicyClick}
                                                         className="mt-2 text-primary"
                                                     >
                                                         Create one now

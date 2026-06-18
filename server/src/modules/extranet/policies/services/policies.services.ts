@@ -32,18 +32,18 @@ export class PoliciesServices {
 
     public static async updatePolicyService(
         id: string,
-        ratePlanCode: string,
-        ratePlanName: string
+        policyName: string,
+        description?: string
     ) {
         try {
-            const response = await PolicyRepository.MapPolicyDao(id, {
-                ratePlanCode,
-                ratePlanName,
+            const response = await PolicyRepository.updateOne(id, {
+                policyName,
+                description,
             });
             if (response) {
-                return successResponse('Policy Mapped Successfully', response);
+                return successResponse('Policy Updated Successfully', response);
             } else {
-                return errorResponse('Error occur while mapping the Policy');
+                return errorResponse('Policy not found');
             }
         } catch (error: any) {
             return errorResponse(

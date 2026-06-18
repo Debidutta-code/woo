@@ -11,6 +11,11 @@ export interface UpdatePolicyData {
     ratePlanName: string;
 }
 
+export interface UpdatePolicyDetailsData {
+    policyName: string;
+    description?: string;
+}
+
 export interface PolicyFilters {
     ratePlanCode: string;
     propertyId: string;
@@ -23,6 +28,11 @@ export interface allPolicies {
     propertyId: string;
     ratePlanCode?: string;
     ratePlanName?: string;
+    ratePlans?: {
+        id: string;
+        ratePlanCode: string;
+        ratePlanName: string;
+    }[];
 }
 export interface IPolicy {
     id: string;
