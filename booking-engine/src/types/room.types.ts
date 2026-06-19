@@ -53,7 +53,7 @@ export interface RatePlan {
   currencyCode: string;
   dailyRate: number;
   totalPrice: number;
-  cancellationPolicy?: string;
+  cancellationPolicy?: string | null;
   baseByGuestAmts: {
     amountBeforeTax: number;
     numberOfGuests: number;
@@ -73,6 +73,8 @@ export interface RatePlan {
   }[];
   durationDays: number;
   packages: any[];
+  depositPolicy?: string | null;
+  guaranteePolicy?: string | null;
   originalDailyRate?: number;
   originalTotalPrice?: number;
   geoPricingApplied?: boolean;

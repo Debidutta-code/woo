@@ -67,8 +67,6 @@ import {
     Receipt,
     Search,
     Layers,
-    CheckCircle,
-    XCircle,
     UserPlus,
     UserMinus,
 } from "lucide-react";

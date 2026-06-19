@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { ICBookingOffsetS } from "../interfaces";
+import type { RatePlan } from "@/pages/tax-system/interface";
 import { X } from "lucide-react";
 
 const OFFSET_FIELDS: { key: keyof ICBookingOffsetS; label: string }[] = [
@@ -41,6 +42,10 @@ interface OffsetFormModalProps {
   onSubmit: () => void;
   onClose: () => void;
   submitLabel?: string;
+  showRatePlan?: boolean;
+  ratePlans?: RatePlan[];
+  ratePlanId?: string;
+  onRatePlanChange?: (ratePlanId: string) => void;
   showDateRange?: boolean;
   startDate?: string;
   endDate?: string;
@@ -56,6 +61,10 @@ export default function OffsetFormModal({
   onSubmit,
   onClose,
   submitLabel = "Save Changes",
+  showRatePlan = false,
+  ratePlans = [],
+  ratePlanId = "",
+  onRatePlanChange,
   showDateRange = false,
   startDate = "",
   endDate = "",
@@ -97,30 +106,59 @@ export default function OffsetFormModal({
         {subtitle && (
           <p className="text-sm text-muted-foreground mb-4">{subtitle}</p>
         )}
-        {showDateRange && (
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                value={startDate}
-                onChange={(e) => onStartDateChange?.(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                value={endDate}
-                onChange={(e) => onEndDateChange?.(e.target.value)}
-              />
-            </div>
+        {(showRatePlan || showDateRange) && (
+          <div
+            className={`grid grid-cols-1 ${
+              showRatePlan && showDateRange
+                ? "md:grid-cols-3"
+                : "md:grid-cols-2"
+            } gap-4 mb-4`}
+          >
+            {showRatePlan && (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Rate Plan
+                </label>
+                <select
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={ratePlanId}
+                  onChange={(e) => onRatePlanChange?.(e.target.value)}
+                >
+                  <option value="">Select a Rate Plan</option>
+                  {ratePlans.map((ratePlan) => (
+                    <option key={ratePlan.id} value={ratePlan.id}>
+                      {ratePlan.ratePlanName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {showDateRange && (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={startDate}
+                  onChange={(e) => onStartDateChange?.(e.target.value)}
+                />
+              </div>
+            )}
+            {showDateRange && (
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={endDate}
+                  onChange={(e) => onEndDateChange?.(e.target.value)}
+                />
+              </div>
+            )}
           </div>
         )}
         <div className="grid grid-cols-2 gap-4">

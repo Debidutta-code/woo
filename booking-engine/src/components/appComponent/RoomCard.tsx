@@ -39,10 +39,6 @@ import {
 import { Card } from "../../components/ui/card";
 import { Room, RatePlan, Amenity } from "../../types/room.types";
 import {
-  getPolicyStyling,
-  getPolicyBulletPoints,
-} from "../../utils/cancellationPolicies";
-import {
   calculatePriceForGuests,
   calculateDiscountPercentage,
   formatCurrency,
@@ -67,6 +63,49 @@ const isAmenityObject = (amenity: string | Amenity): amenity is Amenity => {
 
 // Extended Room type for RoomCard data (same as Room for now)
 export type RoomData = Room;
+
+type BookingPolicySection = {
+  key: "cancellationPolicy" | "depositPolicy" | "guaranteePolicy";
+  label: string;
+  policies: string[];
+};
+
+const getPolicyText = (policy: unknown): string => {
+  if (!policy) return "";
+
+  if (typeof policy === "string") {
+    return policy.trim();
+  }
+
+  if (typeof policy === "object") {
+    const policyObject = policy as Record<string, unknown>;
+    const description = policyObject.description;
+    const policyName = policyObject.policyName;
+
+    if (typeof description === "string" && description.trim()) {
+      return description.trim();
+    }
+
+    if (typeof policyName === "string" && policyName.trim()) {
+      return policyName.trim();
+    }
+  }
+
+  return "";
+};
+
+const getUniquePolicyTexts = (
+  ratePlans: Array<RatePlan | Room | null>,
+  key: BookingPolicySection["key"],
+) => {
+  return Array.from(
+    new Set(
+      ratePlans
+        .map((plan) => getPolicyText((plan as any)?.[key]))
+        .filter(Boolean),
+    ),
+  );
+};
 
 interface RoomCardProps {
   data: Room;
@@ -106,43 +145,25 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1617104678098-de229db51175?q=80&w=1514&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
-  // Derive policy dynamically from backend cancellation policy first, then fallback to rate plan code.
   const allRatePlans = [...(ratePlans || []), ...(data.ratePlans || [])];
-  const backendCancellationPolicy = allRatePlans
-    .map((plan: any) => {
-      const rawPolicy =
-        plan?.cancellationPolicy ??
-        plan?.cancellation_policy ??
-        plan?.policy?.cancellationPolicy ??
-        "";
-      if (typeof rawPolicy === "string") return rawPolicy.trim();
-      if (rawPolicy && typeof rawPolicy === "object") {
-        // Support APIs that return policy as a structured object.
-        return Object.values(rawPolicy)
-          .map((v) => (typeof v === "string" ? v.trim() : ""))
-          .filter(Boolean)
-          .join(". ");
-      }
-      return "";
-    })
-    .find((policy: string) => policy.length > 0) || "";
-  const primaryRatePlan = allRatePlans[0];
-  const policySourceText =
-    backendCancellationPolicy ||
-    primaryRatePlan?.ratePlanCode ||
-    data.rate_plan_code ||
-    "";
-  const isNonRefundable = /non[\s-]?refundable/i.test(policySourceText);
-  const policyType = isNonRefundable ? "NonRefundable" : "Flexible";
-  const policyStyling = getPolicyStyling(policyType);
-  const policyBulletPoints =
-    backendCancellationPolicy.length > 0
-      ? backendCancellationPolicy
-          .split(/\r?\n|(?<=\.)\s+/)
-          .map((line) => line.trim())
-          .filter(Boolean)
-          .map((text) => ({ text, color: "text-gray-700" }))
-      : getPolicyBulletPoints(policyType, t);
+  const bookingPolicySections: BookingPolicySection[] = [
+    {
+      key: "cancellationPolicy" as const,
+      label: t("RoomsPage.RoomCard.policies.cancellationPolicy"),
+      policies: getUniquePolicyTexts(allRatePlans, "cancellationPolicy"),
+    },
+    {
+      key: "depositPolicy" as const,
+      label: "Deposit Policy",
+      policies: getUniquePolicyTexts(allRatePlans, "depositPolicy"),
+    },
+    {
+      key: "guaranteePolicy" as const,
+      label: "Guarantee Policy",
+      policies: getUniquePolicyTexts(allRatePlans, "guaranteePolicy"),
+    },
+  ].filter((section) => section.policies.length > 0);
+  const hasBookingPolicies = bookingPolicySections.length > 0;
 
   const normalizeString = (str: string): string => {
     return str
@@ -792,19 +813,21 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                         </div>
                       </div>
 
-                      <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-gray-200">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowFacilitiesModal(false);
-                            setShowPolicyModal(true);
-                          }}
-                          className="text-tripswift-blue hover:text-blue-700 text-xs sm:text-sm font-medium flex items-center gap-1"
-                        >
-                          <FaInfoCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          View booking policies
-                        </button>
-                      </div>
+                      {hasBookingPolicies && (
+                        <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-gray-200">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowFacilitiesModal(false);
+                              setShowPolicyModal(true);
+                            }}
+                            className="text-tripswift-blue hover:text-blue-700 text-xs sm:text-sm font-medium flex items-center gap-1"
+                          >
+                            <FaInfoCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            {t("RoomsPage.RoomCard.viewBookingPolicies")}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1115,7 +1138,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       </Card>
 
       {/* Policy Modal */}
-      {showPolicyModal && (
+      {showPolicyModal && hasBookingPolicies && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
           onClick={() => setShowPolicyModal(false)}
@@ -1138,71 +1161,23 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             </div>
 
             <div className="p-4 sm:p-5 max-h-[70vh] overflow-y-auto">
-              <div className="mb-5 sm:mb-6">
-                <h4 className="text-sm sm:text-base font-semibold flex items-center mb-3">
-                  <span
-                    className={`inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full mr-2 ${
-                      policyType === "Flexible" ? "bg-green-500" : "bg-red-500"
-                    }`}
-                  ></span>
-                  {t("RoomsPage.RoomCard.policies.cancellationPolicy")}
-                  <span
-                    className={`ml-2 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${policyStyling.bgColor} ${policyStyling.textColor} font-medium`}
-                  >
-                    {t(
-                      `RoomsPage.RoomCard.policies.policyTypes.${policyType.toLowerCase()}`,
-                    )}
-                  </span>
-                </h4>
+              <div className="space-y-5 sm:space-y-6">
+                {bookingPolicySections.map((section) => (
+                  <div key={section.key}>
+                    <h4 className="text-sm sm:text-base font-semibold flex items-center mb-3">
+                      <FaInfoCircle className="mr-2 text-tripswift-blue h-4 w-4 sm:h-5 sm:w-5" />
+                      {section.label}
+                    </h4>
 
-                <ul className="list-disc pl-4 sm:pl-5 space-y-1 sm:space-y-1.5 text-xs sm:text-sm">
-                  {policyBulletPoints.map((point, idx) => (
-                    <li key={idx} className="leading-relaxed">
-                      {point.text.includes(":") ? (
-                        <>
-                          <span className={`font-medium ${point.color}`}>
-                            {point.text.split(":")[0]}:
-                          </span>
-                          <span className="ml-1">
-                            {point.text.split(":").slice(1).join(":").trim()}
-                          </span>
-                        </>
-                      ) : (
-                        <span className={point.color}>{point.text}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-sm sm:text-base font-semibold flex items-center mb-3">
-                  <FaInfoCircle className="mr-2 text-tripswift-blue h-4 w-4 sm:h-5 sm:w-5" />
-                  {t("RoomsPage.RoomCard.policies.amendmentPolicy")}
-                </h4>
-
-                <ul className="list-disc pl-4 sm:pl-5 space-y-1 sm:space-y-1.5 text-xs sm:text-sm">
-                  <li className="leading-relaxed">
-                    {t(
-                      "RoomsPage.RoomCard.policies.amendmentPoints.dateChanges",
-                    )}
-                  </li>
-                  <li className="leading-relaxed">
-                    {t(
-                      "RoomsPage.RoomCard.policies.amendmentPoints.changes72Hours",
-                    )}
-                  </li>
-                  <li className="leading-relaxed">
-                    {t(
-                      "RoomsPage.RoomCard.policies.amendmentPoints.roomUpgrades",
-                    )}
-                  </li>
-                  <li className="leading-relaxed">
-                    {t(
-                      "RoomsPage.RoomCard.policies.amendmentPoints.reducingStay",
-                    )}
-                  </li>
-                </ul>
+                    <ul className="list-disc pl-4 sm:pl-5 space-y-1 sm:space-y-1.5 text-xs sm:text-sm text-gray-700">
+                      {section.policies.map((policy, idx) => (
+                        <li key={`${section.key}-${idx}`} className="leading-relaxed whitespace-pre-wrap">
+                          {policy}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
 
               <button

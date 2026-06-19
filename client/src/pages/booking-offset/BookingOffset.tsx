@@ -84,6 +84,7 @@ export default function BookingOffset() {
   });
 
   // Bulk date range (separate from the page-level filter)
+  const [bulkRatePlanId, setBulkRatePlanId] = useState<string>("");
   const [bulkStartDate, setBulkStartDate] = useState<string>("");
   const [bulkEndDate, setBulkEndDate] = useState<string>("");
 
@@ -190,6 +191,7 @@ export default function BookingOffset() {
   };
 
   const handleBulkDeleteClick = () => {
+    setBulkRatePlanId(selectedRatePlan?.id || "");
     setBulkStartDate(startDate);
     setBulkEndDate(endDate);
     setDeleteTarget({ type: "bulk" });
@@ -198,6 +200,24 @@ export default function BookingOffset() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
+    if (deleteTarget.type === "bulk") {
+      if (!propertyId) {
+        toast.error("Property ID is required");
+        return;
+      }
+      if (!bulkRatePlanId) {
+        toast.error("Please select a rate plan");
+        return;
+      }
+      if (!bulkStartDate || !bulkEndDate) {
+        toast.error("Please select both start and end dates");
+        return;
+      }
+      if (new Date(bulkStartDate) > new Date(bulkEndDate)) {
+        toast.error("Start date must be before end date");
+        return;
+      }
+    }
     setLoader({ isLoading: true, message: "Deleting Booking Offset(s)..." });
     try {
       let result;
@@ -206,13 +226,13 @@ export default function BookingOffset() {
       } else if (
         deleteTarget.type === "bulk" &&
         propertyId &&
-        selectedRatePlan &&
+        bulkRatePlanId &&
         bulkStartDate &&
         bulkEndDate
       ) {
         result = await deleteBookingOffsetsService(
           propertyId,
-          selectedRatePlan.id,
+          bulkRatePlanId,
           bulkStartDate,
           bulkEndDate,
         );
@@ -243,6 +263,7 @@ export default function BookingOffset() {
 
   // --- Bulk update ---
   const handleBulkUpdateClick = () => {
+    setBulkRatePlanId(selectedRatePlan?.id || "");
     setBulkStartDate(startDate);
     setBulkEndDate(endDate);
     setBulkUpdateForm({
@@ -257,13 +278,27 @@ export default function BookingOffset() {
   };
 
   const handleBulkUpdateSubmit = async () => {
-    if (!propertyId || !selectedRatePlan || !bulkStartDate || !bulkEndDate)
+    if (!propertyId) {
+      toast.error("Property ID is required");
       return;
+    }
+    if (!bulkRatePlanId) {
+      toast.error("Please select a rate plan");
+      return;
+    }
+    if (!bulkStartDate || !bulkEndDate) {
+      toast.error("Please select both start and end dates");
+      return;
+    }
+    if (new Date(bulkStartDate) > new Date(bulkEndDate)) {
+      toast.error("Start date must be before end date");
+      return;
+    }
     setLoader({ isLoading: true, message: "Updating Booking Offsets..." });
     try {
       const result = await updateBookingOffsetsService(
         propertyId,
-        selectedRatePlan.id,
+        bulkRatePlanId,
         bulkStartDate,
         bulkEndDate,
         bulkUpdateForm,
@@ -305,6 +340,12 @@ export default function BookingOffset() {
       return `${days} day${days > 1 ? "s" : ""} and ${hours} hour${hours > 1 ? "s" : ""}`;
     if (days > 0) return `${days} day${days > 1 ? "s" : ""}`;
     return `${hours} hour${hours > 1 ? "s" : ""}`;
+  };
+  const getRatePlanName = (ratePlanId: string) => {
+    return (
+      ratePlans.find((ratePlan) => ratePlan.id === ratePlanId)?.ratePlanName ||
+      "the selected rate plan"
+    );
   };
   return (
     <div className="space-y-4 p-4 sm:p-6 lg:p-8">
@@ -511,12 +552,16 @@ export default function BookingOffset() {
       {bulkUpdateModalOpen && (
         <OffsetFormModal
           title="Bulk Update Booking Offsets"
-          subtitle={`This will update all offsets for ${selectedRatePlan?.ratePlanName}.`}
+          subtitle={`This will update all offsets for ${getRatePlanName(bulkRatePlanId)}.`}
           form={bulkUpdateForm}
           onFormChange={setBulkUpdateForm}
           onSubmit={handleBulkUpdateSubmit}
           onClose={() => setBulkUpdateModalOpen(false)}
           submitLabel="Update All"
+          showRatePlan
+          ratePlans={ratePlans}
+          ratePlanId={bulkRatePlanId}
+          onRatePlanChange={setBulkRatePlanId}
           showDateRange
           startDate={bulkStartDate}
           endDate={bulkEndDate}
@@ -535,12 +580,16 @@ export default function BookingOffset() {
           }
           message={
             deleteTarget?.type === "bulk"
-              ? `Are you sure you want to delete all booking offsets for ${selectedRatePlan?.ratePlanName}? This action cannot be undone.`
+              ? `Are you sure you want to delete all booking offsets for ${getRatePlanName(bulkRatePlanId)}? This action cannot be undone.`
               : "Are you sure you want to delete this booking offset? This action cannot be undone."
           }
           onConfirm={handleDeleteConfirm}
           onCancel={handleDeleteCancel}
           isLoading={loader.isLoading}
+          showRatePlan={deleteTarget?.type === "bulk"}
+          ratePlans={ratePlans}
+          ratePlanId={bulkRatePlanId}
+          onRatePlanChange={setBulkRatePlanId}
           showDateRange={deleteTarget?.type === "bulk"}
           startDate={bulkStartDate}
           endDate={bulkEndDate}
