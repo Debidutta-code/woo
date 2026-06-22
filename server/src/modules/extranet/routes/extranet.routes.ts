@@ -17,6 +17,7 @@ import { managementRoute } from '../../utils-management/routes';
 import ActivityRouter from '../../logs/routes/activity.routes';
 import PropertyManagement from '../../property-management/routes/index.route';
 import { uploadRouter } from '../../../infrastructure/uploads/routes';
+import { agencyMainRouter } from '../agency/routes/index.route';
 
 const extranetRouter = Router();
 extranetRouter.use('/auth', AuthRouter);
@@ -41,5 +42,6 @@ extranetRouter.use('/loyalty', loyaltyRouter);
 extranetRouter.use('/utils-management', managementRoute);
 extranetRouter.use('/property-management', PropertyManagement);
 extranetRouter.use('/upload', uploadRouter);
+extranetRouter.use('/agency', agencyMainRouter);
 
 export { extranetRouter };
