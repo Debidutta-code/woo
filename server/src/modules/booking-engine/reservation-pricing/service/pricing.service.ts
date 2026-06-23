@@ -6,6 +6,7 @@ import {
     toUTC,
 } from '../../../utils';
 import { PricingRepository } from '../repository';
+import { DynamicPricingCalculator } from '../../../extranet/dynamic-pricing/utils';
 import {
     AddOnBrakeDown,
     DailyPriceBrakeDown,
@@ -131,6 +132,61 @@ export class PricingService {
                 selectedRoom as any
             );
             let priceBrakedowns = basePrice.calculateTotalPrice();
+
+            // ─── Apply Dynamic Pricing (occupancy, seasonal, weekend) ───
+            const dynamicPricingCalc = new DynamicPricingCalculator();
+            const nightDates: Date[] = [];
+            const currentDateIter = new Date(startDate);
+            while (currentDateIter < endDate) {
+                nightDates.push(new Date(currentDateIter));
+                currentDateIter.setDate(currentDateIter.getDate() + 1);
+            }
+
+            const perDateBaseAmounts: { date: Date; amount: number }[] = [];
+            for (const dpbd of priceBrakedowns.dailyPriceBrakeDown) {
+                perDateBaseAmounts.push({
+                    date: new Date(dpbd.date),
+                    amount: dpbd.baseChargesAmount + dpbd.additionalChargesAmount,
+                });
+            }
+
+            const dynamicPricingResults = (
+                await Promise.all(
+                    perDateBaseAmounts.map(entry => {
+                        const nextDay = new Date(entry.date);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        return dynamicPricingCalc.calculateDynamicPricingForDateRange(
+                            propertyId,
+                            (selectedRoom as any).id,
+                            entry.date,
+                            nextDay,
+                            (selectedRoom as any).totalRoom,
+                            entry.amount,
+                            null  // let calculator look up inventory from DB
+                        );
+                    })
+                )
+            ).flat();
+
+            const totalDynamicAdjustment = dynamicPricingResults.reduce(
+                (sum, r) => sum + r.totalDynamicDiscount,
+                0
+            );
+
+            if (totalDynamicAdjustment !== 0) {
+                priceBrakedowns = {
+                    ...priceBrakedowns,
+                    totalAmount: priceBrakedowns.totalAmount + totalDynamicAdjustment,
+                    amountBeforeTax: priceBrakedowns.amountBeforeTax + totalDynamicAdjustment,
+                    currentChargeableAmount: priceBrakedowns.currentChargeableAmount + totalDynamicAdjustment,
+                    dynamicPricing: dynamicPricingResults,
+                };
+            } else {
+                priceBrakedowns = {
+                    ...priceBrakedowns,
+                    dynamicPricing: dynamicPricingResults,
+                };
+            }
 
             const addOnPrice = new AddOnPriceClass(
                 selectedAddons,
