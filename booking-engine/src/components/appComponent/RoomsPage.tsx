@@ -76,6 +76,7 @@ const RoomsPage: React.FC = () => {
     RatePlan | Room | null
 >(null);
   const [selectedParsedAddons, setSelectedParsedAddons] = useState<any[]>([]);
+  const [selectedIncludedAddons, setSelectedIncludedAddons] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
   const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
@@ -227,7 +228,8 @@ const RoomsPage: React.FC = () => {
   const onBookNow = async (
     room: ConvertedRoom,
     ratePlan?: RatePlan | Room,
-    parsedAddons: any[] = []
+    parsedAddons: any[] = [],
+    includedAddons: string[] = []
   ) => {
     const token = authState?.accessToken || Cookies.get("accessToken");
     const isAuthenticated = Boolean(token && (authState?.user || token));
@@ -251,6 +253,7 @@ const RoomsPage: React.FC = () => {
 
     try {
       setSelectedParsedAddons(parsedAddons);
+      setSelectedIncludedAddons(includedAddons);
       await handleBookNow(room, ratePlan, parsedAddons);
     } catch (err: any) {
       toast.error(err.message || "Something went wrong!");
@@ -477,8 +480,8 @@ const RoomsPage: React.FC = () => {
                   <RoomCard
                     data={roomCardData}
                     ratePlans={room.ratePlans}
-                    onBookNow={(ratePlan, parsedAddons) =>
-                      onBookNow(room, ratePlan, parsedAddons || [])
+                    onBookNow={(ratePlan, parsedAddons, includedAddons) =>
+                      onBookNow(room, ratePlan, parsedAddons || [], includedAddons || [])
                     }
                     isLoadingPrice={isFetchingPrice}
                     guestDetails={guestDetails}
@@ -519,6 +522,7 @@ const RoomsPage: React.FC = () => {
         selectedRoom={selectedRoom}
         selectedRateplan={getRatePlanCode(selectedRatePlan)}
         parsedAddons={selectedParsedAddons}
+        includedAddons={selectedIncludedAddons}
         checkInDate={checkInDate}
         checkOutDate={checkOutDate}
         onConfirmBooking={confirmBooking}

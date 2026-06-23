@@ -575,6 +575,7 @@ export interface ISearchRatePlan {
     cancellationPolicy: string | null;
     depositPolicy: string | null;
     guaranteePolicy: string | null;
+    includedAddonIds?: string[];
 }
 
 export interface IRoomVideo {

@@ -164,7 +164,7 @@ export const useBookRoom = ({
   }>({});
 
   const checkPriceBeforeBooking = useCallback(
-    async (room: ConvertedRoom, ratePlan: RatePlan | Room, parsedAddons: any[] = []) => {
+    async (room: ConvertedRoom, ratePlan: RatePlan | Room, parsedAddons: any[] = [], includedAddons: string[] = []) => {
       if (!room.has_valid_rate) return false;
 
       const ratePlanCode =
@@ -191,6 +191,7 @@ export const useBookRoom = ({
             guestDistribution: [{ adults: guestDetails?.guests || 1, children: guestDetails?.children || 0, childAges: [] }],
             promoCode: "",
             ...(parsedAddons.length > 0 && { parsedAddons }),
+            ...(includedAddons.length > 0 && { includedAddons }),
           },
           { withCredentials: true },
         );

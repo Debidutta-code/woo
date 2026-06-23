@@ -497,6 +497,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     // Reset the flag for new booking flow
     setAddonsModalClosedViaAddButton(false);
 
+    // Extract includedAddonIds from the rate plan (addons linked via extranet "Manage Addons")
+    const includedAddonIds: string[] = (ratePlan as any).includedAddonIds || [];
+
     try {
       // Store the selected rate plan temporarily for booking
       (window as any).__selectedRatePlan = ratePlan;
@@ -515,14 +518,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         if (addons && addons.length > 0) {
           setShowAddonsModal(true);
         } else {
-          // No addons available, proceed directly to booking
-          await onBookNow(ratePlan);
+          // No addons available, proceed directly to booking with includedAddons
+          await onBookNow(ratePlan, [], includedAddonIds);
           delete (window as any).__selectedRatePlan;
           setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
         }
       } else {
-        // Missing required data, proceed directly to booking
-        await onBookNow(ratePlan);
+        // Missing required data, proceed directly to booking with includedAddons
+        await onBookNow(ratePlan, [], includedAddonIds);
         delete (window as any).__selectedRatePlan;
         setLoadingRatePlans((prev) => ({ ...prev, [key]: false }));
       }
@@ -536,6 +539,9 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     const ratePlan = (window as any).__selectedRatePlan;
     const key =
       "ratePlanCode" in ratePlan ? ratePlan.ratePlanCode : data.room_name;
+
+    // Extract includedAddonIds from the rate plan
+    const includedAddonIds: string[] = (ratePlan as any)?.includedAddonIds || [];
 
     try {
       isContinuingWithAddonsRef.current = true;
@@ -566,8 +572,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       // Mark that modal was closed via Add button to prevent duplicate booking
       setAddonsModalClosedViaAddButton(true);
       
-      // Call the original onBookNow
-      await onBookNow(ratePlan, parsedAddons);
+      // Call the original onBookNow with both parsedAddons and includedAddonIds
+      await onBookNow(ratePlan, parsedAddons, includedAddonIds);
       
       // Clear the temporary storage
       delete (window as any).__selectedRatePlan;
@@ -590,11 +596,14 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         ? ratePlan.ratePlanCode
         : data.room_name;
     
+    // Extract includedAddonIds from the rate plan
+    const includedAddonIds: string[] = (ratePlan as any)?.includedAddonIds || [];
+
     try {
       // Only proceed with booking if modal was not closed via Add button
       // (Add button already calls onBookNow via handleAddonsSelected)
       if (ratePlan && !addonsModalClosedViaAddButton) {
-        await onBookNow(ratePlan);
+        await onBookNow(ratePlan, [], includedAddonIds);
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");

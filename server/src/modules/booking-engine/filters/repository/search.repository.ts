@@ -77,6 +77,17 @@ export class SearchRepository {
                             cancellationPolicy: true,
                             depositPolicy: true,
                             guaranteePolicy: true,
+                            Addons: {
+                                include: {
+                                    addon: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            code: true,
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                 },
@@ -290,6 +301,17 @@ export class SearchRepository {
                             cancellationPolicy: true,
                             depositPolicy: true,
                             guaranteePolicy: true,
+                            Addons: {
+                                include: {
+                                    addon: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            code: true,
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                 },

@@ -52,6 +52,17 @@ export class PropertyRepository {
                             cancellationPolicy: true,
                             depositPolicy: true,
                             guaranteePolicy: true,
+                            Addons: {
+                                include: {
+                                    addon: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            code: true,
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                     propertyVideos: true,
@@ -116,6 +127,17 @@ export class PropertyRepository {
                             cancellationPolicy: true,
                             depositPolicy: true,
                             guaranteePolicy: true,
+                            Addons: {
+                                include: {
+                                    addon: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                            code: true,
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                     propertyVideos: true,

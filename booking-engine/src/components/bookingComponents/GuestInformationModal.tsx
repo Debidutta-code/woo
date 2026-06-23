@@ -59,6 +59,7 @@ interface GuestInformationModalProps {
   selectedRoom: ConvertedRoom | null;
   selectedRateplan:string;
   parsedAddons?: any[];
+  includedAddons?: string[];
   checkInDate: string;
   checkOutDate: string;
   onConfirmBooking: (formData: {
@@ -149,6 +150,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
   selectedRoom,
   selectedRateplan,
   parsedAddons = [],
+  includedAddons = [],
   checkInDate,
   checkOutDate,
   onConfirmBooking,
@@ -280,6 +282,7 @@ const GuestInformationModal: React.FC<GuestInformationModalProps> = ({
           promoCode: "",
           guestEmail: email?.trim() || guestData?.email?.trim() || "",
           ...(addonsPayload.length > 0 && { parsedAddons: addonsPayload }),
+          ...(includedAddons.length > 0 && { includedAddons }),
         },
         { withCredentials: true }
       );

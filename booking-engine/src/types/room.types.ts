@@ -143,6 +143,7 @@ export interface PropertyDetails {
       cancellationPolicy: string | null;
       depositPolicy: string | null;
       guaranteePolicy: string | null;
+      includedAddonIds?: string[];
     }>;
   }>;
   baseAmount: number;

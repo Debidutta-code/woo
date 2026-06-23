@@ -411,6 +411,7 @@ export class SearchService {
                     depositPolicy: ratePlan.depositPolicy?.description ?? null,
                     guaranteePolicy:
                         ratePlan.guaranteePolicy?.description ?? null,
+                    includedAddonIds: ((ratePlan as any).Addons || []).map((a: any) => a.addonId),
                 });
             }
 
