@@ -80,6 +80,22 @@ const addPolicyToRatePlan = async (policyId: string, ratePlanId: string) => {
     }
 }  
 
+const removePolicyToRatePlan = async (policyId: string, ratePlanId: string) => {
+    try {
+        const response = await axiosInstance.post(`/policy/removeToRatePlan`, { policyId, ratePlanId });
+        return response.data;
+    } catch (error: any) {
+        if (error?.response?.data) {
+            return error.response.data
+        } else {
+            return {
+                success: false,
+                message: error?.message
+            }
+        }
+    }
+} 
+
 
 
 export {
@@ -87,5 +103,6 @@ export {
     getPolicies,
     updatePolicy,
     deletePolicyApi,
-    addPolicyToRatePlan
+    addPolicyToRatePlan,
+    removePolicyToRatePlan
 }

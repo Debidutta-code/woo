@@ -1,5 +1,6 @@
 import type { PolicyTypes } from "../interfaces";
 import { createPolicy, getPolicies,addPolicyToRatePlan,deletePolicyApi, updatePolicy } from "../api"
+import { removePolicyToRatePlan } from "../api/policy.api";
 export const createPolicyService = async (policyName: string, type: PolicyTypes, propertyId: string, description?: string) => {
     if (!policyName || !type) {
         return {
@@ -94,6 +95,24 @@ export const addPolicyToRatePlanService = async (policyId: string, ratePlanId: s
     }
     try {
         return await addPolicyToRatePlan(policyId, ratePlanId);
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.message
+        }
+    }
+}
+
+
+export const removePolicyToRatePlanService = async (policyId: string, ratePlanId: string) => {
+    if (!policyId || !ratePlanId) {
+        return {
+            success: false,
+            message: "Policy ID and Rate Plan ID are required"
+        }
+    }
+    try {
+        return await removePolicyToRatePlan(policyId, ratePlanId);
     } catch (error: any) {
         return {
             success: false,

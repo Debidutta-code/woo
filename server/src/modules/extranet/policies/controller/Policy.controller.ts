@@ -133,4 +133,27 @@ export class PolicyController {
                 .json(errorResponse('Internal server error', error?.message));
         }
     }
+
+    public static async removeFromRatePlan(req: CustomRequest, res: Response) {
+    try {
+        const { policyId, ratePlanId } = req.body;
+        if (!policyId || !ratePlanId) {
+            return res
+                .status(400)
+                .json(errorResponse('All fields are required'));
+        }
+
+        const serRes = await PoliciesServices.removeFromRatePlan(  
+            policyId,
+            ratePlanId
+        );
+
+        const resStatus = serRes.success ? 200 : 400;
+        return res.status(resStatus).json(serRes);
+    } catch (error: any) {
+        return res
+            .status(500)
+            .json(errorResponse('Internal server error', error?.message));
+    }
+}
 }

@@ -54,4 +54,12 @@ router
         checkRoleBased('canCreatePolicy'),
         PolicyController.AddToRatePlan
     );
+
+router
+    .route('/removeToRatePlan')
+    .post(
+        protect,
+        checkRoleBased('canDeletePolicy'),
+        PolicyController.removeFromRatePlan
+    );
 export default router;

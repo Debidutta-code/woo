@@ -122,7 +122,9 @@ export class PolicyRepository {
             });
 
             if (duplicatePolicy) {
-                throw new Error('Policy with this name and type already exists');
+                throw new Error(
+                    'Policy with this name and type already exists'
+                );
             }
 
             const policy = await prisma.policy.update({
@@ -219,7 +221,7 @@ export class PolicyRepository {
                 const existingPolicy = policiesById.get(policy.id);
                 if (existingPolicy) {
                     const hasRatePlan = existingPolicy.ratePlans?.some(
-                        (item) => item.id === ratePlan.id
+                        item => item.id === ratePlan.id
                     );
                     if (!hasRatePlan) {
                         existingPolicy.ratePlans = [
@@ -228,10 +230,10 @@ export class PolicyRepository {
                         ];
                     }
                     existingPolicy.ratePlanCode = existingPolicy.ratePlans
-                        ?.map((item) => item.ratePlanCode)
+                        ?.map(item => item.ratePlanCode)
                         .join(', ');
                     existingPolicy.ratePlanName = existingPolicy.ratePlans
-                        ?.map((item) => item.ratePlanName)
+                        ?.map(item => item.ratePlanName)
                         .join(', ');
                     return;
                 }
@@ -382,6 +384,43 @@ export class PolicyRepository {
         } catch (error: any) {
             throw new Error(
                 `Failed to add policy to rate plan: ${error.message}`
+            );
+        }
+    }
+
+    public static async RemovePolicyFromRatePlan(
+        ratePlanId: string,
+        policyType: 'deposit' | 'guarantee' | 'cancellation'
+    ) {
+        try {
+            const ratePlan = await prisma.ratePlan.findUnique({
+                where: { id: toStringId(ratePlanId) },
+            });
+
+            if (!ratePlan) {
+                throw new Error('Rate Plan not found');
+            }
+
+            const updateData: any = {};
+            if (policyType === 'deposit') {
+                updateData.depositPolicyId = null; 
+            } else if (policyType === 'guarantee') {
+                updateData.guaranteePolicyId = null; 
+            } else if (policyType === 'cancellation') {
+                updateData.cancellationPolicyId = null; 
+            } else {
+                throw new Error('Invalid policy type');
+            }
+
+            await prisma.ratePlan.update({
+                where: { id: toStringId(ratePlanId) },
+                data: updateData,
+            });
+
+            return true;
+        } catch (error: any) {
+            throw new Error(
+                `Failed to remove policy from rate plan: ${error.message}` 
             );
         }
     }

@@ -57,6 +57,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { createPolicyService, getPoliciesService, fetchRatePlansService, addPolicyToRatePlanService, deletePolicyService, updatePolicyService } from "./services";
 import type { IPolicy, PolicyTypes, ICPolicy, RatePlan } from "./interfaces";
+import { removePolicyToRatePlanService } from "./services/policy.services";
 
 export default function PoliciesPage() {
     const { propertyId } = useParams<{ propertyId: string }>();
@@ -79,6 +80,7 @@ export default function PoliciesPage() {
     // New state for actions
     const [policyToDelete, setPolicyToDelete] = useState<IPolicy | null>(null);
     const [policyToAssign, setPolicyToAssign] = useState<IPolicy | null>(null);
+    const [policyToRemove, setPolicyToRemove] = useState<IPolicy | null>(null);
     const [selectedRatePlanId, setSelectedRatePlanId] = useState<string>("");
 
     const fetchPolicies = async () => {
@@ -240,6 +242,11 @@ export default function PoliciesPage() {
         setSelectedRatePlanId("");
     };
 
+    const handleRemoveClick = (policy: IPolicy) => {
+        setPolicyToRemove(policy);
+        setSelectedRatePlanId("");
+    };
+
     const handleConfirmAssign = async () => {
         if (!policyToAssign || !selectedRatePlanId) {
             if (!selectedRatePlanId) toast.error("Please select a rate plan");
@@ -257,6 +264,28 @@ export default function PoliciesPage() {
             }
         } catch (error) {
             toast.error("Error assigning policy");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleConfirmRemove = async () => {
+        if (!policyToRemove || !selectedRatePlanId) {
+            if (!selectedRatePlanId) toast.error("Please select a rate plan");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            const response = await removePolicyToRatePlanService(policyToRemove.id, selectedRatePlanId);
+            if (response.success) {
+                toast.success("Policy removed from rate plan successfully");
+                setPolicyToRemove(null);
+                fetchPolicies();
+            } else {
+                toast.error(response.message || "Failed to remove policy");
+            }
+        } catch (error) {
+            toast.error("Error removing policy");
         } finally {
             setIsSubmitting(false);
         }
@@ -443,6 +472,10 @@ export default function PoliciesPage() {
                                                                         <Link2 className="mr-2 h-4 w-4" />
                                                                         Add to Rate Plan
                                                                     </DropdownMenuItem>
+                                                                    <DropdownMenuItem onClick={() => handleRemoveClick(policy)}>
+                                                                        <Link2 className="mr-2 h-4 w-4" />
+                                                                        Remove from Rate Plan
+                                                                    </DropdownMenuItem>
                                                                     <DropdownMenuItem onClick={() => handleEditClick(policy)}>
                                                                         <Pencil className="mr-2 h-4 w-4" />
                                                                         Edit Policy
@@ -587,6 +620,54 @@ export default function PoliciesPage() {
                                 className="bg-black text-white hover:bg-gray-800"
                             >
                                 {isSubmitting ? "Assigning..." : "Add to Rate Plan"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Remove from Rate Plan Dialog */}
+                <Dialog open={!!policyToRemove} onOpenChange={(open) => !open && setPolicyToRemove(null)}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Remove from Rate plan</DialogTitle>
+                            <DialogDescription>
+                                Remove "{policyToRemove?.policyName}" to a rate plan.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="ratePlan">Select Rate Plan</Label>
+                                <Select
+                                    value={selectedRatePlanId}
+                                    onValueChange={setSelectedRatePlanId}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a rate plan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ratePlans.map((plan) => (
+                                            <SelectItem key={plan.id} value={plan.id}>
+                                                {plan.ratePlanName}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setPolicyToRemove(null)}
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleConfirmRemove}
+                                disabled={isSubmitting}
+                                className="bg-black text-white hover:bg-gray-800"
+                            >
+                                {isSubmitting ? "Removing..." : "Remove from Rate Plan"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
