@@ -90,6 +90,13 @@ export default function PropertyDetails({
   const [editEmailLoading, setEditEmailLoading] = useState(false);
   const [deleteEmailId, setDeleteEmailId] = useState<string | null>(null);
   const [deleteEmailLoading, setDeleteEmailLoading] = useState(false);
+  const [addEmailError, setAddEmailError] = useState<string | null>(null);
+  const [editEmailError, setEditEmailError] = useState<string | null>(null);
+
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
   useEffect(() => {
     if (!propertyId) {
       toast.error("Property id not found");
@@ -114,10 +121,19 @@ export default function PropertyDetails({
   };
 
   const handleAddEmail = async () => {
-    if (!addEmailValue.trim()) return;
+    const trimmed = addEmailValue.trim();
+    if (!trimmed) {
+      setAddEmailError("Email is required.");
+      return;
+    }
+    if (!isValidEmail(trimmed)) {
+      setAddEmailError("Please enter a valid email address (e.g. user@example.com).");
+      return;
+    }
+    setAddEmailError(null);
     setAddEmailLoading(true);
     try {
-      const response = await createPropertyEmail(propertyId, addEmailValue.trim());
+      const response = await createPropertyEmail(propertyId, trimmed);
       if (response.success) {
         toast.success("Email added successfully");
         setAddEmailValue("");
@@ -134,10 +150,19 @@ export default function PropertyDetails({
   };
 
   const handleEditEmail = async () => {
-    if (!editingEmail || !editEmailValue.trim()) return;
+    const trimmed = editEmailValue.trim();
+    if (!editingEmail || !trimmed) {
+      setEditEmailError("Email is required.");
+      return;
+    }
+    if (!isValidEmail(trimmed)) {
+      setEditEmailError("Please enter a valid email address (e.g. user@example.com).");
+      return;
+    }
+    setEditEmailError(null);
     setEditEmailLoading(true);
     try {
-      const response = await updatePropertyEmail(editingEmail.id, editEmailValue.trim());
+      const response = await updatePropertyEmail(editingEmail.id, trimmed);
       if (response.success) {
         toast.success("Email updated successfully");
         setEditEmailOpen(false);
@@ -500,7 +525,7 @@ export default function PropertyDetails({
       </Card>
 
       {/* Add Email Dialog */}
-      <Dialog open={addEmailOpen} onOpenChange={setAddEmailOpen}>
+      <Dialog open={addEmailOpen} onOpenChange={(open) => { setAddEmailOpen(open); if (!open) setAddEmailError(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add Email Address</DialogTitle>
@@ -512,9 +537,16 @@ export default function PropertyDetails({
               type="email"
               placeholder="e.g. reservations@hotel.com"
               value={addEmailValue}
-              onChange={(e) => setAddEmailValue(e.target.value)}
+              onChange={(e) => { setAddEmailValue(e.target.value); setAddEmailError(null); }}
               onKeyDown={(e) => e.key === "Enter" && handleAddEmail()}
+              className={addEmailError ? "border-red-500 focus:border-red-600" : ""}
             />
+            {addEmailError && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {addEmailError}
+              </p>
+            )}
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" disabled={addEmailLoading} onClick={() => setAddEmailOpen(false)}>
@@ -528,7 +560,7 @@ export default function PropertyDetails({
       </Dialog>
 
       {/* Edit Email Dialog */}
-      <Dialog open={editEmailOpen} onOpenChange={(open) => { setEditEmailOpen(open); if (!open) setEditingEmail(null); }}>
+      <Dialog open={editEmailOpen} onOpenChange={(open) => { setEditEmailOpen(open); if (!open) { setEditingEmail(null); setEditEmailError(null); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Email Address</DialogTitle>
@@ -540,9 +572,16 @@ export default function PropertyDetails({
               type="email"
               placeholder="e.g. reservations@hotel.com"
               value={editEmailValue}
-              onChange={(e) => setEditEmailValue(e.target.value)}
+              onChange={(e) => { setEditEmailValue(e.target.value); setEditEmailError(null); }}
               onKeyDown={(e) => e.key === "Enter" && handleEditEmail()}
+              className={editEmailError ? "border-red-500 focus:border-red-600" : ""}
             />
+            {editEmailError && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {editEmailError}
+              </p>
+            )}
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" disabled={editEmailLoading} onClick={() => setEditEmailOpen(false)}>

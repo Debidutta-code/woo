@@ -41,11 +41,12 @@ const propertyInfoSchema = z.object({
   propertyName: z
     .string()
     .min(3, "Property name must be at least 3 characters long."),
-  propertyEmail: z.string().email("Please enter a valid email address."),
+  propertyEmail: z.string().min(1, "Email is required.").email("Please enter a valid email address (e.g. user@example.com)."),
   propertyContact: z
     .string()
     .min(10, "Contact must be at least 10 digits.")
-    .max(15),
+    .max(15, "Contact number cannot exceed 15 digits.")
+    .regex(/^\+?[0-9]+$/, "Contact number must contain only digits."),
   description: z
     .string()
     .min(20, "Description must be at least 20 characters.")

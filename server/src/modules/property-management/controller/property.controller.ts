@@ -7,6 +7,7 @@ import {
     PropertyAminityService,
 } from '../services';
 import type { IUpdatePropertyData } from '../types/propertyModel.types';
+import { isValidEmail, isValidContact } from '../utils/validators';
 export class Property {
     public static async createProperty(req: CustomRequest, res: Response) {
         try {
@@ -47,6 +48,24 @@ export class Property {
                 return res
                     .status(400)
                     .json(errorResponse('Provide all the necessary field'));
+            }
+            if (!isValidEmail(propertyEmail)) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide a valid email address (e.g. user@example.com)'
+                        )
+                    );
+            }
+            if (!isValidContact(propertyContact)) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide a valid contact number (10-15 digits, optionally starting with +)'
+                        )
+                    );
             }
             if (!image || image.length == 0) {
                 return res
@@ -119,6 +138,24 @@ export class Property {
                     .json(errorResponse('Property Id Not found'));
             }
             const updateBody: IUpdatePropertyData = req.body;
+            if (updateBody.propertyEmail && !isValidEmail(updateBody.propertyEmail)) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide a valid email address (e.g. user@example.com)'
+                        )
+                    );
+            }
+            if (updateBody.propertyContact && !isValidContact(updateBody.propertyContact)) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide a valid contact number (10-15 digits)'
+                        )
+                    );
+            }
             const serRes = await PropertyService.updatePropertyById(
                 id,
                 updateBody

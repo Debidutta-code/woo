@@ -43,8 +43,8 @@ import { getCreationId } from "@/pages/property/api/api";
 // Zod Validation Schema
 const propertyInfoSchema = z.object({
   propertyName: z.string().min(3, "Property name must be at least 3 characters long."),
-  propertyEmail: z.string().email("Please enter a valid email address."),
-  propertyContact: z.string().min(10, "Please enter a valid contact number.").max(15),
+  propertyEmail: z.string().min(1, "Email is required.").email("Please enter a valid email address ."),
+  propertyContact: z.string().min(10, "Contact number must be at least 10 digits.").max(15, "Contact number cannot exceed 15 digits.").regex(/^\+?[0-9]+$/, "Contact number must contain only digits."),
   description: z.string().min(1, "Description must be at least 20 characters long.").max(5000, "Description cannot exceed 500 characters."),
   propertyCategory: z.object({
     masterCategory: z.object({

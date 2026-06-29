@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { PropertyEmailsService } from '../services';
 import { CustomRequest, errorResponse } from '../../../common/utils';
+import { isValidEmail } from '../utils/validators';
 
 export class PropertyEmailController {
     private propertyEmailsService: PropertyEmailsService;
@@ -21,6 +22,15 @@ export class PropertyEmailController {
             const { email } = req.body;
             if (!email) {
                 return res.status(400).json(errorResponse('email is required'));
+            }
+            if (!isValidEmail(email)) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide a valid email address (e.g. user@example.com)'
+                        )
+                    );
             }
             const result = await this.propertyEmailsService.createPropertyEmail(
                 propertyId,
@@ -126,6 +136,15 @@ export class PropertyEmailController {
             const { email } = req.body;
             if (!email) {
                 return res.status(400).json(errorResponse('email is required'));
+            }
+            if (!isValidEmail(email)) {
+                return res
+                    .status(400)
+                    .json(
+                        errorResponse(
+                            'Please provide a valid email address (e.g. user@example.com)'
+                        )
+                    );
             }
             const result = await this.propertyEmailsService.updatePropertyEmail(
                 id,

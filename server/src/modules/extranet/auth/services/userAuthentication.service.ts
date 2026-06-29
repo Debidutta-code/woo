@@ -15,7 +15,7 @@ export class AuthService {
             var user = await UserAuthRepository.findUserByEmail(email);
             // console.log("user", user)
             if (!user) {
-                return errorResponse('No User Found');
+                return errorResponse('The credentials you entered are incorrect');
             }
             const isValidPassword = await compareHash(password, user.password);
             //  console.log("isValidPassword", isValidPassword)
@@ -38,7 +38,7 @@ export class AuthService {
                     accessToken,
                 });
             } else {
-                return errorResponse('Invalid Password');
+                return errorResponse('The credentials you entered are incorrect');
             }
         } catch (error: any) {
             // console.log(error)
