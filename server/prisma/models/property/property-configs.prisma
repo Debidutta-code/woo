@@ -5,14 +5,11 @@ model PropertyEmails {
   Property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@unique([propertyId, email])
-  @@map("property_emails")
 }
 
 model PropertyConfigs {
-  id         String   @id @default(uuid())
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId String   @unique @map("property_id")
-
+  id                              String       @id @default(uuid())
+  propertyId                      String       @unique @map("property_id")
   pmsIntegrationActive            Boolean      @default(true) @map("pms_integration_active")
   channelManagerIntegrationActive Boolean      @default(true) @map("channel_manager_integration_active")
   selfAriActive                   Boolean      @default(true) @map("self_ari_active")
@@ -22,16 +19,32 @@ model PropertyConfigs {
   commission                      Boolean      @default(false)
   timezone                        String       @default("Asia/Kolkata") @map("timezone")
   baseCurrency                    CurrencyCode @default(INR) @map("base_currency")
-  reservationResetMinutes         Int          @default(570) @map("reservation_reset_minutes")
-  createdAt                       DateTime     @default(now())
-  updatedAt                       DateTime     @updatedAt
+  isAvailableForBooking           Boolean      @default(true) @map("is_available_for_booking")
+  isAvailableForOTA               Boolean      @default(true) @map("is_available_for_ota")
+  isAvailableForBookingEngine     Boolean      @default(true) @map("is_available_for_booking_engine")
+  isSpaModuleEnabled              Boolean      @default(false) @map("is_spa_module_enabled")
+  isLoyaltyProgramEnabled         Boolean      @default(false) @map("is_loyalty_program_enabled")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  property  Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@map("property_configs")
 }
 
+model PropertyActiveLanguages {
+  id         String   @id @default(uuid())
+  propertyId String   @map("property_id")
+  language   Language @default(hi)
+
+  Property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, language])
+  @@map("property_active_languages")
+}
+
 model BookingEngineConfigurations {
   id              String   @id @default(uuid())
-  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   propertyId      String   @unique @map("property_id")
   primaryColor    String   @map("primary_color")
   secondaryColor  String   @map("secondary_color")
@@ -40,6 +53,7 @@ model BookingEngineConfigurations {
   bannerImage     String?  @map("banner_image")
   logo            String
   url             String?  @map("website_url")
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@map("booking_engine_configurations")
 }

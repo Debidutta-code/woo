@@ -15,12 +15,14 @@ const config = {
     agencyJWTSecret: process.env.AGENT_JWT_SECRET,
     agencyJWTExpiresIn: process.env.AGENT_JWT_EXPIRES_IN,
 
-    customerJWTSecret: process.env.CUSTOMER_JWT_SECRET,
-    customerJWTExpiresIn: process.env.CUSTOMER_JWT_EXPIRES_IN,
+    customerJWTSecret: process.env.CUSTOMER_GUEST_JWT_SECRETE,
+    customerJWTExpiresIn: process.env.CUSTOMER_GUEST_JWT_EXPIRES,
 
-    cloudinaryUrl: process.env.CLOUDINARY_URL,
+    otaJWTSecret: process.env.OTA_GUEST_JWT_SECRET,
+    otaJWTExpiresIn: process.env.OTA_GUEST_JWT_EXPIRES,
 
     frontendUrl: process.env.FRONTEND_URL,
+    bookingEngineUrl: process.env.BOOKING_ENGINE_URL,
 
     allowedOrigins: process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(',')
@@ -59,7 +61,10 @@ const config = {
     rateTigerJwtExpiresIn: 24 * 60 * 60,
     rateTigerReservationUrl: process.env.RATETIGER_RESERVATION_URL || '',
     rateTigerAuthUrl: process.env.RATETIGER_AUTHENTICATION_URL || '',
-
+    siteMinderUsername: process.env.SITE_MINDER_USERNAME,
+    siteMinderPassword: process.env.SITE_MINDER_PASSWORD,
+    siteMinderReservationUserName: process.env.SITE_MINDER_RESERVATION_USERNAME,
+    siteMinderReservationPassword: process.env.SITE_MINDER_RESERVATION_PASSWORD,
     //currency exchange api url;
     exchangeApiUrl: process.env.EXCHANGE_API_URL || '',
     //redis config
@@ -69,13 +74,21 @@ const config = {
 
     emailQueue: process.env.EMAIL_QUEUE || 'email-send-queue',
     deadLetterQueue: process.env.DEAD_LETTER_QUEUE || 'email-dead-queue',
+    siteMinderAriQueue: process.env.SITEMINDER_ARI_QUEUE || 'siteminder-ari',
+    siteMinderDeadLetterQueue: process.env.SITEMINDER_DEAD_LETTER_QUEUE || 'siteminder-ari-dead-letter',
     currencyExchangeQueue:
         process.env.CURRENCY_EXCHANGE_QUEUE || 'currency-exchange-queue',
 
-    //S3 CONFIG FOR IMAGE UPLOAD
+    //s3 bucket config
     awsRegion: process.env.AWS_REGION!,
     awsAccessKey: process.env.AWS_ACCESS_KEY!,
     awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
     awsBucketName: process.env.AWS_BUCKET_NAME!,
+    bookingengineUrl: process.env.BOOKING_ENGINE_URL,
+    alertReceipeints: process.env.ALERT_RECIPEINTS
+        ? process.env.ALERT_RECIPEINTS.split(',').map(e => e.trim()).filter(Boolean)
+        : ['no-reply@revchilldirect.com'],
+
+    extranetUrl: process.env.EXTRANET_URL,
 };
 export default config;

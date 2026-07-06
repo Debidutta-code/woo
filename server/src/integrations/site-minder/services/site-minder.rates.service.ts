@@ -1,0 +1,299 @@
+import { getCurrencyConverter, getPropertyBaseCurrency } from '../../../currency-maping/utils';
+import { CurrencyCode } from '../../../tax-system/interfaces/tourist-tax.type';
+import { SiteMinderDao } from '../dao/site-minder.dao';
+import { SiteMinderRateAmountNotifRQ, SiteMinderProcessResult } from '../types/site-minder.types';
+import { ServiceLogger, LogBuilder } from '../../../logs/services/service-log.service';
+import { siteMinderQueue, SiteMinderRateJobRateDetail } from '../../../queue/site-minder.queus';
+
+const logger = new ServiceLogger('SiteMinderARI');
+
+function reverseTax(
+    amountAfterTax: number,
+    rules: Array<{ priority: number; type: string; value: number }>,
+    options: { skipFixed?: boolean } = {}
+): number {
+    if (rules.length === 0) return amountAfterTax;
+    const grouped = new Map<number, Array<{ type: string; value: number }>>();
+    for (const rule of rules) {
+        if (!grouped.has(rule.priority)) grouped.set(rule.priority, []);
+        grouped.get(rule.priority)!.push(rule);
+    }
+    const priorities = [...grouped.keys()].sort((a, b) => b - a);
+    let amount = amountAfterTax;
+    for (const priority of priorities) {
+        const group = grouped.get(priority)!;
+        let percentageSum = 0;
+        let fixedSum = 0;
+        for (const rule of group) {
+            if (rule.type === 'percentage') percentageSum += rule.value / 100;
+            else if (rule.type === 'fixed' && !options.skipFixed) fixedSum += rule.value;
+        }
+        amount = (amount - fixedSum) / (1 + percentageSum);
+    }
+    return amount;
+}
+
+export class SiteMinderRatesService {
+
+    public static async processRatesUpdate(
+        payload: SiteMinderRateAmountNotifRQ,
+        rawXml: string,
+        log: LogBuilder
+    ): Promise<SiteMinderProcessResult> {
+        const { hotelCode, rateAmountMessages } = payload;
+
+        try {
+            // ── Repo: getProperty ─────────────────────────────────────────────
+            let property: any;
+            const t0 = Date.now();
+            try {
+                property = await SiteMinderDao.getProperty(hotelCode);
+                log.addRepoCall({
+                    repoName: 'SiteMinderDao',
+                    method: 'getProperty',
+                    input: { hotelCode },
+                    response: property ?? null,
+                    success: !!property,
+                    durationMs: Date.now() - t0,
+                });
+            } catch (err: any) {
+                log.addRepoCall({
+                    repoName: 'SiteMinderDao',
+                    method: 'getProperty',
+                    input: { hotelCode },
+                    success: false,
+                    durationMs: Date.now() - t0,
+                    error: { message: err?.message },
+                });
+                throw err;
+            }
+
+            if (!property) {
+                log.pushMessage(`Property ${hotelCode} not found`, 'error');
+                return {
+                    success: false,
+                    errors: [{ type: 6, code: 392, text: `Hotel not found for HotelCode=${hotelCode}` }],
+                };
+            }
+
+            log.pushMessage(`Property found: ${property.propertyCode}`, 'info');
+            const { propertyId, propertyCode } = property;
+
+            const readyMessages: Array<{
+                start: string;
+                end: string;
+                roomTypeCode: string;
+                ratePlanCode: string;
+                ratePlanName: string;
+                roomTypeName: string;
+                rates: SiteMinderRateJobRateDetail;
+            }> = [];
+
+            for (const message of rateAmountMessages) {
+                const { statusApplicationControl, rates } = message;
+                const { start, end, invTypeCode: roomTypeCode, ratePlanCode } = statusApplicationControl;
+
+                if (!ratePlanCode) continue;
+
+                // ── Repo: getRatePlanName ─────────────────────────────────────
+                let ratePlanName: any;
+                const t1 = Date.now();
+                try {
+                    ratePlanName = await SiteMinderDao.getRatePlanName(ratePlanCode);
+                    log.addRepoCall({
+                        repoName: 'SiteMinderDao',
+                        method: 'getRatePlanName',
+                        input: { ratePlanCode },
+                        response: { ratePlanName: ratePlanName ?? null },
+                        success: !!ratePlanName,
+                        durationMs: Date.now() - t1,
+                    });
+                } catch (err: any) {
+                    log.addRepoCall({
+                        repoName: 'SiteMinderDao',
+                        method: 'getRatePlanName',
+                        input: { ratePlanCode },
+                        success: false,
+                        durationMs: Date.now() - t1,
+                        error: { message: err?.message },
+                    });
+                    throw err;
+                }
+
+                if (!ratePlanName) {
+                    log.pushMessage(`Rate plan ${ratePlanCode} not found`, 'error');
+                    return {
+                        success: false,
+                        errors: [{ type: 12, code: 249, text: 'Rate code not found for this hotel' }],
+                    };
+                }
+
+                // ── Repo: getRoomTypeName ─────────────────────────────────────
+                let roomTypeName: any;
+                const t2 = Date.now();
+                try {
+                    roomTypeName = await SiteMinderDao.getRoomTypeName(roomTypeCode, propertyCode);
+                    log.addRepoCall({
+                        repoName: 'SiteMinderDao',
+                        method: 'getRoomTypeName',
+                        input: { roomTypeCode, hotelCode },
+                        response: { roomTypeName: roomTypeName ?? null },
+                        success: !!roomTypeName,
+                        durationMs: Date.now() - t2,
+                    });
+                } catch (err: any) {
+                    log.addRepoCall({
+                        repoName: 'SiteMinderDao',
+                        method: 'getRoomTypeName',
+                        input: { roomTypeCode, hotelCode },
+                        success: false,
+                        durationMs: Date.now() - t2,
+                        error: { message: err?.message },
+                    });
+                    throw err;
+                }
+
+                if (!roomTypeName) {
+                    log.pushMessage(`Room type ${roomTypeCode} not found`, 'error');
+                    return {
+                        success: false,
+                        errors: [{ type: 12, code: 402, text: 'Room type code not found for this hotel' }],
+                    };
+                }
+
+                const maxOccupancy = await SiteMinderDao.getRoomMaxAdults(roomTypeCode, propertyCode);
+                if (maxOccupancy === null || maxOccupancy === undefined) {
+                    log.pushMessage(`Max occupancy not configured for room ${roomTypeCode}`, 'error');
+                    return {
+                        success: false,
+                        errors: [{ type: 12, code: 397, text: 'Invalid number of adults' }],
+                    };
+                }
+
+                if (rates.baseByGuestAmts.length !== maxOccupancy) {
+                    log.pushMessage(
+                        `Invalid number of adults: got ${rates.baseByGuestAmts.length}, expecting ${maxOccupancy}`,
+                        'error'
+                    );
+                    return {
+                        success: false,
+                        errors: [{ type: 12, code: 397, text: `Invalid number of adults: expecting ${maxOccupancy}` }],
+                    };
+                }
+
+                const t3 = Date.now();
+                const taxRules = await SiteMinderDao.getActiveTaxRulesForRatePlan(ratePlanCode, propertyCode);
+                log.addRepoCall({
+                    repoName: 'SiteMinderDao',
+                    method: 'getActiveTaxRulesForRatePlan',
+                    input: { ratePlanCode, hotelCode },
+                    response: { count: taxRules?.length ?? 0, taxRules },
+                    success: true,
+                    durationMs: Date.now() - t3,
+                });
+
+                const incomingCurrency = rates.baseByGuestAmts.find(b => b.currencyCode)?.currencyCode as CurrencyCode | undefined;
+                const fromCurrency = incomingCurrency ?? await getPropertyBaseCurrency(propertyId);
+                const { convert, baseCurrency } = await getCurrencyConverter(propertyId, fromCurrency);
+
+                const finalBaseAmounts = rates.baseByGuestAmts.map((b, i) => {
+                    const hasAmountBeforeTax = b.amountBeforeTax !== undefined;
+                    const hasAmountAfterTax = b.amountAfterTax !== undefined;
+                    
+                    let rawAmount = 0;
+                    let shouldBacktrack = false;
+                    
+                    if (hasAmountBeforeTax) {
+                        rawAmount = b.amountBeforeTax!;
+                        shouldBacktrack = false;
+                    } else if (hasAmountAfterTax) {
+                        rawAmount = b.amountAfterTax!;
+                        if (property.amountBeforeTax) {
+                            shouldBacktrack = false;
+                        } else if (property.amountAfterTax) {
+                            shouldBacktrack = true;
+                        } else {
+                            shouldBacktrack = true;
+                        }
+                    } else {
+                        rawAmount = 0;
+                        shouldBacktrack = false;
+                    }
+
+                    const convertedAmount = convert(rawAmount);
+                    const finalAmount = shouldBacktrack
+                        ? Number(reverseTax(convertedAmount, taxRules).toFixed(2))
+                        : Number(convertedAmount.toFixed(2));
+
+                    return {
+                        numberOfGuests: b.numberOfGuests ?? i + 1,
+                        ageQualifyingCode: '10' as const,
+                        amountBeforeTax: finalAmount,
+                    };
+                });
+
+                const childBaseAmount = rates.additionalGuestAmounts?.find(
+                    a => String(a.ageQualifyingCode) === '8'
+                )?.amount ?? 0;
+
+                let shouldBacktrackChild = true;
+                if (property.amountBeforeTax) {
+                    shouldBacktrackChild = false;
+                } else if (property.amountAfterTax) {
+                    shouldBacktrackChild = true;
+                }
+
+                const convertedChildAmount = shouldBacktrackChild
+                    ? reverseTax(convert(childBaseAmount), taxRules, { skipFixed: true })
+                    : convert(childBaseAmount);
+
+                const maxChildren = await SiteMinderDao.getRoomMaxChildren(roomTypeCode, propertyCode);
+
+                const childBaseAmounts = (convertedChildAmount > 0 && maxChildren > 0)
+                    ? Array.from({ length: maxChildren }, (_, i) => ({
+                        numberOfGuests: i + 1,
+                        ageQualifyingCode: '8' as const,
+                        amountBeforeTax: convertedChildAmount * (i + 1),
+                    }))
+                    : [];
+
+                const childAdditionalAmounts = (convertedChildAmount > 0 && maxChildren > 0)
+                    ? [{ ageQualifyingCode: '8' as const, amount: convertedChildAmount }]
+                    : [];
+
+                readyMessages.push({
+                    start,
+                    end,
+                    roomTypeCode,
+                    ratePlanCode,
+                    ratePlanName,
+                    roomTypeName,
+                    rates: {
+                        currencyCode: baseCurrency,
+                        baseByGuestAmounts: [...finalBaseAmounts, ...childBaseAmounts],
+                        additionalGuestAmounts: childAdditionalAmounts,
+                    },
+                });
+            }
+
+            // ── Enqueue Rates Jobs in Background ──────────────────────────────
+            await siteMinderQueue.enqueueRatesMessages({
+                hotelCode,
+                propertyCode,
+                propertyId,
+                echoToken: payload.echoToken,
+                rateAmountMessages: readyMessages,
+            });
+
+            log.pushMessage('Rates accepted and enqueued successfully', 'info');
+            return { success: true };
+
+        } catch (error: any) {
+            log.setError(error);
+            return {
+                success: false,
+                errors: [{ type: 6, code: 392, text: error.message || 'Internal error' }],
+            };
+        }
+    }
+}

@@ -7,7 +7,7 @@ import {
 } from '../interfaces';
 import { GOOGLE_FEED_CONFIG } from '../config/google.config';
 import { GoogleFeedsRepository } from '../dao';
-import { RoomBookingService } from '../../../modules/booking-engine/reservation-pricing/service';
+import { RoomBookingService } from '../../../booking-engine/service';
 
 export class GoogleFeedsService {
     /**
@@ -30,7 +30,7 @@ export class GoogleFeedsService {
             latitude: p.propertyAddress.latitude,
             longitude: p.propertyAddress.longitude,
             phoneNumber: p.propertyContact,
-            websiteUrl: `https://woohobooking.trip-swift.ai/hotel/?id=${p.id}`,
+            websiteUrl: `https://bookings.revchilltech.com/Rooms/?code=${p.propertyCode}`,
         }));
     }
 
@@ -93,7 +93,7 @@ export class GoogleFeedsService {
                 tax: 0,
                 otherFees: 0,
                 currencyCode: 'USD',
-                landingPageUrl: `https://woohobooking.trip-swift.ai/hotel/?id=${property.id}&checkin={checkin}&checkout={checkout}&adults={adults}&children={children}&rooms={rooms}`,
+                landingPageUrl: `https://bookings.revchilltech.com/Rooms/?code=${property.propertyCode}&checkin={checkin}&checkout={checkout}&adults={adults}&children={children}&rooms={rooms}`,
             });
         }
 

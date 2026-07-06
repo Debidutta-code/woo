@@ -1,0 +1,33 @@
+model Spa {
+  id            String            @id @default(uuid())
+  name          String
+  itemCode      String            @map("item_code")
+  description   String            @map("description")
+  benefits      String[]          @map("benefits")
+  conditions    Json              @map("conditions")
+  isInclusive   Boolean           @map("is_inclusive")
+  images        String[]          @map("images")
+  serviceTime   Int               @map("service_time")
+  location      String            @map("location")
+  createdBy     String            @map("created_by")
+  categoryId    String            @map("category_id")
+  subCategoryId String            @map("sub_category_id")
+  isActive      Boolean           @map("is_active")
+  discountValue Float?            @map("discount_value")
+  currencyCode  CurrencyCode?     @default(AED) @map("currency_code")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  propertyId    String            @map("property_id")
+  SlotBookings  SlotBooking[]
+  SpaDates      SpaDates[]
+  Category      SpaCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  User          User              @relation("SpaCreatedBy", fields: [createdBy], references: [id], onDelete: Cascade)
+  Property      Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  SubCategory   SpaSubCategory    @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  AssignedSpas  UserAssignedSpa[] @relation("SpaToUserAssignedSpa")
+
+  @@unique([name, propertyId])
+  @@unique([itemCode, propertyId])
+  @@map("spa_module")
+}
+
+

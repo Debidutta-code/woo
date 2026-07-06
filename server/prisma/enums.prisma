@@ -6,6 +6,7 @@ enum Role {
   hotel_manager
   staff
   revenue_manager
+  spa_manager
 }
 
 enum geoRestrictionType {
@@ -256,6 +257,8 @@ enum BookingStatus {
   expired
   modified
   no_show
+  checked_in
+  checked_out
 }
 
 enum AmenityType {
@@ -381,23 +384,6 @@ enum PromotionType {
   device_specific
 }
 
-enum SeasonalDynamicPricingEnumType {
-  season
-  holiday
-  weekend
-}
-
-enum WeekEndDays {
-  friday
-  saturday
-  sunday
-}
-
-enum DynamicPricingPricingType {
-  increase
-  decrease
-}
-
 enum TicketStatus {
   open
   in_progress
@@ -410,4 +396,144 @@ enum TicketPriority {
   medium
   high
   urgent
+}
+
+enum Platforms {
+  web
+  mobile
+  desktop
+}
+
+enum AddOnType {
+  included
+  selected
+}
+
+enum RestrictionType {
+  increase
+  decrease
+  payLater
+}
+
+enum DynamicPricingPricingType {
+  increase
+  decrease
+}
+
+enum SeasonalDynamicPricingEnumType {
+  season
+  holiday
+  weekend
+}
+
+enum WeekEndDays {
+  friday
+  saturday
+  sunday
+}
+
+enum PromotionApplyType {
+  user_applied
+  auto_applied
+}
+enum Language {
+  zh
+  hi
+  es
+  fr
+  ar
+  bn
+  pt
+  ru
+  ur
+  id
+  de
+  ja
+  pcm
+  mr
+  te
+  tr
+  ta
+  yue
+  vi
+  wuu
+  ko
+  ha
+  fa
+  th
+  gu
+  kn
+  jv
+  it
+  pl
+  ml
+  or
+  pa
+  uk
+  bho
+  su
+  ro
+  az
+  mai
+  my
+  nan
+  yo
+  hak
+  ig
+  uz
+  sd
+  am
+  ff
+  sr
+  om
+  hr
+  cs
+  nl
+  ku
+  si
+  hne
+  zu
+  km
+  tk
+  ne
+  as
+  mad
+  so
+  mwr
+  mag
+  hu
+  ccg
+  el
+  dcc
+  ak
+  kk
+  ps
+  xh
+  ilo
+  apd
+  ht
+  sn
+  mg
+  za
+  rw
+  af
+  ug
+  mos
+  tg
+  srk
+  be
+  bal
+  sk
+  da
+  fi
+  no
+  he
+  lo
+  bg
+  lt
+  lv
+  sl
+  et
+  is
+  mt
 }

@@ -1,23 +1,18 @@
 model CreationLoyaltyConfig {
-  id         String   @id @default(uuid())
-  creationId String   @unique @map("creation_id")
-  Creation   Creation @relation(fields: [creationId], references: [id])
-
-  loyaltyDiscountType DiscountType  @default(percentage) @map("loyalty_discount_type")
-  discountValue       Int           @map("discount_value")
-  currencyCode        CurrencyCode? @default(INR) @map("currency_code")
-
-  BasicLoyaltyProgram       BasicLoyaltyProgram?
-  AdvanceLoyaltyProgram     AdvanceLoyaltyProgram?
-  loyaltyConditions         LoyaltyConditions[]
-  loyaltySpecialConditions  LoyaltySpecialCondition[]
+  id                        String                      @id @default(uuid())
+  creationId                String                      @unique @map("creation_id")
+  loyaltyDiscountType       DiscountType                @default(percentage) @map("loyalty_discount_type")
+  discountValue             Int                         @map("discount_value")
+  currencyCode              CurrencyCode?               @default(INR) @map("currency_code")
+  createdAt                 DateTime                    @default(now())
   LoyaltyProgramFieldConfig LoyaltyProgramFieldConfig[]
+  BasicLoyaltyProgram       BasicLoyaltyProgram?
+  CreationGuest             CreationGuest[]
+  loyaltyConditions         LoyaltyConditions[]
+  LoyalityLevels            LoyalityLevel[]
+  Creation                  Creation                    @relation(fields: [creationId], references: [id])
+  loyaltySpecialConditions  LoyaltySpecialCondition[]
   PropertyLoyaltyConfig     PropertyLoyaltyConfig[]
-
-  CreationGuest  CreationGuest[] // ← replace LoyalityGuests with this
-  LoyalityLevels LoyalityLevel[] // ← add this
-
-  createdAt DateTime @default(now())
 
   @@map("loyalty_program_configs")
 }

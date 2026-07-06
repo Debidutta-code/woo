@@ -1,7 +1,6 @@
 model AddonAvailability {
   id           String   @id @default(uuid())
   addonId      String
-  // propertyId   String
   date         DateTime @db.Date
   price        Float
   currencyCode String   @default("INR") @db.VarChar(5)
@@ -11,5 +10,4 @@ model AddonAvailability {
   addon        Addon    @relation(fields: [addonId], references: [id], onDelete: Cascade)
 
   @@unique([addonId, date])
-  @@map("addon_availability")
 }

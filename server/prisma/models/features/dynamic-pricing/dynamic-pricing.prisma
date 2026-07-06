@@ -1,10 +1,13 @@
 model DynamicPricing {
-  id                           String                         @id @default(cuid())
-  propertyId                   String                         @unique
-  Property                     Property                       @relation(fields: [propertyId], references: [id])
+  id           String @id @default(uuid())
+  propertyId   String @unique @map("property_id")
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   OccupancyBasedDynamicPricing OccupancyBasedDynamicPricing[]
-  SeasonalDynamicPricings      SeasonalDynamicPricing[]
-  WeekendDynamicPricing        WeekendDynamicPricing[]
+  SeasonalDynamicPricings       SeasonalDynamicPricing[]
+  WeekendDynamicPricing         WeekendDynamicPricing[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  @@map("dynamic_pricing")
+  @@index([propertyId])
+  @@map("dynamic_pricings")
 }

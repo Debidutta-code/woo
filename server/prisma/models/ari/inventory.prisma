@@ -2,15 +2,12 @@ model Inventory {
   id           String   @id @default(uuid())
   propertyCode String   @map("property_code")
   roomTypeCode String   @map("room_type_code")
-  roomId       String   @map("room_id")
   date         DateTime @db.Date
   availability Int
   ratePlans    String[] @default([]) @map("rate_plans")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([roomId, date])
   @@unique([propertyCode, roomTypeCode, date])
   @@index([propertyCode])
   @@index([roomTypeCode])

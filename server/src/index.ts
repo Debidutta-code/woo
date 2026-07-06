@@ -3,8 +3,8 @@ import { app } from './app';
 import { initializeExpressRoutes } from './config/route.config';
 import { connectPostgres, connectMongo } from './config/index';
 import { createServer } from 'http';
-import { CurrencyQueue, EmailQueue } from './infrastructure/queue';
-import { socketManager } from './infrastructure/socket';
+import { socketManager } from './socket';
+import { CurrencyQueue, EmailQueue } from './queue';
 
 const httpServer = createServer(app);
 

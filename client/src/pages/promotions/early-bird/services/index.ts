@@ -1,2 +1,0 @@
-import {createEarlyBirdPromotionService, getEarlyBirdPromotionsByPropertyService, getEarlyBirdPromotionByIdService, updateEarlyBirdPromotionService, deleteEarlyBirdPromotionService, toggleEarlyBirdPromotionStatusService} from './early-bird.service';
-export {createEarlyBirdPromotionService, getEarlyBirdPromotionsByPropertyService, getEarlyBirdPromotionByIdService, updateEarlyBirdPromotionService, deleteEarlyBirdPromotionService, toggleEarlyBirdPromotionStatusService};

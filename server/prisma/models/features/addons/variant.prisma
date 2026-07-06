@@ -3,10 +3,10 @@ model AddonVariant {
   code          String           @unique
   name          String
   subcategoryId String
-  subCategory   AddonSubCategory @relation(fields: [subcategoryId], references: [id])
-  addons        Addon[]          @relation("AddonToVariant")
+  propertyId    String?          @map("property_id")
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
-
-  @@map("addon_variant")
+  addons        Addon[]          @relation("AddonToVariant")
+  Property      Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  subCategory   AddonSubCategory @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
 }
