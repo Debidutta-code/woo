@@ -1,0 +1,43 @@
+export interface RoomTypes {
+    id: string;
+    roomName: string;
+    roomType: string;
+    totalRoom: number;
+    maxNumberOfAdults: number;
+    maxNumberOfChildren: number;
+    _translations?:{
+        roomName:string;
+        roomType:string;
+        description?:string;
+        
+    }
+}
+
+
+export interface SelectedRoom {
+    id: string;
+    roomName: string;
+    roomType: string;
+    totalRoom: number;
+    availableRooms: number;
+    startDate: string;
+    endDate: string;
+    pushFromCalender?: boolean; // Add this
+    
+
+}
+
+export interface Loader {
+    isLoading: boolean;
+    text: string;
+}
+export interface IRoomDateAvailability {
+    date: string;
+    availability: number;
+}
+
+export interface IRoomAvailabilityResponse {
+    success: boolean;
+    message: string;
+    data: IRoomDateAvailability[];
+}

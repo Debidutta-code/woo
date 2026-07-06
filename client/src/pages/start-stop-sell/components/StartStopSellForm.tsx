@@ -1,0 +1,335 @@
+import { useEffect, useState } from "react";
+import { Ban, PlayCircle, CalendarIcon } from "lucide-react";
+import { useStartStopSellService } from "../services/index";
+import axiosInstance from "@/components/axiosInstance";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+
+interface RatePlan {
+    id: string;
+    ratePlanCode: string;
+    ratePlanName: string;
+    _translations?: {
+        ratePlanName: string;
+    };
+}
+
+interface RoomType {
+    id: string;
+    roomName: string;
+    roomType: string;
+    _translations: {
+        roomName: string;
+        roomType: string;
+        description: string;
+    }
+}
+
+interface FormData {
+    from: Date;
+    to: Date;
+    ratePlanCode: string;
+    roomTypeCode: string;
+    isSellStop: boolean;
+}
+
+interface StartStopSellFormProps {
+    propertyId: string;
+}
+
+export default function StartStopSellForm({ propertyId }: StartStopSellFormProps) {
+    const { t } = useTranslation();
+    const [ratePlans, setRatePlans] = useState<RatePlan[]>([]);
+    const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [fromDateOpen, setFromDateOpen] = useState(false);
+    const [toDateOpen, setToDateOpen] = useState(false);
+    const [formData, setFormData] = useState<FormData>({
+        from: new Date(),
+        to: new Date(),
+        ratePlanCode: "",
+        roomTypeCode: "",
+        isSellStop: true,
+    });
+
+    useEffect(() => {
+        if (propertyId) {
+            fetchPropertyData();
+        }
+    }, [propertyId]);
+
+    const fetchPropertyData = async () => {
+        try {
+            setIsLoading(true);
+            const axios = axiosInstance();
+
+            // Fetch rate plans
+            try {
+                const ratePlansResponse = await axios.get(`/ari/rate-plan/${propertyId}`);
+                if (ratePlansResponse.data?.data) {
+                    const ratePlansData = ratePlansResponse.data.data || [];
+                    setRatePlans(ratePlansData);
+                }
+            } catch (rateError) {
+                console.warn("Failed to fetch rate plans:", rateError);
+            }
+
+            // Fetch room types
+            try {
+                const roomTypesResponse = await axios.get(`/property-management/property/${propertyId}/room/inv-setup`);
+                if (roomTypesResponse.data?.data) {
+                    const roomTypesData = roomTypesResponse.data.data || [];
+                    setRoomTypes(roomTypesData);
+                }
+            } catch (roomError) {
+                console.warn("Failed to fetch room types:", roomError);
+            }
+        } catch (error) {
+            console.error("Error fetching property data:", error);
+            toast.error(t("StartStopSell.toast.failedToLoadData"));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSubmit = async () => {
+        // Validation
+        if (!formData.ratePlanCode && !formData.roomTypeCode) {
+            toast.error(t("StartStopSell.toast.selectAtLeastOne"));
+            return;
+        }
+        if (!formData.from || !formData.to) {
+            toast.error(t("StartStopSell.toast.selectBothDates"));
+            return;
+        }
+        if (formData.to < formData.from) {
+            toast.error(t("StartStopSell.toast.toDateEarlier"));
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            // Format dates to YYYY-MM-DD without timezone conversion
+            const formatDateToLocal = (date: Date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            const dataToSend = {
+                ...formData,
+                from: formatDateToLocal(formData.from),
+                to: formatDateToLocal(formData.to),
+            };
+
+            // Call the service to handle start/stop sell
+            const response = await useStartStopSellService(propertyId, {
+                from: new Date(dataToSend.from),
+                to: new Date(dataToSend.to),
+                ratePlanCode: dataToSend.ratePlanCode,
+                roomTypeCode: dataToSend.roomTypeCode,
+                isSellStop: dataToSend.isSellStop,
+            });
+
+            if (response.success) {
+                toast.success(response.message || (formData.isSellStop ? t("StartStopSell.toast.saleStopped") : t("StartStopSell.toast.saleStarted")));
+                // Reset form
+                setFormData({
+                    from: new Date(),
+                    to: new Date(),
+                    ratePlanCode: "",
+                    roomTypeCode: "",
+                    isSellStop: true,
+                });
+            } else {
+                toast.error(response.message || t("StartStopSell.toast.failedToProcess"));
+            }
+        } catch (error) {
+            console.error("Start/Stop Sell Error:", error);
+            toast.error(t("StartStopSell.toast.errorOccurred"));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isLoading && ratePlans.length === 0 && roomTypes.length === 0) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">{t("StartStopSell.form.loadingData")}</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="grid gap-6">
+                {/* Action Type */}
+                <div className="grid gap-2">
+                    <Label>{t("StartStopSell.form.action")}</Label>
+                    <div className="flex gap-4">
+                        <Button
+                            variant={formData.isSellStop ? "default" : "outline"}
+                            onClick={() => setFormData({ ...formData, isSellStop: true })}
+                            className="flex items-center gap-2"
+                        >
+                            <Ban className="w-4 h-4" />
+                            {t("StartStopSell.form.stopSales")}
+                        </Button>
+                        <Button
+                            variant={!formData.isSellStop ? "default" : "outline"}
+                            onClick={() => setFormData({ ...formData, isSellStop: false })}
+                            className="flex items-center gap-2"
+                        >
+                            <PlayCircle className="w-4 h-4" />
+                            {t("StartStopSell.form.startSales")}
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Rate Plan Selection */}
+                <div className="grid gap-2">
+                    <Label>{t("StartStopSell.form.ratePlan")}</Label>
+                    <Select
+                        value={formData.ratePlanCode}
+                        onValueChange={(value) =>
+                            setFormData({ ...formData, ratePlanCode: value })
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder={t("StartStopSell.form.selectRatePlan")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {ratePlans.map((plan) => (
+                                <SelectItem key={plan.id} value={plan.ratePlanCode}>
+                                    {plan._translations?.ratePlanName ?? plan.ratePlanName}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Room Type Selection */}
+                <div className="grid gap-2">
+                    <Label>{t("StartStopSell.form.roomType")}</Label>
+                    <Select
+                        value={formData.roomTypeCode}
+                        onValueChange={(value) =>
+                            setFormData({ ...formData, roomTypeCode: value })
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder={t("StartStopSell.form.selectRoomType")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {roomTypes.map((room) => (
+                                <SelectItem key={room.id} value={room.roomType}>
+                                    {room._translations?.roomName ?? room.roomName}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Date Range */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid gap-2">
+                        <Label>{t("StartStopSell.form.fromDate")}</Label>
+                        <Popover open={fromDateOpen} onOpenChange={setFromDateOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "justify-start text-left font-normal",
+                                        !formData.from && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {formData.from ? format(formData.from, "PPP") : t("StartStopSell.form.pickDate")}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={formData.from}
+                                    onSelect={(date) => {
+                                        date && setFormData({ ...formData, from: date });
+                                        setFromDateOpen(false);
+                                    }}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>{t("StartStopSell.form.toDate")}</Label>
+                        <Popover open={toDateOpen} onOpenChange={setToDateOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={cn(
+                                        "justify-start text-left font-normal",
+                                        !formData.to && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {formData.to ? format(formData.to, "PPP") : t("StartStopSell.form.pickDate")}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={formData.to}
+                                    onSelect={(date) => {
+                                        date && setFormData({ ...formData, to: date });
+                                        setToDateOpen(false);
+                                    }}
+                                    initialFocus
+                                    disabled={(date) => date < formData.from}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex gap-4 pt-4">
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className={formData.isSellStop ? "bg-destructive hover:bg-destructive/90" : "bg-success hover:bg-success/90"}
+                    >
+                        {isSubmitting ? t("StartStopSell.form.processing") : formData.isSellStop ? t("StartStopSell.form.stopSales") : t("StartStopSell.form.startSales")}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            setFormData({
+                                from: new Date(),
+                                to: new Date(),
+                                ratePlanCode: "",
+                                roomTypeCode: "",
+                                isSellStop: true,
+                            });
+                        }}
+                        disabled={isSubmitting}
+                    >
+                        {t("StartStopSell.form.reset")}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}

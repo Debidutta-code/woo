@@ -1,0 +1,349 @@
+import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import type { ILoader } from "../dashboard/interface";
+import {
+  createLoyaltyProgramService,
+  updateLoyaltyProgramService,
+  createCreationLoyalityService,
+  getLoyalityByCreationService,
+  updateCreationLoyalityService
+} from "./services";
+import type {
+  ICloyaltyProgram,
+  ICreationLoyality
+} from "./interfaces";
+import Loader from "@/components/Loader/Loader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import ImageUploadModal from "@/components/property/ImageUploadModal";
+import CreateLoyaltyForm from "./components/CreateLoyaltyForm";
+import DiscountsTab from "./components/DiscountsTab";
+import BasicConfigTab from "./components/BasicConfigTab";
+import AddPropertyToLoyalty from "./components/AddPropertyToLoyalty";
+import BackButton from "@/components/shared/BackButton";
+import { useTranslation } from "react-i18next";
+import { getAllActiveLoyalityProperties } from "./services/creation-loyality.service";
+
+interface Property {
+  id: string;
+  code: string,
+  name: string,
+  _translations?: {
+    propertyName: string;
+    description: string;
+  }
+
+}
+
+export default function Loyalty() {
+    const { t } = useTranslation();
+
+  const { creationId } = useParams();
+  const [loader, setLoader] = useState<ILoader>({
+    isLoading: true,
+    message: "Loading Loyalty Configuration..."
+  });
+
+  const [creationLoyalty, setCreationLoyalty] = useState<ICreationLoyality | null>(null);
+  const [hasCreationLoyalty, setHasCreationLoyalty] = useState<boolean>(false);
+
+  const [basicProgram, setBasicProgram] = useState<ICloyaltyProgram | null>(null);
+  // const [advanceProgram, setAdvanceProgram] = useState<IAdvanceLoyaltyprogram | null>(null);
+
+  const [activeTab, setActiveTab] = useState<"discounts" | "basic" | "properties">("basic");
+  const [availableProperties, setAvailableProperties] = useState<Property[]>([]);
+
+  // Creation Loyalty Form State
+  const [discountType, setDiscountType] = useState<string>("percentage");
+  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [currencyCode, setCurrencyCode] = useState<string>("USD");
+
+  // Basic Configuration State
+  const [logos, setLogos] = useState<string[]>([]);
+  const [isBasicActive, setIsBasicActive] = useState<boolean>(true);
+  const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    if (creationId) {
+      fetchLoyaltyData();
+      fetchPropertiesByCreation(creationId);
+    }
+  }, [creationId]);
+
+  const fetchPropertiesByCreation = async (creationId: string) => {
+    try {
+      const response = await getAllActiveLoyalityProperties(creationId);
+      if (response.success && response.data) {
+        // Map the response to match the Property interface
+      
+        setAvailableProperties(response.data);
+      } else {
+        toast.error(response.message || t("Loyalty.toast.failedFetchProperties"));
+        setAvailableProperties([]);
+      }
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      toast.error(t("Loyalty.toast.failedFetchProperties"));
+      setAvailableProperties([]);
+    }
+  };
+
+  const fetchLoyaltyData = async () => {
+    if (!creationId) return;
+
+    setLoader({ isLoading: true, message: t("Loyalty.toast.loadingConfig") });
+    try {
+      const creationResponse = await getLoyalityByCreationService(creationId);
+
+      if (creationResponse.success && creationResponse.data) {
+        const data = creationResponse.data;
+
+        // Set creation loyalty
+        setCreationLoyalty(data);
+        setHasCreationLoyalty(true);
+        setDiscountType(data.loyaltyDiscountType);
+        setDiscountValue(data.discountValue);
+        setCurrencyCode(data.currencyCode || "USD");
+
+        // Set basic program if exists
+        if (data.BasicLoyaltyProgram) {
+          setBasicProgram(data.BasicLoyaltyProgram as any);
+          setLogos(data.BasicLoyaltyProgram.logo || []);
+          setIsBasicActive(data.BasicLoyaltyProgram.isActive);
+        } else {
+          setBasicProgram(null);
+          setLogos([]);
+        }
+
+
+      } else {
+        setHasCreationLoyalty(false);
+      }
+    } catch (error) {
+      console.error("Error fetching loyalty data:", error);
+      setHasCreationLoyalty(false);
+    } finally {
+      setLoader({ isLoading: false, message: "" });
+    }
+  };
+
+  const handleCreateCreationLoyalty = async (data: { discountType: string; discountValue: number; currencyCode: string }) => {
+    if (!creationId) return;
+
+   if (data.discountValue <= 0) {
+      toast.error(t("Loyalty.toast.discountValueRequired"));
+      return;
+    }
+
+    if (data.discountType === "percentage" && data.discountValue > 100) {
+      toast.error(t("Loyalty.toast.percentageExceed"));
+      return;
+    }
+
+    setLoader({ isLoading: true, message: t("Loyalty.toast.creatingConfig") });
+    try {
+      const response = await createCreationLoyalityService({
+        creationId,
+        loyaltyDiscountType: data.discountType as any,
+        discountValue: data.discountValue,
+        currencyCode: data.currencyCode as any
+      });
+
+      if (response.success) {
+        toast.success(t("Loyalty.successMessage"));
+        await fetchLoyaltyData();
+      } else {
+        toast.error(response.message || t("Loyalty.errorMessage"));
+      }
+    } catch (error) {
+      toast.error(t("Loyalty.errorMessage"));
+    } finally {
+      setLoader({ isLoading: false, message: "" });
+    }
+  };
+
+  const handleUpdateDiscounts = async () => {
+    if (!creationId || !creationLoyalty) return;
+
+    if (discountValue <= 0) {
+      toast.error(t("Loyalty.toast.discountValueRequired"));
+      return;
+    }
+
+    if (discountType === "percentage" && discountValue > 100) {
+      toast.error(t("Loyalty.toast.percentageExceed"));
+      return;
+    }
+
+    setLoader({ isLoading: true, message: t("Loyalty.toast.updatingDiscounts") });
+    try {
+      const response = await updateCreationLoyalityService(creationLoyalty.id!, {
+        loyaltyDiscountType: discountType as any,
+        discountValue,
+        currencyCode: currencyCode as any
+      });
+
+      if (response.success) {
+        toast.success(t("Loyalty.toast.discountsUpdated"));
+        await fetchLoyaltyData();
+      } else {
+        toast.error(response.message || t("Loyalty.errorMessage"));
+      }
+    } catch (error) {
+      toast.error(t("Loyalty.errorMessage"));
+    } finally {
+      setLoader({ isLoading: false, message: "" });
+    }
+  };
+
+  const handleCreateBasicProgram = async () => {
+    if (!creationId || !creationLoyalty) return;
+
+    if (logos.length === 0) {
+      toast.error(t("Loyalty.toast.uploadLogo"));
+      return;
+    }
+
+    setLoader({ isLoading: true, message: t("Loyalty.toast.creatingBasic") });
+    try {
+      const response = await createLoyaltyProgramService({
+        loyaltyProgramId: creationLoyalty.id!,
+        logo: logos,
+        isActive: isBasicActive
+      });
+
+      if (response.success) {
+        toast.success(t("Loyalty.toast.basicCreated"));
+        await fetchLoyaltyData();
+      } else {
+        toast.error(response.message || t("Loyalty.errorMessage"));
+      }
+    } catch (error) {
+      toast.error(t("Loyalty.errorMessage"));
+    } finally {
+      setLoader({ isLoading: false, message: "" });
+    }
+  };
+
+  const handleUpdateBasicConfig = async () => {
+    if (!creationId || !creationLoyalty) return;
+
+    if (logos.length === 0) {
+      toast.error(t("Loyalty.toast.uploadLogo"));
+      return;
+    }
+
+    setLoader({ isLoading: true, message: t("Loyalty.toast.updatingBasic") });
+    try {
+      const response = await updateLoyaltyProgramService(creationLoyalty.id!, {
+        logo: logos,
+        isActive: isBasicActive
+      });
+
+      if (response.success) {
+        toast.success(t("Loyalty.toast.basicUpdated"));
+        await fetchLoyaltyData();
+      } else {
+        toast.error(response.message || t("Loyalty.errorMessage"));
+      }
+    } catch (error) {
+      toast.error(t("Loyalty.errorMessage"));
+    } finally {
+      setLoader({ isLoading: false, message: "" });
+    }
+  };
+
+  const handleImageUploadSuccess = (uploadedUrls: string[]) => {
+    setLogos([...logos, ...uploadedUrls]);
+    toast.success(t("Loyalty.toast.uploadSuccess", { count: uploadedUrls.length }));
+  };
+
+  const handleRemoveLogo = (index: number) => {
+    setLogos(logos.filter((_, i) => i !== index));
+  };
+
+  if (loader.isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader text={loader.message} />
+      </div>
+    );
+  }
+
+  if (!hasCreationLoyalty) {
+    return (
+      <CreateLoyaltyForm onSubmit={handleCreateCreationLoyalty} />
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 md:p-6 lg:p-8">
+      <BackButton />
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">{t("Loyalty.page.title")}</h1>
+        <p className="text-muted-foreground mt-2">
+          {t("Loyalty.page.subtitle")}
+        </p>
+      </div>
+
+
+
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "discounts" | "basic" | "properties")} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="basic">{t("Loyalty.tabs.basicConfig")}</TabsTrigger>
+          <TabsTrigger value="discounts">{t("Loyalty.tabs.discounts")}</TabsTrigger>
+          <TabsTrigger value="properties">{t("Loyalty.tabs.properties")}</TabsTrigger>
+        </TabsList>
+
+        {/* Discounts Tab */}
+        <TabsContent value="discounts" className="space-y-6">
+          <DiscountsTab
+            discountType={discountType}
+            setDiscountType={setDiscountType}
+            discountValue={discountValue}
+            setDiscountValue={setDiscountValue}
+            currencyCode={currencyCode}
+            setCurrencyCode={setCurrencyCode}
+            onUpdate={handleUpdateDiscounts}
+          />
+        </TabsContent>
+
+        {/* Basic Configuration Tab */}
+        <TabsContent value="basic" className="space-y-6">
+          <BasicConfigTab
+            basicProgram={basicProgram}
+            creationId={creationId}
+            logos={logos}
+            isBasicActive={isBasicActive}
+            setIsBasicActive={setIsBasicActive}
+            onUploadClick={() => setIsImageModalOpen(true)}
+            onRemoveLogo={handleRemoveLogo}
+            onCreate={handleCreateBasicProgram}
+            onUpdate={handleUpdateBasicConfig}
+          />
+        </TabsContent>
+
+
+        <ImageUploadModal
+          isOpen={isImageModalOpen}
+          onClose={() => setIsImageModalOpen(false)}
+          // uploadImages={uploadImages}
+          onUploadSuccess={handleImageUploadSuccess}
+        />
+        {/* Add Property to Loyalty Program Section */}
+        <TabsContent value="properties" className="space-y-6">
+          {creationLoyalty?.id && (
+            <AddPropertyToLoyalty
+              loyaltyProgramId={creationLoyalty.id}
+              availableProperties={availableProperties}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Image Upload Modal */}
+
+    </div>
+  );
+}
