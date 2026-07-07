@@ -79,13 +79,13 @@
     "creating": "创建中...",
     "saving": "保存中...",
     "loadingTranslations": "加载翻译中...",
-"noTranslationsFound": "未找到翻译。",
-"pleaseSelectLanguage": "请选择语言",
-"pleaseFillOneField": "请至少填写一个字段",
-"translationSaved": "翻译保存成功！",
-"failedToSaveTranslation": "保存翻译失败",
-"translationUpdated": "翻译更新成功！",
-"failedToUpdateTranslation": "更新翻译失败"
+    "noTranslationsFound": "未找到翻译。",
+    "pleaseSelectLanguage": "请选择语言",
+    "pleaseFillOneField": "请至少填写一个字段",
+    "translationSaved": "翻译保存成功！",
+    "failedToSaveTranslation": "保存翻译失败",
+    "translationUpdated": "翻译更新成功！",
+    "failedToUpdateTranslation": "更新翻译失败"
   },
   "AddRoomLangDialog": {
     "title": "添加房间翻译",
@@ -145,8 +145,6 @@
     "october": "十月",
     "november": "十一月",
     "december": "十二月"
-    
-
   },
   "Sidebar": {
     "dashboard": "仪表板",
@@ -2097,8 +2095,7 @@
       "placeholder": "例如：电话号码",
       "checkTranslations": "忠诚度字段翻译",
       "editTranslation": "编辑忠诚度字段翻译",
-          "noTranslationsFound": "未找到翻译。"
-
+      "noTranslationsFound": "未找到翻译。"
     }
   },
   "Loyalty": {

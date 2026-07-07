@@ -207,7 +207,8 @@
     "mySpa": "My Spa",
     "reports": "Reports",
     "apiLogs": "Api Logs",
-    "serviceLogs": "Service logs"
+    "serviceLogs": "Service logs",
+    "dynamicPricing": "Dynamic Pricing"
   },
   "Auth": {
     "login": "Login",

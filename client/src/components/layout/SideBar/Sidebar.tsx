@@ -14,6 +14,7 @@ import {
   ChevronRight,
   CalendarClock,
   DollarSign,
+  TrendingUp,
   Ban,
   Wrench,
   Tag,
@@ -182,6 +183,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }: SidebarProps) 
           { name: t('Sidebar.rateAllotment'), href: `/property/rate-plan/map/${pid}`, icon: CalendarClock, userLevels: [0, 1, 2, 3, 4], priority: 1, roles: ['super_admin', 'regional_admin', 'group_manager', 'brand_manager', 'hotel_manager', 'staff',] },
           { name: t('Sidebar.calenderView'), href: `/property/calender-view/${pid}`, icon: LayoutDashboard, userLevels: [0, 1, 2, 3, 4], priority: 1, roles: ['super_admin', 'regional_admin', 'group_manager', 'brand_manager', 'hotel_manager', 'staff',] },
           { name: t('Sidebar.inventory'), href: `/property/inventory/${pid}`, icon: Building, userLevels: [0, 1, 2, 3, 4], priority: 1, roles: ['super_admin', 'regional_admin', 'group_manager', 'brand_manager', 'hotel_manager', 'staff',] },
+          { name: t('Sidebar.dynamicPricing'), href: `/property/dynamic-pricing/${pid}`, icon: TrendingUp, userLevels: [0, 1, 2, 3, 4], priority: 1, roles: ['super_admin', 'regional_admin', 'group_manager', 'brand_manager', 'hotel_manager', 'staff',] },
         ],
       });
       // Only add Spa nav group when the property has spa module enabled

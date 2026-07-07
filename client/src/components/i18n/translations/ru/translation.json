@@ -79,13 +79,13 @@
     "creating": "Создание...",
     "saving": "Сохранение...",
     "loadingTranslations": "Загрузка переводов...",
-"noTranslationsFound": "Переводы не найдены.",
-"pleaseSelectLanguage": "Пожалуйста, выберите язык",
-"pleaseFillOneField": "Пожалуйста, заполните хотя бы одно поле",
-"translationSaved": "Перевод успешно сохранен!",
-"failedToSaveTranslation": "Не удалось сохранить перевод",
-"translationUpdated": "Перевод успешно обновлен!",
-"failedToUpdateTranslation": "Не удалось обновить перевод"
+    "noTranslationsFound": "Переводы не найдены.",
+    "pleaseSelectLanguage": "Пожалуйста, выберите язык",
+    "pleaseFillOneField": "Пожалуйста, заполните хотя бы одно поле",
+    "translationSaved": "Перевод успешно сохранен!",
+    "failedToSaveTranslation": "Не удалось сохранить перевод",
+    "translationUpdated": "Перевод успешно обновлен!",
+    "failedToUpdateTranslation": "Не удалось обновить перевод"
   },
   "AddRoomLangDialog": {
     "title": "Добавить перевод номера",
@@ -103,7 +103,7 @@
       "saveSuccess": "Перевод номера успешно добавлен!",
       "saveFailed": "Не удалось добавить перевод."
     }
-  },   
+  },
   "BookingStatus": {
     "confirmed": "Подтверждено",
     "cancelled": "Отменено",
@@ -2095,8 +2095,7 @@
       "placeholder": "например, Номер телефона",
       "checkTranslations": "Переводы полей лояльности",
       "editTranslation": "Редактировать перевод поля лояльности",
-          "noTranslationsFound": "Переводы не найдены."   
-
+      "noTranslationsFound": "Переводы не найдены."
     }
   },
   "Loyalty": {
