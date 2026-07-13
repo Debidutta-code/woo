@@ -12,20 +12,20 @@ const config = {
     jwtExpiresInDev: process.env.JWT_EXPIRES_IN_DEV,
     jwtExpiresInProd: process.env.JWT_EXPIRES_IN,
 
-    agencyJWTSecret: process.env.AGENT_JWT_SECRET,
-    agencyJWTExpiresIn: process.env.AGENT_JWT_EXPIRES_IN,
+    agencyJWTSecret: process.env.AGENT_JWT_SECRET || process.env.JWT_SECRET_KEY || process.env.JWT_SECRET_KEY_DEV || 'agency_default_secret',
+    agencyJWTExpiresIn: process.env.AGENT_JWT_EXPIRES_IN || '24h',
 
-    customerJWTSecret: process.env.CUSTOMER_GUEST_JWT_SECRETE,
-    customerJWTExpiresIn: process.env.CUSTOMER_GUEST_JWT_EXPIRES,
+    customerJWTSecret: process.env.CUSTOMER_GUEST_JWT_SECRETE || process.env.CUSTOMER_GUEST_JWT_SECRET || process.env.JWT_SECRET_KEY || process.env.JWT_SECRET_KEY_DEV || 'customer_default_secret',
+    customerJWTExpiresIn: process.env.CUSTOMER_GUEST_JWT_EXPIRES || '24h',
 
-    otaJWTSecret: process.env.OTA_GUEST_JWT_SECRET,
-    otaJWTExpiresIn: process.env.OTA_GUEST_JWT_EXPIRES,
+    otaJWTSecret: process.env.OTA_GUEST_JWT_SECRET || process.env.JWT_SECRET_KEY || process.env.JWT_SECRET_KEY_DEV || 'ota_default_secret',
+    otaJWTExpiresIn: process.env.OTA_GUEST_JWT_EXPIRES || '24h',
 
     frontendUrl: process.env.FRONTEND_URL,
     bookingEngineUrl: process.env.BOOKING_ENGINE_URL,
 
-    allowedOrigins: process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(',')
+    allowedOrigins: (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS)
+        ? (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS)!.split(',')
         : ['*'],
 
     GridApiKey: process.env.SENDGRID_API_KEY,

@@ -13,8 +13,9 @@ export class CustomerRepository {
                     lastName: true,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occurred while finding customer');
+        } catch (error: any) {
+            console.error('CustomerRepository findByEmail error:', error);
+            throw new Error('Error occurred while finding customer: ' + error.message);
         }
     }
     public async loginUser(email: string): Promise<ICustomerwp | null> {
@@ -29,8 +30,9 @@ export class CustomerRepository {
                     password: true,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occurred while finding customer');
+        } catch (error: any) {
+            console.error('CustomerRepository loginUser error:', error);
+            throw new Error('Error occurred while finding customer: ' + error.message);
         }
     }
 
@@ -68,8 +70,9 @@ export class CustomerRepository {
                     WishList: true,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occurred while finding customer');
+        } catch (error: any) {
+            console.error('CustomerRepository findById error:', error);
+            throw new Error('Error occurred while finding customer: ' + error.message);
         }
     }
 
@@ -89,8 +92,9 @@ export class CustomerRepository {
                     lastName: true,
                 },
             });
-        } catch (error) {
-            throw new Error('Error occurred while creating customer');
+        } catch (error: any) {
+            console.error('CustomerRepository create error:', error);
+            throw new Error('Error occurred while creating customer: ' + error.message);
         }
     }
 
@@ -100,8 +104,9 @@ export class CustomerRepository {
                 where: { email },
                 data: { password: hashedPassword },
             });
-        } catch (error) {
-            throw new Error('Error occurred while updating password');
+        } catch (error: any) {
+            console.error('CustomerRepository updatePassword error:', error);
+            throw new Error('Error occurred while updating password: ' + error.message);
         }
     }
     
@@ -117,8 +122,9 @@ export class CustomerRepository {
                     lastName: true,
                 }
             });
-        } catch (error) {
-            throw new Error('Error occurred while updating profile');
+        } catch (error: any) {
+            console.error('CustomerRepository updateProfile error:', error);
+            throw new Error('Error occurred while updating profile: ' + error.message);
         }
     }
 }
