@@ -19,7 +19,8 @@ customerRouter
 
 customerRouter
     .route('/me')
-    .get(customerProtect, customerController.getMe.bind(customerController));
+    .get(customerProtect, customerController.getMe.bind(customerController))
+    .put(customerProtect, customerController.updateProfile.bind(customerController));
 
 customerRouter
     .route('/update-password')

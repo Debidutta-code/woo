@@ -149,4 +149,25 @@ export class CustomerService {
             return errorResponse('Failed to verify OTP');
         }
     }
+
+    public async updateProfile(
+        id: string,
+        firstName: string,
+        lastName: string,
+        password?: string
+    ): Promise<IApiResponse> {
+        try {
+            const data: any = { firstName, lastName };
+            if (password) {
+                data.password = await createHash(password);
+            }
+            const updated = await this.customerRepository.updateProfile(id, data);
+            return successResponse('Profile updated successfully', updated);
+        } catch (error) {
+            if (error instanceof Error) {
+                return errorResponse('Failed to update profile', error.message);
+            }
+            return errorResponse('Failed to update profile');
+        }
+    }
 }

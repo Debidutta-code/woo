@@ -10,7 +10,7 @@ import { PolicyRoute } from '../policies/routes';
 import { promoCodeRoutes } from '../promocode/routes';
 import { TaxSystemRouter } from '../tax-system/routes';
 import { AddonsRoute } from '../add-on/routes';
-import { BookingEngineRoutes } from '../booking-engine/routes';
+import { BookingEngineRoutes, BookingRoutes } from '../booking-engine/routes';
 import { dashboardRouter } from '../dashboard/routes';
 import { PaymentRoutes } from '../payment/routes';
 
@@ -71,6 +71,9 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/reports', reportsRouter);
 
     apiV1Router.use('/booking-engine', BookingEngineRoutes);
+    apiV1Router.use('/booking', BookingRoutes);
+    apiV1Router.use('/pms/front-office/reservations', reservationRoute);
+    apiV1Router.use('/extranet/addon', AddonsRoute);
     apiV1Router.use('/agency', agencyMainRouter);
     apiV1Router.use('/promotions', promotionRouter);
     apiV1Router.use('/loyalty', loyaltyRouter);

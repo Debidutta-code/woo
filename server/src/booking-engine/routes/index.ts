@@ -1,2 +1,3 @@
 import { BookingEngineRoutes } from './room.routes';
-export { BookingEngineRoutes };
+import { BookingRoutes } from './booking.routes';
+export { BookingEngineRoutes, BookingRoutes };

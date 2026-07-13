@@ -39,6 +39,11 @@ export class PropertyWishList {
                             propertyName: true,
                             propertyCode: true,
                             image: true,
+                            propertyAddress: {
+                                select: {
+                                    city: true
+                                }
+                            }
                         },
                     },
                     RoomWishList: true,

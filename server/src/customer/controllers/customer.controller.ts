@@ -221,6 +221,32 @@ export class CustomerController {
         }
     }
 
+    public async updateProfile(req: CustomRequest, res: Response): Promise<Response<IApiResponse>> {
+        try {
+            const customerId = req.customer?.id;
+            if (!customerId) {
+                return res.status(401).json(errorResponse('Not authenticated'));
+            }
+            const { firstName, lastName, password } = req.body;
+            if (!firstName || !lastName) {
+                return res.status(400).json(errorResponse('First name and last name are required'));
+            }
+            if (password) {
+                const isValidPassword = this.validatePassword(password);
+                if (isValidPassword) {
+                    return res.status(400).json(errorResponse(isValidPassword));
+                }
+            }
+            const result = await this.customerService.updateProfile(customerId, firstName, lastName, password);
+            return res.status(result.success ? 200 : 400).json(result);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(500).json(errorResponse('Failed to update profile', error.message));
+            }
+            return res.status(500).json(errorResponse('Failed to update profile'));
+        }
+    }
+
     public async logout(req: Request, res: Response): Promise<Response<IApiResponse>> {
         res.clearCookie('customerToken');
         res.clearCookie('loyalty_token');

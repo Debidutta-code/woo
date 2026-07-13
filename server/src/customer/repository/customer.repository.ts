@@ -105,4 +105,20 @@ export class CustomerRepository {
         }
     }
     
+    public async updateProfile(id: string, data: { firstName: string; lastName: string; email?: string; password?: string }) {
+        try {
+            return await prisma.customers.update({
+                where: { id },
+                data,
+                select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                }
+            });
+        } catch (error) {
+            throw new Error('Error occurred while updating profile');
+        }
+    }
 }
