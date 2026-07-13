@@ -44,6 +44,24 @@ export class RoomBookingService {
             countryCode,
         } = payload;
 
+        // Normalize guests payload to construct roomsArray if it is missing
+        if (!guests.roomsArray || guests.roomsArray.length === 0) {
+            const roomsCount = guests.rooms || 1;
+            const adultsCount = guests.adults || 1;
+            const childrenCount = guests.children || 0;
+            
+            const roomsArray: any[] = [];
+            let remainingAdults = adultsCount;
+            let remainingChildren = childrenCount;
+            for (let i = 0; i < roomsCount; i++) {
+                const roomAdults = Math.max(1, Math.min(remainingAdults - (roomsCount - 1 - i), remainingAdults));
+                remainingAdults -= roomAdults;
+                const roomChildren = i === 0 ? remainingChildren : 0;
+                roomsArray.push({ adults: roomAdults, children: roomChildren, childAges: [] });
+            }
+            guests.roomsArray = roomsArray;
+        }
+
         const property = await RoomBookingRepository.getPropertyByCode(
             propertyCode
         ) as IPropertyData | null;

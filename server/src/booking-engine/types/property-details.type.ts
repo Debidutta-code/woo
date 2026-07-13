@@ -1,4 +1,5 @@
-import { IBookingEngineConfig, IPropertyAddress, IRoomAmenityDetail } from "../../property-management/types";
+import { IBookingEngineConfig, IPropertyAddress } from "../../property-management/types";
+import { IRoomAmenityDetail } from "./room.type";
 
 export interface IPropertyDetailsContext {
     id: string;

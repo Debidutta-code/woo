@@ -856,9 +856,6 @@ export const RoomCard: React.FC<RoomCardProps> = ({
             {visibleRatePlans.map((ratePlan, index) => {
               const guestCount = guestDetails?.guests || 1;
               const currentRatePlan = ratePlan || data;
-              const isPriceAvailable = ratePlan
-                ? true
-                : (data.has_valid_rate ?? false);
 
               // Calculate price for current guest count
               const price =
@@ -872,6 +869,13 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                         (ratePlan as any).totalPrice
                     )
                   : data.baseAmount || data.room_price || 0;
+
+              const isRoomAvail = isRoomAvailable(data);
+              const isPriceAvailable = ratePlan
+                ? true
+                : (data.has_valid_rate ?? (price > 0));
+
+              const isAvailable = isRoomAvail && isPriceAvailable;
 
               // Find all prices for discount calculation
               // Find all prices for discount calculation
@@ -1089,11 +1093,11 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                       <button
                         onClick={() => handleBookNow(currentRatePlan)}
                         disabled={
-                          !isPriceAvailable ||
+                          !isAvailable ||
                           loadingRatePlans[ratePlanCode || "default"]
                         }
                         className={`w-auto md:w-full px-4 md:px-6 py-2 md:py-2.5 rounded-lg font-bold text-xs sm:text-sm transition-all shadow-md hover:shadow-lg whitespace-nowrap ${
-                          isPriceAvailable
+                          isAvailable
                             ? "bg-tripswift-blue text-white"
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
@@ -1103,7 +1107,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                             <FaSpinner className="animate-spin h-4 w-4" />
                             Processing...
                           </div>
-                        ) : isPriceAvailable ? (
+                        ) : isAvailable ? (
                           "Book Now"
                         ) : (
                           "Sold Out"
@@ -1111,7 +1115,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                       </button>
 
                       {/* Secure Payment */}
-                      {isPriceAvailable && isRoomAvailable(data) && (
+                      {isAvailable && (
                         <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-gray-600">
                           <FaShieldAlt className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                           <span>Secure payment</span>
