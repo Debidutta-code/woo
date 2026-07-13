@@ -48,11 +48,16 @@ export const useProperty = ({
       );
       const propDetails = propertyResponse.data.data;
 
-      // if (!propDetails?.property_amenities?.amenities) {
+      // Extract the nested propertyDetails if it exists
+      const extractedPropertyDetails = propDetails?.availableRooms?.propertyDetails || propDetails;
+      
+      // Attach the rooms array so fetchAmenities can use it
+      if (extractedPropertyDetails) {
+        extractedPropertyDetails.availableRooms = propDetails?.availableRooms?.rooms || propDetails?.availableRooms || [];
+      }
 
-      // }
-      setPropertyDetails(propDetails);
-      setPropertyCode(propDetails.propertyCode);
+      setPropertyDetails(extractedPropertyDetails);
+      setPropertyCode(propDetails.propertyCode || extractedPropertyDetails.propertyCode);
     } catch (error) {
       console.error("Error fetching property:", error);
     } finally {

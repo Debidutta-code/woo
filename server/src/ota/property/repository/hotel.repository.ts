@@ -299,23 +299,12 @@ export class HotelRepository {
                 FROM properties p
                 JOIN property_addresses pa ON pa.property_id = p.id
                 WHERE
-                    lower(concat_ws(' ',
-                        p.property_name,
-                        pa.city,
-                        pa.state,
-                        pa.location,
-                        pa.landmark,
-                        pa.address_line1
-                    )) % lower(${query})
-                    OR metaphone(pa.city, 10) = metaphone(${query}, 10)
-                    OR concat_ws(' ',
-                        p.property_name,
-                        pa.city,
-                        pa.state,
-                        pa.location,
-                        pa.landmark,
-                        pa.address_line1
-                    ) ILIKE ${searchPattern}
+                    p.property_name ILIKE ${searchPattern}
+                    OR pa.city ILIKE ${searchPattern}
+                    OR pa.state ILIKE ${searchPattern}
+                    OR pa.location ILIKE ${searchPattern}
+                    OR pa.landmark ILIKE ${searchPattern}
+                    OR pa.address_line1 ILIKE ${searchPattern}
             `;
             rawTotalCount = Number(countResult[0]?.total || 0);
 
@@ -334,65 +323,29 @@ export class HotelRepository {
             const rawResults: any[] = await prisma.$queryRaw`
                 SELECT 
                     p.id,
-                    (
-                        similarity(
-                            lower(concat_ws(' ',
-                                p.property_name,
-                                pa.city,
-                                pa.state,
-                                pa.location,
-                                pa.landmark,
-                                pa.address_line1
-                            )),
-                            lower(${query})
-                        )
-                        +
-                        CASE
-                            WHEN metaphone(pa.city, 10) = metaphone(${query}, 10)
-                            THEN 0.5
-                            ELSE 0
-                        END
-                        +
-                        CASE
-                            WHEN concat_ws(' ',
-                                p.property_name,
-                                pa.city,
-                                pa.state,
-                                pa.location,
-                                pa.landmark,
-                                pa.address_line1
-                            ) ILIKE ${searchPattern} THEN 0.3
-                            ELSE 0
-                        END
-                    ) AS score
+                    CASE 
+                        WHEN LOWER(pa.city) = LOWER(${query}) THEN 1
+                        WHEN p.property_name ILIKE ${searchPattern} THEN 2
+                        WHEN pa.city ILIKE ${searchPattern} THEN 3
+                        ELSE 4
+                    END as relevance
                 FROM properties p
                 JOIN property_addresses pa ON pa.property_id = p.id
                 WHERE
-                    lower(concat_ws(' ',
-                        p.property_name,
-                        pa.city,
-                        pa.state,
-                        pa.location,
-                        pa.landmark,
-                        pa.address_line1
-                    )) % lower(${query})
-                    OR metaphone(pa.city, 10) = metaphone(${query}, 10)
-                    OR concat_ws(' ',
-                        p.property_name,
-                        pa.city,
-                        pa.state,
-                        pa.location,
-                        pa.landmark,
-                        pa.address_line1
-                    ) ILIKE ${searchPattern}
-                ORDER BY score DESC
+                    p.property_name ILIKE ${searchPattern}
+                    OR pa.city ILIKE ${searchPattern}
+                    OR pa.state ILIKE ${searchPattern}
+                    OR pa.location ILIKE ${searchPattern}
+                    OR pa.landmark ILIKE ${searchPattern}
+                    OR pa.address_line1 ILIKE ${searchPattern}
+                ORDER BY relevance ASC
                 LIMIT ${pageSize}
                 OFFSET ${offset}
             `;
 
             propertyIds = rawResults.map((r: any) => r.id);
 
-            // Apply fuzzy search IDs
+            // Apply search IDs
             where.id = {
                 in: propertyIds,
             };

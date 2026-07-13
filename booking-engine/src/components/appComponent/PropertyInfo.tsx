@@ -153,31 +153,36 @@ export const PropertyInfo: React.FC<PropertyInfoProps> = ({
               <h3 className="text-section-heading mb-2">
                 {t("RoomsPage.aboutThisProperty")}
               </h3>
-              <p className="text-description leading-relaxed whitespace-pre-wrap">
-                {propertyDetails.description.split(" ").length > 10 ? (
-                  <>
-                    {showFullDescription
-                      ? propertyDetails.description
-                      : propertyDetails.description
-                          .split(" ")
-                          .slice(0, 10)
-                          .join(" ") + "..."}
-                    <button
-                      type="button"
-                      className="text-tripswift-blue font-tripswift-medium text-sm ml-1"
-                      onClick={() =>
-                        setShowFullDescription(!showFullDescription)
-                      }
-                    >
-                      {showFullDescription
-                        ? t("RoomsPage.showLess")
-                        : t("RoomsPage.showMore")}
-                    </button>
-                  </>
-                ) : (
-                  propertyDetails.description
-                )}
-              </p>
+              <div className="text-description leading-relaxed whitespace-pre-wrap">
+                {(() => {
+                  const plainText = propertyDetails.description.replace(/<[^>]*>?/gm, '');
+                  const words = plainText.split(" ");
+                  const isLong = words.length > 20;
+
+                  return (
+                    <>
+                      {showFullDescription || !isLong ? (
+                        <div dangerouslySetInnerHTML={{ __html: propertyDetails.description }} />
+                      ) : (
+                        <span>
+                          {words.slice(0, 20).join(" ")}...
+                        </span>
+                      )}
+                      {isLong && (
+                        <button
+                          type="button"
+                          className="text-tripswift-blue font-tripswift-medium text-sm mt-1"
+                          onClick={() => setShowFullDescription(!showFullDescription)}
+                        >
+                          {showFullDescription
+                            ? t("RoomsPage.showLess")
+                            : t("RoomsPage.showMore")}
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
           )}
           {/* Contact information */}

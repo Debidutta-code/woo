@@ -169,4 +169,30 @@ router.get('/check/availability', async (req: Request, res: Response) => {
     }
 });
 
+// Explicit availability filter endpoint (mirrors compatibility route)
+router.get('/filters/availability', async (req: Request, res: Response) => {
+    try {
+        const { hotelCode, checkIn, checkOut } = req.query as any;
+        if (!hotelCode || !checkIn || !checkOut) {
+            return res.status(400).json(errorResponse('Missing required query parameters'));
+        }
+        const fetchRes = await RoomBookingService.fetchRooms({
+            propertyCode: hotelCode,
+            startDate: checkIn,
+            endDate: checkOut,
+            guests: { adults: 1, children: 0, rooms: 1 }
+        });
+        if (fetchRes.success && fetchRes.data) {
+            const rooms = (fetchRes.data as any).rooms || [];
+            const anyAvailable = rooms.some((r: any) => r.availabilityCount && r.availabilityCount > 0);
+            if (anyAvailable) {
+                return res.status(200).json({ success: true, message: 'available' });
+            }
+        }
+        return res.status(200).json({ success: false, message: 'Room not available for selected dates' });
+    } catch (error: any) {
+        return res.status(500).json(errorResponse('Failed to check availability', error.message));
+    }
+});
+
 export const BookingRoutes = router;

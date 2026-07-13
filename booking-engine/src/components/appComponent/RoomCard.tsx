@@ -723,7 +723,13 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                 {data.room_view && (
                   <div className="flex items-center gap-1">
                     <span className="text-gray-600 text-xs sm:text-sm">
-                      • {data.room_view}
+                      • {
+                        typeof data.room_view === 'string' 
+                          ? data.room_view 
+                          : Array.isArray(data.room_view as any) 
+                            ? (data.room_view as any[]).map((v: any) => v?.MasterRoomView?.viewName || v?.viewName || "").filter(Boolean).join(", ")
+                            : (data.room_view as any)?.MasterRoomView?.viewName || (data.room_view as any)?.viewName || ""
+                      }
                     </span>
                   </div>
                 )}
@@ -786,9 +792,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
                     <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-60px)] sm:max-h-[75vh]">
                       {data.description && (
                         <div className="mb-4 sm:mb-5">
-                          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
-                            {data.description}
-                          </p>
+                          <div 
+                            className="text-xs sm:text-sm text-gray-700 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: data.description }} 
+                          />
                         </div>
                       )}
 

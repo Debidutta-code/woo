@@ -1,4 +1,4 @@
-import { IBookingEngineConfig, IPropertyAddress } from "../../property-management/types";
+import { IBookingEngineConfig, IPropertyAddress, IRoomAmenityDetail } from "../../property-management/types";
 
 export interface IPropertyDetailsContext {
     id: string;
@@ -7,6 +7,8 @@ export interface IPropertyDetailsContext {
     propertyAddress: IPropertyAddress | null;
     bookingEngineConfig: IBookingEngineConfig | null;
     propertyConfigs: IPropertyConfigType | null;
+    images: string[];
+    amenities: IRoomAmenityDetail[];
 }
 interface IPropertyConfigType {
     isSpaModuleEnabled: boolean;

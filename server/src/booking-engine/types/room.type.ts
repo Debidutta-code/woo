@@ -349,7 +349,7 @@ export interface CustomizableDealsApplicableAddons{
 }
 export interface IRoomAmenityDetail {
     id: string;
-    amenityName: string;
+    name: string;
     amenityType: string;
     description: string | null;
     icon: string | null;
@@ -370,6 +370,7 @@ export interface IRoom {
     images: string[];
     amenities: IRoomAmenityDetail[];
     hasValidRate: boolean;
+    availabilityCount?: number;
     roomPrice: IRoomPrice[];
     roomVideos: IRoomVideo | null;
 }
@@ -391,6 +392,18 @@ export interface IPropertyData {
     propertyCode: string;
     starRating: number | null;
     isAvailable: boolean;
+    description: string | null;
+    image: string[];
+    propertyEmail: string | null;
+    propertyContact: string | null;
+    propertyAmenities: {
+        amenity: {
+            id: string;
+            amenityName: string;
+            isActive: boolean;
+            icon: string | null;
+        }
+    }[];
     propertyAddress: IPropertyAddress;
     propertyVideos: IPropertyVideo[];
     propertyConfigs: IPropertyConfig | null;

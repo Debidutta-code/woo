@@ -1,4 +1,5 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
+import { errorResponse } from '../../utils';
 import { RoomBookingController } from '../controllers';
 import { attachPropertyDetails } from '../../middlewares/property.middleware';
 import { pricingRouter } from './pricing.route';
@@ -422,3 +423,28 @@ BookingEngineRoutes.post('/wish-list', customerProtect, async (req: CustomReques
 
 BookingEngineRoutes.get('/wish-list/my', customerProtect, propertyWishController.getWishlistForUser.bind(propertyWishController));
 
+// Availability filter endpoint for /filters/availability
+BookingEngineRoutes.get('/filters/availability', async (req: Request, res: Response) => {
+    try {
+        const { hotelCode, checkIn, checkOut } = req.query as any;
+        if (!hotelCode || !checkIn || !checkOut) {
+            return res.status(400).json(errorResponse('Missing required query parameters'));
+        }
+        const rooms = await prisma.inventory.findMany({
+            where: {
+                propertyCode: hotelCode,
+                date: {
+                    gte: new Date(checkIn),
+                    lte: new Date(checkOut)
+                },
+                availability: { gt: 0 }
+            }
+        });
+        if (rooms.length > 0) {
+            return res.status(200).json({ success: true, message: 'available' });
+        }
+        return res.status(200).json({ success: false, message: 'Room not available for selected dates' });
+    } catch (error: any) {
+        return res.status(500).json(errorResponse('Failed to check availability', error.message));
+    }
+});

@@ -75,8 +75,8 @@ export const useRooms = ({
       // Transform property rooms to match the expected RoomResponse format
       const transformedRooms: RoomResponse = {
         success: true,
-        data: propertyData?.availableRooms?.length
-          ? propertyData.availableRooms.map((room: any) => ({
+        data: propertyData?.availableRooms?.rooms?.length
+          ? propertyData.availableRooms.rooms.map((room: any) => ({
               _id: room.id,
               room_name: room.roomName,
               room_type: room.roomType,

@@ -28,11 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           strategy="lazyOnload"
         />
       </head> */}
-      <body className={nunito.className}>
+      <body className={nunito.className} suppressHydrationWarning>
         <Providers>
           <FCMInitializer />
           {/* <Navbar /> */}
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "missing_client_id"}>
             {children}
           </GoogleOAuthProvider>
           {/* <Footer /> */}

@@ -9,7 +9,7 @@ const RegisterPage = () => {
   return (
     <RedirectIfAuthenticated>
       <div>
-        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""}>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "missing_client_id"}>
           <Register />
         </GoogleOAuthProvider>
       </div>

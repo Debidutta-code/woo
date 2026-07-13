@@ -66,15 +66,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const [amenitiesCurrentPage, setAmenitiesCurrentPage] = useState(0);
   const AMENITIES_PER_PAGE = 5;
 
-  // Property categories state
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    filters.propertyCategories || [],
-  );
-
-  // Property types state
-  const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>(
-    filters.propertyTypes || [],
-  );
+  // Property categories and types use filters state directly
 
   // Debounced values
   const debouncedMinPrice = useDebounce(localMinPrice, 500);
@@ -122,9 +114,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   useEffect(() => {
     if (filters.minPrice !== undefined && filters.minPrice !== localMinPrice) {
       setLocalMinPrice(filters.minPrice);
+    } else if (filters.minPrice === undefined && localMinPrice !== 0) {
+      setLocalMinPrice(0);
     }
+
     if (filters.maxPrice !== undefined && filters.maxPrice !== localMaxPrice) {
       setLocalMaxPrice(filters.maxPrice);
+    } else if (filters.maxPrice === undefined && localMaxPrice !== 100000) {
+      setLocalMaxPrice(100000);
     }
   }, [filters.minPrice, filters.maxPrice]);
 
@@ -181,28 +178,26 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   };
 
   const togglePropertyCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category],
-    );
+    const currentCategories = filters.propertyCategories || [];
+    const newCategories = currentCategories.includes(category)
+      ? currentCategories.filter((c) => c !== category)
+      : [...currentCategories, category];
+
     onFilterChange({
       ...filters,
-      propertyCategories: selectedCategories.includes(category)
-        ? selectedCategories.filter((c) => c !== category)
-        : [...selectedCategories, category],
+      propertyCategories: newCategories,
     });
   };
 
   const togglePropertyType = (type: string) => {
-    setSelectedPropertyTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
-    );
+    const currentTypes = filters.propertyTypes || [];
+    const newTypes = currentTypes.includes(type)
+      ? currentTypes.filter((t) => t !== type)
+      : [...currentTypes, type];
+
     onFilterChange({
       ...filters,
-      propertyTypes: selectedPropertyTypes.includes(type)
-        ? selectedPropertyTypes.filter((t) => t !== type)
-        : [...selectedPropertyTypes, type],
+      propertyTypes: newTypes,
     });
   };
 
@@ -227,8 +222,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     setLocalMinPrice(0);
     setLocalMaxPrice(100000);
     setShowAllAmenities(false);
-    setSelectedCategories([]);
-    setSelectedPropertyTypes([]);
     onFilterChange({
       amenities: {},
       roomAmenities: {},
@@ -540,7 +533,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 >
                   <input
                     type="checkbox"
-                    checked={selectedCategories.includes(category)}
+                    checked={(filters.propertyCategories || []).includes(category)}
                     onChange={() => togglePropertyCategory(category)}
                     className="w-4 h-4 rounded border-2 border-gray-300 text-tripswift-blue focus:ring-2 focus:ring-tripswift-blue/30 cursor-pointer transition-all"
                   />
@@ -574,7 +567,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 >
                   <input
                     type="checkbox"
-                    checked={selectedPropertyTypes.includes(type)}
+                    checked={(filters.propertyTypes || []).includes(type)}
                     onChange={() => togglePropertyType(type)}
                     className="w-4 h-4 rounded border-2 border-gray-300 text-tripswift-blue focus:ring-2 focus:ring-tripswift-blue/30 cursor-pointer transition-all"
                   />

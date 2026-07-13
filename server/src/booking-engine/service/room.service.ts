@@ -139,6 +139,14 @@ export class RoomBookingService {
                 propertyDetails: {
                     id: property.id,
                     propertyName: property.propertyName,
+                    description: property.description,
+                    images: property.image || [],
+                    propertyEmail: property.propertyEmail,
+                    propertyContact: property.propertyContact,
+                    amenities: property.propertyAmenities?.reduce((acc: any, pa: any) => {
+                        acc[pa.amenity.amenityName] = pa.amenity.isActive;
+                        return acc;
+                    }, {}) || {},
                     propertyVideos: property.propertyConfigs?.showVideo
                         ? property.propertyVideos
                         : null,
@@ -205,6 +213,7 @@ export class RoomBookingService {
             .filter((r): r is IRoomPrice[] => r !== null)
             .flat();
 
+        const totalAvailability = inventory.reduce((sum, inv) => sum + (inv.availability || 0), 0);
         return {
             id: room.id,
             roomName: room.roomName,
@@ -217,10 +226,18 @@ export class RoomBookingService {
             maxOccupancy: room.maxOccupancy,
             description: room.description || '',
             images: room.image || [],
-            amenities: room.roomAmenities.map(r => r.amenity),
+            amenities: room.roomAmenities.map(r => ({
+                id: r.amenity.id,
+                name: r.amenity.amenityName,
+                amenityType: r.amenity.amenityType,
+                description: r.amenity.description,
+                icon: r.amenity.icon,
+                isActive: r.amenity.isActive
+            })),
             hasValidRate: roomPrice.length > 0,
             roomPrice: roomPrice,
             roomVideos: room.roomVideos || null,
+            availabilityCount: totalAvailability,
         };
     }
 

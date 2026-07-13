@@ -10,7 +10,7 @@ const LoginPage = () => {
     <RedirectIfAuthenticated>
       <div>
         <Suspense fallback={<div>Loading...</div>}>
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""}>
+          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "missing_client_id"}>
             <Login />
           </GoogleOAuthProvider>
         </Suspense>
