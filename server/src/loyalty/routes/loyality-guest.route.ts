@@ -21,6 +21,14 @@ router
     );
 
 router
+    .route('/customer-config/:propertyId')
+    .get(
+        loyaltyGuestController.getCustomerConfigForProperty.bind(
+            loyaltyGuestController
+        )
+    );
+
+router
     .route('/creation/:creationLoyaltyId')
     .get(
         protect,

@@ -1,5 +1,6 @@
 import { IApiResponse } from '../../utils';
 import { successResponse, errorResponse } from '../../utils';
+import { prisma } from '../../config';
 import {
     LoyalityLevelRepository,
     LoyaltyGuestRepository,
@@ -274,6 +275,49 @@ export class LoyaltyGuestService {
                 );
             }
             return errorResponse('Failed to check loyalty discount');
+        }
+    }
+
+    public async getCustomerConfigForProperty(propertyId: string): Promise<IApiResponse> {
+        try {
+            const config = await prisma.propertyLoyaltyConfig.findFirst({
+                where: { propertyId, isActive: true },
+                include: {
+                    CreationLoyaltyConfig: {
+                        include: {
+                            BasicLoyaltyProgram: true,
+                            loyaltyConditions: {
+                                where: { isDeleted: false, isActive: true }
+                            },
+                            loyaltySpecialConditions: {
+                                where: { isDeleted: false, isActive: true }
+                            },
+                            LoyaltyProgramFieldConfig: {
+                                where: { visibleInRegistration: true }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (!config || !config.CreationLoyaltyConfig) {
+                return errorResponse('No active loyalty program found for this property');
+            }
+
+            const loyalty = config.CreationLoyaltyConfig;
+            const result = {
+                discountType: loyalty.loyaltyDiscountType,
+                discountValue: loyalty.discountValue,
+                currencyCode: loyalty.currencyCode || 'INR',
+                discountImage: loyalty.BasicLoyaltyProgram?.logo?.[0] || null,
+                terms: (loyalty.loyaltyConditions || []).map(t => ({ id: t.id, text: t.text })),
+                specialTerms: (loyalty.loyaltySpecialConditions || []).map(st => ({ id: st.id, title: st.title, subTitle: st.subTitle })),
+                fields: (loyalty.LoyaltyProgramFieldConfig || []).map(f => ({ id: f.id, fieldName: f.fieldName, required: f.required }))
+            };
+
+            return successResponse('Loyalty config fetched successfully', result);
+        } catch (error) {
+            return errorResponse('Failed to fetch loyalty config', error instanceof Error ? error.message : undefined);
         }
     }
 }

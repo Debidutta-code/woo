@@ -93,7 +93,7 @@ class FikafiService {
   async getPaymentStatus(referenceNumber: string): Promise<FikafiPaymentStatusResponse> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/fikafi/payment-status/${referenceNumber}`,
+        `${API_BASE_URL}/fikafi/payment-status/${referenceNumber}`,
         {
           method: 'GET',
           headers: {

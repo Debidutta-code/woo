@@ -21,4 +21,8 @@ managementRoute.use('/room-view', roomViewRouter);
 aminityRouter.use('/room', roomAminityRouteM);
 managementRoute.use('/spa', spaTypeRouter);
 
+managementRoute.get('/explor-destination', (req, res) => {
+    return res.status(200).json({ success: true, data: [] });
+});
+
 export { managementRoute };

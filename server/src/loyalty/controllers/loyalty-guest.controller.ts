@@ -239,4 +239,25 @@ export class LoyaltyGuestController {
             return res.status(500).json(errorResponse("Internal Server Error","Failed to signout"))
         }
     }
+
+    public async getCustomerConfigForProperty(
+        req: Request,
+        res: Response
+    ): Promise<Response> {
+        try {
+            const { propertyId } = req.params;
+            if (!propertyId) {
+                return res
+                    .status(400)
+                    .json(errorResponse('Invalid Request', 'Property ID is required'));
+            }
+
+            const result = await this.loyaltyGuestService.getCustomerConfigForProperty(propertyId);
+            return res.status(result.success ? 200 : 400).json(result);
+        } catch (error) {
+            return res
+                .status(500)
+                .json(errorResponse('Internal Server Error', error instanceof Error ? error.message : undefined));
+        }
+    }
 }

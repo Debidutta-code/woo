@@ -1,6 +1,34 @@
 import { prisma } from '../../../config';
 import { HotelFilterQuery, IRepoProperty, IRepoRes } from '../types';
 
+function parseFilterString(value: any): string | undefined {
+    if (!value) return undefined;
+    
+    if (Array.isArray(value)) {
+        return value.join(',');
+    }
+    
+    if (typeof value === 'object' && value !== null) {
+        return Object.keys(value)
+            .filter(k => value[k] === true || value[k] === 'true' || value[k] === 1)
+            .join(',');
+    }
+    
+    if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                return parseFilterString(parsed);
+            } catch (e) {
+                // ignore
+            }
+        }
+    }
+    
+    return String(value);
+}
+
 export class HotelRepository {
     public async getPaginatedHotels(filters: HotelFilterQuery): Promise<IRepoRes> {
         const {
@@ -13,6 +41,11 @@ export class HotelRepository {
             propertyType,
             propertyCategory,
         } = filters;
+
+        const parsedAmenities = parseFilterString(amenities);
+        const parsedPropertyType = parseFilterString(propertyType);
+        const parsedPropertyCategory = parseFilterString(propertyCategory);
+
         const pageNumber = parseInt(page, 10);
         const pageSize = parseInt(limit, 10);
         const skip = (pageNumber - 1) * pageSize;
@@ -51,8 +84,8 @@ export class HotelRepository {
         }
 
         // Filtering by amenities
-        if (amenities) {
-            const amenityList = amenities.split(',').map(a => a.trim()).filter(Boolean);
+        if (parsedAmenities) {
+            const amenityList = parsedAmenities.split(',').map(a => a.trim()).filter(Boolean);
             if (amenityList.length > 0) {
                 where.propertyAmenities = {
                     some: {
@@ -75,8 +108,8 @@ export class HotelRepository {
         }
 
         // Filtering by property type
-        if (propertyType) {
-            const types = propertyType
+        if (parsedPropertyType) {
+            const types = parsedPropertyType
                 .split(',')
                 .map(t => t.trim())
                 .filter(Boolean);
@@ -95,8 +128,8 @@ export class HotelRepository {
         }
 
         // Filtering by property category
-        if (propertyCategory) {
-            const categories = propertyCategory
+        if (parsedPropertyCategory) {
+            const categories = parsedPropertyCategory
                 .split(',')
                 .map(c => c.trim())
                 .filter(Boolean);
@@ -174,6 +207,7 @@ export class HotelRepository {
             },
         };
     }
+
     public async getAutocompleteLocations(filters: HotelFilterQuery):Promise<IRepoRes> {
         const {
             page = '1',
@@ -185,6 +219,10 @@ export class HotelRepository {
             propertyType,
             propertyCategory,
         } = filters;
+
+        const parsedAmenities = parseFilterString(amenities);
+        const parsedPropertyType = parseFilterString(propertyType);
+        const parsedPropertyCategory = parseFilterString(propertyCategory);
 
         const query = search || city;
 
@@ -214,8 +252,8 @@ export class HotelRepository {
        
 
         // Amenities
-        if (amenities) {
-            const amenityList = amenities
+        if (parsedAmenities) {
+            const amenityList = parsedAmenities
                 .split(',')
                 .map(a => a.trim())
                 .filter(Boolean);
@@ -246,8 +284,8 @@ export class HotelRepository {
         }
 
         // Property Type
-        if (propertyType) {
-            const types = propertyType
+        if (parsedPropertyType) {
+            const types = parsedPropertyType
                 .split(',')
                 .map(t => t.trim())
                 .filter(Boolean);
@@ -267,8 +305,8 @@ export class HotelRepository {
         }
 
         // Property Category
-        if (propertyCategory) {
-            const categories = propertyCategory
+        if (parsedPropertyCategory) {
+            const categories = parsedPropertyCategory
                 .split(',')
                 .map(c => c.trim())
                 .filter(Boolean);

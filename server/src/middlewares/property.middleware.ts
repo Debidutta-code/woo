@@ -103,6 +103,13 @@ export const resolvePropertyIdentifier = (
         case 'body':
             // Support nested keys like "data.bookingDetails.propertyCode"
             value = getNestedValue(req.body, rule.key);
+            // Fallback for flat body vs structured booking body
+            if (!value && rule.key === 'propertyCode') {
+                value = getNestedValue(req.body, 'data.bookingDetails.propertyCode');
+            }
+            if (!value && rule.key === 'propertyId') {
+                value = getNestedValue(req.body, 'data.bookingDetails.propertyId');
+            }
             break;
 
         case 'headers':

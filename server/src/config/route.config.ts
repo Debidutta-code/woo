@@ -74,6 +74,9 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/booking', BookingRoutes);
     apiV1Router.use('/pms/front-office/reservations', reservationRoute);
     apiV1Router.use('/extranet/addon', AddonsRoute);
+    apiV1Router.use('/extranet/loyalty', loyaltyRouter);
+    apiV1Router.use('/extranet/utils-management', managementRoute);
+    apiV1Router.use('/extranet/promo-codes', promoCodeRoutes);
     apiV1Router.use('/agency', agencyMainRouter);
     apiV1Router.use('/promotions', promotionRouter);
     apiV1Router.use('/loyalty', loyaltyRouter);
