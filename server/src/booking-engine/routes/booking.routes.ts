@@ -11,7 +11,7 @@ const reservationController = new ReservationController();
 const reservationService = new NewReservationService();
 
 // Payload adapter for reservation creation
-const adaptReservationPayload = (req: CustomRequest, res: Response, next: NextFunction) => {
+export const adaptReservationPayload = (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
         const body = req.body;
         const customerId = req.customer?.id || body.customerId || null;

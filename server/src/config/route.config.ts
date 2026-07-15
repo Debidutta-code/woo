@@ -20,6 +20,7 @@ import promotionRouter from '../promotions/routes';
 import { agentPlatformRouter } from '../agent-paltform/routes';
 import integrationRouter from '../integrations/routes/index.routes';
 import platformRouter from '../platforms/routes/platform.routes';
+import googleRouter from '../platforms/google/routes/google.routes';
 import { currencyRoutes } from '../currency-maping/routes';
 import { fikafiPaymentRoutes } from '../payment/routes/fikafi.routes';
 import { managementRoute } from '../utils-management/routes';
@@ -86,6 +87,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/payment', PaymentRoutes);
     apiV1Router.use('/integrations', integrationRouter);
     apiV1Router.use('/platform', platformRouter);
+    apiV1Router.use('/google', googleRouter);
     apiV1Router.use('/spa', spaRouter);
     apiV1Router.use('/currency', currencyRoutes);
     apiV1Router.use('/service-logs', serviceLogRouter);
@@ -93,6 +95,7 @@ export async function initializeExpressRoutes({ app }: { app: Express }) {
     apiV1Router.use('/ota', otaRouter);
     apiV1Router.use('/multi-language', multiLanguageRouter);
     apiV1Router.use('/customer', customerRouter);
+    apiV1Router.use('/customers', customerRouter);
     apiV1Router.use('/dynamic-pricing', dynamicPricingRouter);
     apiV1Router.use('/property-commission', propertyCommissionRouter);
 

@@ -4,11 +4,14 @@ import { Router } from "express";
 
 import { ReservationController } from '../controllers';
 import { attachPropertyDetails } from '../../middlewares/property.middleware';
+import { adaptReservationPayload } from "../../booking-engine/routes/booking.routes";
 
 const reservationRoute = Router();
 const reservationController = new ReservationController();
 
 reservationRoute.route('/').post(
+    customerProtect,
+    adaptReservationPayload,
     attachPropertyDetails({
         identifierType: 'code',
         key: 'propertyCode',
