@@ -362,6 +362,7 @@ export class InitializeDB {
             });
             return userRes;
         } catch (error) {
+            console.error("Initialization database error details:", error);
             throw new Error('Failed to init db');
         }
     }
